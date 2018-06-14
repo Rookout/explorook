@@ -12,7 +12,8 @@
     "no-conditional-assignment": true,
     "no-consecutive-blank-lines": false,
     "object-literal-sort-keys": false,
-    "interface-name": false
+    "interface-name": false,
+    "trailing-comma": false
   },
   "jsRules": {
     "max-line-length": {

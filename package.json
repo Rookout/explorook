@@ -17,11 +17,13 @@
   "author": "Rookout",
   "license": "MIT",
   "devDependencies": {
+    "@playlyfe/gql": "^2.6.0",
     "electron": "^2.0.2",
     "tslint": "^5.10.0",
     "typescript": "^2.8.3"
   },
   "dependencies": {
+    "@types/ws": "^5.1.2",
     "graphql-yoga": "^1.14.8"
   }
 }

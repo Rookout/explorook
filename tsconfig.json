@@ -5,7 +5,7 @@
       "dom",
       "es6",
       "dom.iterable",
-      "scripthost"
+      "scripthost",
     ],
     "module": "commonjs",
     "noImplicitAny": true,
