@@ -20,5 +20,8 @@
     "electron": "^2.0.2",
     "tslint": "^5.10.0",
     "typescript": "^2.8.3"
+  },
+  "dependencies": {
+    "graphql-yoga": "^1.14.8"
   }
 }

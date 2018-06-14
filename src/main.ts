@@ -1,17 +1,22 @@
 import { app, BrowserWindow, Menu, Tray } from "electron";
 import * as path from "path";
+import * as cdnServer from "./server";
 
 let mainWindow: Electron.BrowserWindow;
+let tray: Tray;
+
+function main() {
+  createWindow();
+  spinServer();
+  openTray();
+}
 
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    icon: path.join(__dirname, 'assets/icons/rookout_favicon.ico')
   });
-
-  openTray();
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
@@ -29,24 +34,29 @@ function createWindow() {
 }
 
 function openTray() {
-  let tray = null
-  app.on('ready', () => {
-    tray = new Tray('../rookout_favicon')
-    const contextMenu = Menu.buildFromTemplate([
-      { label: 'Item1', type: 'radio' },
-      { label: 'Item2', type: 'radio' },
-      { label: 'Item3', type: 'radio', checked: true },
-      { label: 'Item4', type: 'radio' }
-    ])
-    tray.setToolTip('This is my application.')
-    tray.setContextMenu(contextMenu)
-  })
+  const icoPath = path.join(__dirname, "../assets/icons/rookout_favicon.ico");
+  console.log(icoPath);
+  tray = new Tray(icoPath);
+  const contextMenu = Menu.buildFromTemplate([
+    { label: "Item1", type: "radio" },
+    { label: "Item2", type: "radio" },
+    { label: "Item3", type: "radio", checked: true },
+    { label: "Item4", type: "radio" },
+  ]);
+  tray.setToolTip("This is my application.");
+  tray.setContextMenu(contextMenu);
+}
+
+function spinServer() {
+  cdnServer.start();
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+app.on("ready", () => {
+  main();
+});
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
@@ -61,7 +71,8 @@ app.on("activate", () => {
   // On OS X it"s common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
-    createWindow();
+    // createWindow();
+    main();
   }
 });
 
