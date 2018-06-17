@@ -5,8 +5,6 @@ import './App.css';
 import { Header } from './components/Header'
 import { Token } from './components/Token'
 import { ReposList } from './components/ReposList'
-const Store = require('electron-store');
-const uuidv4 = window.require("uuid/v4");
 
 class App extends Component {
   constructor(props) {
