@@ -1,11 +1,19 @@
 import { app, BrowserWindow, Menu, Tray } from "electron";
+const Store = require("electron-store");
 import * as path from "path";
 import * as cdnServer from "./server";
+const uuidv4 = require("uuid/v4");
 
 let mainWindow: Electron.BrowserWindow;
 let tray: Tray;
 
 function main() {
+  const store = new Store();
+  let token = store.get("token", null);
+  if (!token) {
+    token = uuidv4();
+    store.set("token", token);
+  }
   createWindow();
   spinServer();
   openTray();
@@ -14,15 +22,19 @@ function main() {
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    height: 450,
+    width: 550,
+    minWidth: 500,
+    minHeight: 400,
+    frame: false,
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "../index.html"));
+  // mainWindow.loadFile(path.join(__dirname, "http://localhost:3000"));
+  mainWindow.loadURL("http://localhost:3000");
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
 
   // Emitted when the window is closed.
   mainWindow.on("closed", () => {

@@ -12,7 +12,7 @@ const server = new GraphQLServer({
 });
 
 server.express.use((req, res, next) => {
-  const token = req.param("token");
+  const token = req.param("token") || req.header("token") || "";
   if (token === "opensesame") {
     next();
   } else {

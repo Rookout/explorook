@@ -1,0 +1,134 @@
+html { 
+  background-color: #3F4758;
+  font-family: Roboto;
+  color: white;
+}
+
+.gray-shaded {
+  color: #B6C8D4;
+}
+
+body {
+  -ms-overflow-style: scrollbar;
+}
+
+.App {
+  text-align: center;
+}
+
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.Header-line {
+  box-sizing: border-box;
+  height: 2px;
+  border: 1px solid #4D5667;
+}
+
+.Header-title {
+  height: 24px;
+  color: #FFFFFF;
+  font-family: Roboto;
+  font-size: 20px;
+  line-height: 24px;
+  margin-bottom: 5px;
+  padding-left: 25px;
+}
+
+.Header {
+  margin-right: 50px;
+  -webkit-app-region: drag;
+  text-align: left;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+#token-box {
+  padding: 10px;
+  background-color: #2F3545;
+  width: 60%;
+  color: #B6C8D4;
+  font-family: Roboto;
+  font-size: 18px;
+}
+
+#token-wrapper {
+  display: -webkit-box;
+}
+
+#token-show-eye {
+  float: right;
+}
+
+.small-icon {
+  font-size: 18;
+  color: #5f697a;
+}
+
+#copy-token-btn {
+  height: 43px;
+  font-weight: 400;
+  margin-top: 18px;
+  font-size: 14px;
+  font-family: Roboto;
+  color: white;
+  border-radius: 0;
+  background-color: #955FF8;
+}
+
+#close-window-btn {
+  color: white;
+  margin: 10px;
+  -webkit-app-region: no-drag;
+}
+
+#close-window-wrapper {
+  float: right;
+  z-index: 500;
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+}
+
+#content-container {
+  margin-left: 25px;
+  text-align: left;
+}
+
+.repo-name {
+  margin-top: 5px;
+  margin-left: 10px;
+}
+
+.delete-button {
+  margin-top: -10px !important;
+  position: absolute !important;
+  right: 25px !important;
+  /* margin-left: 200px !important; */
+}
+
+#repo-list-container {
+  
+}
