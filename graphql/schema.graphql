@@ -1,4 +1,11 @@
+type Repository {
+  fullpath: String!
+  repoName: String!
+  id: String!
+}
+
 type Query {
-  dir(repo: String!, path: String!): [String]!
-  file(repo: String!, path: String!): String!
+  dir(repoId: String!, path: String!): [String]!
+  file(repoId: String!, path: String!): String!
+  listRepos: [Repository!]!
 }

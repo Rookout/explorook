@@ -1,7 +1,8 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, Tray, dialog } from "electron";
 import Store = require("electron-store");
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
+import { repStore, Repository } from "./rep-store";
 import * as cdnServer from "./server";
 
 const ICONS_DIR = "../assets/icons/";
@@ -22,6 +23,22 @@ function main() {
     store.set("token", token);
   }
   ipcMain.on("hidden", showActiveOnBackgroundBalloon);
+  // TODO: move all event emitters to somewhere else?
+  ipcMain.on("repos-request", (e: any) => e.returnValue = repStore.get());
+  ipcMain.on("token-request", (e: any) =>  e.returnValue = token);
+  ipcMain.on("add-repo", (e: any, repo: Repository) => {
+    repStore.add(repo);
+    e.sender.send("refresh-repos", repStore.get());
+  });
+  ipcMain.on("delete-repo", (e: any, repId: string) => {
+    repStore.remove(repId);
+    e.sender.send("refresh-repos", repStore.get());
+  });
+  ipcMain.on("edit-repo", (e: any, args: {id: string, repoName: string}) => {
+    const {id, repoName } = args;
+    repStore.update(id, repoName);
+    e.sender.send("refresh-repos", repStore.get());
+  });
   createWindow();
   spinServer();
   openTray();
@@ -40,8 +57,8 @@ function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 450,
-    width: 550,
-    minWidth: 500,
+    width: 600,
+    minWidth: 550,
     minHeight: 400,
     frame: false,
   });
@@ -78,8 +95,8 @@ function maximize() {
 function openTray() {
   tray = new Tray(ROOKOUT_ICON);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Close", icon: CLOSE_ICON, click: app.quit },
     { label: "Config...", icon: SETTINGS_ICON, click: maximize },
+    { label: "Close", icon: CLOSE_ICON, click: app.quit },
   ]);
   tray.setToolTip("Rookout");
   tray.setContextMenu(contextMenu);

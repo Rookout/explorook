@@ -1,7 +1,7 @@
 // tslint:disable-next-line:no-var-requires
 import { GraphQLServer } from "graphql-yoga";
 import { join } from "path";
-import { resolvers } from "./api";
+import { repoMiddleware, resolvers, traversalMiddleware } from "./api";
 
 const typeDefs = join(__dirname, `../graphql/schema.graphql`);
 
@@ -9,6 +9,7 @@ const typeDefs = join(__dirname, `../graphql/schema.graphql`);
 const server = new GraphQLServer({
   resolvers,
   typeDefs,
+  middlewares: [traversalMiddleware, repoMiddleware],
 });
 
 server.express.use((req, res, next) => {
@@ -22,6 +23,6 @@ server.express.use((req, res, next) => {
 });
 
 export const start = () => {
-  server.start(() => console.log(`Server is running on http://localhost:4000`));
+  server.start({ port: 50001 }, (options) => console.log(`Server is running on http://localhost:${options.port}`));
 };
 

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Close } from '@material-ui/icons';
-const { remote, ipcRenderer } = window.require('electron');
+require = window.require;
+const { remote, ipcRenderer } = require('electron');
 
 export class Header extends Component {
     constructor(props) {

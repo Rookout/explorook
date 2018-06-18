@@ -4,6 +4,11 @@ html {
   color: white;
 }
 
+.primary {
+  color: #955FF8;
+  border-color: #955FF8;
+}
+
 .gray-shaded {
   color: #B6C8D4;
 }
@@ -69,7 +74,8 @@ body {
 #token-box {
   padding: 10px;
   background-color: #2F3545;
-  width: 60%;
+  width: 75%;
+  max-width: 500px;
   color: #B6C8D4;
   font-family: Roboto;
   font-size: 18px;
@@ -81,6 +87,7 @@ body {
 
 #token-show-eye {
   float: right;
+  cursor: pointer;
 }
 
 .small-icon {
@@ -122,7 +129,21 @@ body {
   margin-left: 10px;
 }
 
-.delete-button {
+.repo-name-edit {
+  margin-left: 10px;
+  min-width: 350px;
+  outline-width: 0;
+  background-color: transparent;
+  border-top: none;
+  border-left: none;
+  border-color: #955FF8;
+  border-right: none;
+  height: 25px;
+  font-size: 16px;
+  color: white;
+}
+
+#repo-buttons {
   margin-top: -10px !important;
   position: absolute !important;
   right: 25px !important;

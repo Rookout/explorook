@@ -1,43 +1,56 @@
 import React, { Component } from 'react';
-import { Folder } from "@material-ui/icons"
 import { ReposListItem } from "./RepoListItem"
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import CommentIcon from '@material-ui/icons/Comment';
+import { IconButton, TextField } from '@material-ui/core';
+import { AddCircle } from "@material-ui/icons"
+require = window.require;
+const { ipcRenderer, remote } = require("electron");
+const path = require("path");
+
+const dialog = remote.dialog;
 
 export class ReposList extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            repos: ipcRenderer.sendSync("repos-request"),
+        }
+        ipcRenderer.on("refresh-repos", (e, repos) => 
+        {
+            this.setState({...this.state, repos})
+        });
+        this.onRemoveClicked = this.onRemoveClicked.bind(this);
+        this.onAddClicked = this.onAddClicked.bind(this);
+    }
+
+    onRemoveClicked(repoId) {
+        ipcRenderer.send("delete-repo", repoId);
+    }
+
+    onAddClicked() {
+        const win = remote.getCurrentWindow();
+        const folders = dialog.showOpenDialog(win, { properties: ["openDirectory"] });
+        if (!folders) { // user closed dialog without choosing
+            return;
+        }
+        const folder = folders[0];
+        const repoName = path.basename(folder);
+        const newRepo = { repoName, fullpath: folder };
+        ipcRenderer.send("add-repo", newRepo);
     }
 
     render() {
-        const repos = [{ repoName: "/some/path/to/project" }];
+        const divStyle = {
+            display: 'flex',
+        };
         return (
             <div id="repo-list-container">
-                <p className="gray-shaded">Files</p>
-                {repos.map(rep => <ReposListItem repoName={rep.repoName} key={rep.repoName} />)}
-                {/* <List>
-                    {[0, 1, 2, 3].map(value => (
-                        <ListItem
-                            key={value}
-                            role={undefined}
-                            dense
-                            button
-                        >
-                            <Folder className="gray-shaded" /> 
-                            <ListItemText primary={`Line item ${value + 1}`} />
-                            <ListItemSecondaryAction>
-                                <IconButton aria-label="Comments">
-                                    <CommentIcon />
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                    ))}
-                </List> */}
+                <div style={divStyle}>
+                    <p className="gray-shaded">Local Repositories</p>
+                    <IconButton variant="fab" aria-label="add" onClick={this.onAddClicked}>
+                        <AddCircle className="primary" />
+                    </IconButton>
+                </div>
+                {this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.repoName} />)}
             </div>
         )
     }
