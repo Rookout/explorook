@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray, dialog } from "electron";
+import { app, BrowserWindow, nativeImage, ipcMain, Menu, Tray, dialog } from "electron";
 import Store = require("electron-store");
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
@@ -93,7 +93,8 @@ function maximize() {
 }
 
 function openTray() {
-  tray = new Tray(ROOKOUT_ICON);
+  const img = nativeImage.createFromPath(ROOKOUT_ICON);
+  tray = new Tray(img);
   const contextMenu = Menu.buildFromTemplate([
     { label: "Config...", icon: SETTINGS_ICON, click: maximize },
     { label: "Close", icon: CLOSE_ICON, click: app.quit },
