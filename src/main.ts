@@ -1,22 +1,39 @@
-import { app, BrowserWindow, Menu, Tray } from "electron";
-const Store = require("electron-store");
+import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
+import Store = require("electron-store");
 import * as path from "path";
-import * as cdnServer from "./server";
 const uuidv4 = require("uuid/v4");
+import * as cdnServer from "./server";
+
+const ICONS_DIR = "../assets/icons/";
+const ROOKOUT_ICON = path.join(__dirname, ICONS_DIR, "rookout_favicon.ico");
+const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
+const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
+const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
 
 let mainWindow: Electron.BrowserWindow;
 let tray: Tray;
+let token: string;
 
 function main() {
   const store = new Store();
-  let token = store.get("token", null);
+  token = store.get("token", null);
   if (!token) {
     token = uuidv4();
     store.set("token", token);
   }
+  ipcMain.on("hidden", showActiveOnBackgroundBalloon);
   createWindow();
   spinServer();
   openTray();
+}
+
+function showActiveOnBackgroundBalloon() {
+  if (tray != null) {
+    tray.displayBalloon({ title: "I'm still here!",
+    content: "Files are still served in the background",
+    // TODO: better logo
+    icon: ROOKOUT_LOGO });
+  }
 }
 
 function createWindow() {
@@ -34,7 +51,7 @@ function createWindow() {
   mainWindow.loadURL("http://localhost:3000");
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   // Emitted when the window is closed.
   mainWindow.on("closed", () => {
@@ -45,17 +62,26 @@ function createWindow() {
   });
 }
 
+function maximize() {
+  if (mainWindow === null) {
+    createWindow();
+    return;
+  }
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+    return;
+  }
+  mainWindow.show();
+  mainWindow.focus();
+}
+
 function openTray() {
-  const icoPath = path.join(__dirname, "../assets/icons/rookout_favicon.ico");
-  console.log(icoPath);
-  tray = new Tray(icoPath);
+  tray = new Tray(ROOKOUT_ICON);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Item1", type: "radio" },
-    { label: "Item2", type: "radio" },
-    { label: "Item3", type: "radio", checked: true },
-    { label: "Item4", type: "radio" },
+    { label: "Close", icon: CLOSE_ICON, click: app.quit },
+    { label: "Config...", icon: SETTINGS_ICON, click: maximize },
   ]);
-  tray.setToolTip("This is my application.");
+  tray.setToolTip("Rookout");
   tray.setContextMenu(contextMenu);
 }
 
@@ -72,21 +98,7 @@ app.on("ready", () => {
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  showActiveOnBackgroundBalloon();
 });
 
-app.on("activate", () => {
-  // On OS X it"s common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
-    // createWindow();
-    main();
-  }
-});
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+app.on("activate", maximize);

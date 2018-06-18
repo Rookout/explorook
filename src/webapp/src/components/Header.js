@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Close } from '@material-ui/icons';
-const remote = window.require('electron').remote;
+const { remote, ipcRenderer } = window.require('electron');
 
 export class Header extends Component {
     constructor(props) {
@@ -10,7 +10,8 @@ export class Header extends Component {
 
     closeWindow() {
         const w = remote.getCurrentWindow();
-        w.close();
+        w.hide();
+        ipcRenderer.send('hidden');
     }
 
     render() {
