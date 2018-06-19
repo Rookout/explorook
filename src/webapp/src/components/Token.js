@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, IconButton } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import { RemoveRedEye, ContentCopy } from '@material-ui/icons'
 import { copyText } from '../utils'
 require = window.require;

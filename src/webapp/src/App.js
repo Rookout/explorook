@@ -7,10 +7,6 @@ import { Token } from './components/Token'
 import { ReposList } from './components/ReposList'
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
       <div className="App">
