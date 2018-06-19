@@ -1,0 +1,13 @@
+{
+    "name": "rookup",
+    "dest": "release-builds/",
+    "icon": "assets/icons/logo.png",
+    "categories": [
+      "Utility",
+      "Rookout",
+      "Files"
+    ],
+    "lintianOverrides": [
+      "changelog-file-missing-in-native-package"
+    ]
+  }

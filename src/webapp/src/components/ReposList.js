@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { ReposListItem } from "./RepoListItem"
-import { IconButton, TextField } from '@material-ui/core';
+import { IconButton } from '@material-ui/core';
 import { AddCircle } from "@material-ui/icons"
 require = window.require;
 const { ipcRenderer, remote } = require("electron");
