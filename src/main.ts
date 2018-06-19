@@ -6,7 +6,7 @@ import { repStore, Repository } from "./rep-store";
 import * as cdnServer from "./server";
 
 const ICONS_DIR = "../assets/icons/";
-const ROOKOUT_ICON = path.join(__dirname, ICONS_DIR, "rookout_favicon.ico");
+const ROOKOUT_ICON = process.platform.toString() == "windows" ? path.join(__dirname, ICONS_DIR, "rookout_favicon.ico") : path.join(__dirname, ICONS_DIR, "logo@16x16.png");
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
@@ -98,6 +98,7 @@ function maximize() {
 }
 
 function openTray() {
+  console.log(ROOKOUT_ICON);
   const img = nativeImage.createFromPath(ROOKOUT_ICON);
   tray = new Tray(img);
   const contextMenu = Menu.buildFromTemplate([
