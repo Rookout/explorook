@@ -2,11 +2,35 @@
   "name": "rookexp",
   "version": "1.0.0",
   "description": "Rookout's site addon to support local files and folders",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "dist": "build",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "npm run build && (set development=1 || export development=1) && electron ./dist/index.js"
+  },
+  "build": {
+    "extends": null,
+    "appId": "rookup",
+    "directories": {
+      "output": "installers"
+    },
+    "files": [
+      "dist",
+      "assets",
+      "graphql"
+    ],
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "target": "NSIS",
+      "icon": "assets/icons/logo.png"
+    }
   },
   "repository": "https://github.com/rookout/rookexp",
   "keywords": [
@@ -14,7 +38,10 @@
     "Explorer",
     "Simple-Https"
   ],
-  "author": "Rookout",
+  "author": {
+    "email": "support@rookout.com",
+    "name": "Rookout"
+  },
   "license": "MIT",
   "devDependencies": {
     "@playlyfe/gql": "^2.6.0",
@@ -22,7 +49,6 @@
     "electron": "^2.0.2",
     "electron-builder": "^20.15.1",
     "electron-installer-debian": "^0.8.1",
-    "electron-packager": "^12.1.0",
     "tslint": "^5.10.0",
     "typescript": "^2.8.3"
   },
@@ -31,16 +57,10 @@
     "@types/ws": "^5.1.2",
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-scripts": "^1.1.4",
-    "typeface-roboto": "^0.0.54",
     "uuid": "^3.2.1",
     "electron-store": "^2.0.0",
     "graphql-middleware": "^1.3.0",
     "graphql-yoga": "^1.14.8",
-    "lodash": "^4.17.10",
-    "vue": "^2.5.16",
-    "vue-material": "^1.0.0-beta-10.2"
+    "lodash": "^4.17.10"
   }
 }
