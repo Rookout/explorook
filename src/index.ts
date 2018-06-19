@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
 import Store = require("electron-store");
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
@@ -6,7 +6,7 @@ import { repStore, Repository } from "./rep-store";
 import * as cdnServer from "./server";
 
 const ICONS_DIR = "../assets/icons/";
-const ROOKOUT_ICON = path.join(__dirname, ICONS_DIR, "rookout_favicon.ico");
+const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
@@ -14,6 +14,18 @@ const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_1
 let mainWindow: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
+
+// getAppIcon resolves the right icon for the running platform
+function getAppIcon() {
+  if (process.platform.match("win32")) {
+    return "/win/icon.ico";
+  } else if (process.platform.match("darwin")) {
+    return "/mac/icon.icns";
+  } else {
+    // TODO: resolve icon for linux
+    return "/win/icon.ico";
+  }
+}
 
 function main() {
   const store = new Store();
@@ -61,11 +73,15 @@ function createWindow() {
     minWidth: 550,
     minHeight: 400,
     frame: false,
+    icon: APP_ICON
   });
 
   // and load the index.html of the app.
-  // mainWindow.loadFile(path.join(__dirname, "http://localhost:3000"));
-  mainWindow.loadURL("http://localhost:3000");
+  if (process.env.development) {
+    mainWindow.loadURL("http://localhost:3000");
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "index.html"));
+  }
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
@@ -93,7 +109,7 @@ function maximize() {
 }
 
 function openTray() {
-  tray = new Tray(ROOKOUT_ICON);
+  tray = new Tray(APP_ICON);
   const contextMenu = Menu.buildFromTemplate([
     { label: "Config...", icon: SETTINGS_ICON, click: maximize },
     { label: "Close", icon: CLOSE_ICON, click: app.quit },
