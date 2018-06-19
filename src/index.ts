@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, Tray, Notification, nativeImage } from "electron";
 import Store = require("electron-store");
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
@@ -14,6 +14,7 @@ const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_1
 let mainWindow: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
+const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -22,8 +23,7 @@ function getAppIcon() {
   } else if (process.platform.match("darwin")) {
     return "/mac/icon.icns";
   } else {
-    // TODO: resolve icon for linux
-    return "/win/icon.ico";
+    return "/logo.png";
   }
 }
 
@@ -58,10 +58,16 @@ function main() {
 
 function showActiveOnBackgroundBalloon() {
   if (tray != null) {
-    tray.displayBalloon({ title: "I'm still here!",
-    content: "Files are still served in the background",
-    // TODO: better logo
-    icon: ROOKOUT_LOGO });
+    if (!process.platform.match("win32")) {
+      const notif = new Notification({title: "I'm still here!", body: "Files are still served in the background", icon: APP_ICON});
+      notif.on("click", (e) => {
+        maximize();
+      });
+      notif.show()
+    } else {
+      tray.displayBalloon({ title: "I'm still here!",
+      content: "Files are still served in the background", icon: icon });
+    }
   }
 }
 
@@ -73,7 +79,7 @@ function createWindow() {
     minWidth: 550,
     minHeight: 400,
     frame: false,
-    icon: APP_ICON
+    icon: icon,
   });
 
   // and load the index.html of the app.
