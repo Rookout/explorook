@@ -11,6 +11,9 @@ export class Header extends Component {
 
     closeWindow() {
         const w = remote.getCurrentWindow();
+        if (process.platform.match("darwin")) {
+            remote.app.dock.hide();
+        }
         w.hide();
         ipcRenderer.send('hidden');
     }
