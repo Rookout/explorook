@@ -63,10 +63,10 @@ function showActiveOnBackgroundBalloon() {
       notif.on("click", (e) => {
         maximize();
       });
-      notif.show()
+      notif.show();
     } else {
       tray.displayBalloon({ title: "I'm still here!",
-      content: "Files are still served in the background", icon: icon });
+      content: "Files are still served in the background", icon: ROOKOUT_LOGO });
     }
   }
 }
