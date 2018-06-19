@@ -1,9 +1,10 @@
 {
   "name": "rookexp",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
+    "publish": "build.sh && build --win -p always",
     "build": "tsc",
     "dist": "build",
     "watch": "tsc -w",
@@ -13,6 +14,13 @@
   "build": {
     "extends": null,
     "appId": "rookup",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "rookout",
+        "repo": "rookexp"
+      }
+    ],
     "directories": {
       "output": "installers"
     },
@@ -57,14 +65,16 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.109",
-    "@types/ws": "^5.1.2",
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
-    "uuid": "^3.2.1",
+    "@types/lodash": "^4.14.109",
+    "@types/ws": "^5.1.2",
+    "electron-log": "^2.2.15",
     "electron-store": "^2.0.0",
+    "electron-updater": "^2.21.10",
     "graphql-middleware": "^1.3.0",
     "graphql-yoga": "^1.14.8",
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "uuid": "^3.2.1"
   }
 }
