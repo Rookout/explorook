@@ -1,9 +1,16 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray, Notification, nativeImage } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, Notification, Tray } from "electron";
+import * as log from "electron-log";
 import Store = require("electron-store");
+import { autoUpdater } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
 import { repStore, Repository } from "./rep-store";
 import * as cdnServer from "./server";
+
+autoUpdater.logger = log;
+// log.transports.file.level = "debug";
+log.transports.console.level = "warn";
+log.verbose("app starting...");
 
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
@@ -37,7 +44,8 @@ function main() {
   ipcMain.on("hidden", showActiveOnBackgroundBalloon);
   // TODO: move all event emitters to somewhere else?
   ipcMain.on("repos-request", (e: any) => e.returnValue = repStore.get());
-  ipcMain.on("token-request", (e: any) =>  e.returnValue = token);
+  ipcMain.on("version-request", (e: any) => e.returnValue = autoUpdater.currentVersion);
+  ipcMain.on("token-request", (e: any) => e.returnValue = token);
   ipcMain.on("add-repo", (e: any, repo: Repository) => {
     repStore.add(repo);
     e.sender.send("refresh-repos", repStore.get());
@@ -46,11 +54,12 @@ function main() {
     repStore.remove(repId);
     e.sender.send("refresh-repos", repStore.get());
   });
-  ipcMain.on("edit-repo", (e: any, args: {id: string, repoName: string}) => {
-    const {id, repoName } = args;
+  ipcMain.on("edit-repo", (e: any, args: { id: string, repoName: string }) => {
+    const { id, repoName } = args;
     repStore.update(id, repoName);
     e.sender.send("refresh-repos", repStore.get());
   });
+  autoUpdater.checkForUpdatesAndNotify();
   createWindow();
   spinServer();
   openTray();
@@ -59,14 +68,19 @@ function main() {
 function showActiveOnBackgroundBalloon() {
   if (tray != null) {
     if (!process.platform.match("win32")) {
-      const notif = new Notification({title: "I'm still here!", body: "Files are still served in the background", icon: APP_ICON});
+      const notif = new Notification({
+        title: "I'm still here!",
+        body: "Files are still served in the background", icon: APP_ICON
+      });
       notif.on("click", (e) => {
         maximize();
       });
       notif.show();
     } else {
-      tray.displayBalloon({ title: "I'm still here!",
-      content: "Files are still served in the background", icon: ROOKOUT_LOGO });
+      tray.displayBalloon({
+        title: "I'm still here!",
+        content: "Files are still served in the background", icon: ROOKOUT_LOGO
+      });
     }
   }
 }
@@ -79,7 +93,7 @@ function createWindow() {
     minWidth: 550,
     minHeight: 400,
     frame: false,
-    icon: icon,
+    icon,
   });
 
   // and load the index.html of the app.
