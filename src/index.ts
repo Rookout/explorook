@@ -8,9 +8,7 @@ import { repStore, Repository } from "./rep-store";
 import * as cdnServer from "./server";
 
 autoUpdater.logger = log;
-// log.transports.file.level = "debug";
 log.transports.console.level = "warn";
-log.verbose("app starting...");
 
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
@@ -34,17 +32,11 @@ function getAppIcon() {
   }
 }
 
-function main() {
-  const store = new Store();
-  token = store.get("token", null);
-  if (!token) {
-    token = uuidv4();
-    store.set("token", token);
-  }
+// registerIpc listens to ipc requests\event
+function registerIpc() {
   ipcMain.on("hidden", showActiveOnBackgroundBalloon);
-  // TODO: move all event emitters to somewhere else?
   ipcMain.on("repos-request", (e: any) => e.returnValue = repStore.get());
-  ipcMain.on("version-request", (e: any) => e.returnValue = autoUpdater.currentVersion);
+  ipcMain.on("version-request", (e: any) => e.returnValue = app.getVersion());
   ipcMain.on("token-request", (e: any) => e.returnValue = token);
   ipcMain.on("add-repo", (e: any, repo: Repository) => {
     repStore.add(repo);
@@ -59,10 +51,20 @@ function main() {
     repStore.update(id, repoName);
     e.sender.send("refresh-repos", repStore.get());
   });
-  autoUpdater.checkForUpdatesAndNotify();
+}
+
+function main() {
+  const store = new Store();
+  token = store.get("token", null);
+  if (!token) {
+    token = uuidv4();
+    store.set("token", token);
+  }
+  registerIpc();
   createWindow();
   spinServer();
   openTray();
+  autoUpdater.checkForUpdatesAndNotify();
 }
 
 function showActiveOnBackgroundBalloon() {
