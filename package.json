@@ -1,13 +1,13 @@
 {
   "name": "rookexp",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
     "publish": "build.sh && build --win -p always",
     "build": "tsc",
     "dist": "build",
-    "mac-publish": "build --mac -p always",
+    "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win -p always",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "npm run build && (set development=1 || export development=1) && electron ./dist/index.js"
