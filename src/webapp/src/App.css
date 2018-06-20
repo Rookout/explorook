@@ -150,6 +150,28 @@ body {
   /* margin-left: 200px !important; */
 }
 
+#version-title {
+  padding-top: 10px;
+  margin-left: 5px;
+  font-size: 12px;
+}
+
+.flex {
+  display: flex;
+}
+
+#token-title {
+  margin-bottom: -12px;
+  align-items: center;
+  font-size: 16px;
+}
+
+#token-lock {
+  margin-bottom: 5px;
+  height: 25px;
+  cursor: pointer;
+}
+
 #repo-list-container {
   
 }

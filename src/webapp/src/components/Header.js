@@ -25,8 +25,9 @@ export class Header extends Component {
                 <div id="close-window-wrapper">
                     <Close id="close-window-btn" onClick={this.closeWindow}/>
                 </div>
-                <div className="Header">
-                    <p className="Header-title">Rookout File Explorer {this.state.version}</p>
+                <div className="Header flex">
+                    <p className="Header-title" title={this.state.version}>Rookout File Explorer</p>
+                    <p className="gray-shaded" id="version-title">{this.state.version}</p>
                 </div>
                 <hr className="Header-line"></hr>
             </div>
