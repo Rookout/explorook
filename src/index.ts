@@ -12,6 +12,7 @@ log.transports.console.level = "warn";
 
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
+const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
@@ -26,10 +27,17 @@ function getAppIcon() {
   if (process.platform.match("win32")) {
     return "/win/icon.ico";
   } else if (process.platform.match("darwin")) {
-    return "/mac/icon.icns";
+    return "logo.png";
   } else {
     return "/logo.png";
   }
+}
+
+function getTrayIcon() {
+  if (process.platform.match("darwin")) {
+    return "logo@16x16.png";
+  }
+  return getAppIcon();
 }
 
 // registerIpc listens to ipc requests\event
@@ -126,12 +134,15 @@ function maximize() {
     mainWindow.restore();
     return;
   }
+  if (process.platform.match("darwin")) {
+    app.dock.show();
+  }
   mainWindow.show();
   mainWindow.focus();
 }
 
 function openTray() {
-  tray = new Tray(APP_ICON);
+  tray = new Tray(TRAY_ICON);
   const contextMenu = Menu.buildFromTemplate([
     { label: "Config...", icon: SETTINGS_ICON, click: maximize },
     { label: "Close", icon: CLOSE_ICON, click: app.quit },
