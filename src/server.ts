@@ -1,4 +1,3 @@
-// tslint:disable-next-line:no-var-requires
 import { GraphQLServer } from "graphql-yoga";
 import { join } from "path";
 import { repoMiddleware, resolvers, traversalMiddleware } from "./api";

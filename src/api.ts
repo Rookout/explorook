@@ -5,6 +5,12 @@ import _ = require("lodash");
 import { join } from "path";
 import { Repository, repStore } from "./rep-store";
 
+interface FileInfo {
+  path: string;
+  name: string;
+  isFolder: boolean;
+}
+
 const isDirTraversal = (dirPath: string, fullpath: string): boolean => {
   return !fullpath.startsWith(dirPath);
 };
@@ -54,7 +60,7 @@ export const resolvers = {
     },
     // dir get's a target repository (as a user can expose multiple folders on it's PC) and a relative path
     // and returns a list of all files and folders in that path
-    dir(parent: any, args: { repo: Repository, path: string }): Promise<string[]> {
+    dir(parent: any, args: { repo: Repository, path: string }): Promise<FileInfo[]> {
       const { path, repo } = args;
       return new Promise((resolve, reject) => {
         const targetDir = join(repo.fullpath, path);
@@ -63,7 +69,16 @@ export const resolvers = {
             reject(err);
             return;
           }
-          resolve(files);
+          const res: FileInfo[] = [];
+          files.forEach((f) => {
+            const fstats = fs.statSync(join(repo.fullpath, path, f));
+            res.push({
+              isFolder: !fstats.isFile(),
+              name: f,
+              path: join(path, f),
+            });
+          });
+          resolve(res);
         });
       });
     },
