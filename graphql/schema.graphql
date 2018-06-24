@@ -4,8 +4,14 @@ type Repository {
   id: String!
 }
 
+type FileInfo {
+  path: String!
+  name: String!
+  isFolder: Boolean!
+}
+
 type Query {
-  dir(repoId: String!, path: String!): [String]!
+  dir(repoId: String!, path: String!): [FileInfo]!
   file(repoId: String!, path: String!): String!
   listRepos: [Repository!]!
 }
