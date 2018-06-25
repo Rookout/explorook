@@ -50,7 +50,7 @@ export class ReposList extends Component {
                         <AddCircle className="primary" />
                     </IconButton>
                 </div>
-                {this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.repoName} />)}
+                {this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)}
             </div>
         )
     }
