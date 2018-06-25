@@ -19,6 +19,7 @@ jobs:
             npm install
             npm run build
             cd src/webapp
+            npm install -g yarn
             yarn
             yarn run build
             mv build/* ../../dist/
