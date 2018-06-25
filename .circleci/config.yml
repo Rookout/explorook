@@ -4,7 +4,7 @@ jobs:
 
     # Specify the Xcode version to use
     macos:
-      xcode: "8.3.3"
+      xcode: "9.2.0"
 
     steps:
       - checkout
@@ -12,10 +12,10 @@ jobs:
       - run:
           name: Install dependencies
           command: | 
-            brew update
-            brew install node@8
-            echo 'export PATH="/usr/local/opt/node@8/bin:$PATH"' >> ~/.bash_profile
-            export PATH="/usr/local/opt/node@8/bin:$PATH"
+            # brew update
+            # brew install node@8
+            # echo 'export PATH="/usr/local/opt/node@8/bin:$PATH"' >> ~/.bash_profile
+            # export PATH="/usr/local/opt/node@8/bin:$PATH"
             npm install
             npm run build
             cd src/webapp
