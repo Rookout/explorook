@@ -1,5 +1,5 @@
 {
-  "name": "rookexp",
+  "name": "explorook",
   "version": "0.0.6",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
@@ -19,7 +19,7 @@
       {
         "provider": "github",
         "owner": "rookout",
-        "repo": "rookexp"
+        "repo": "explorook"
       }
     ],
     "directories": {
@@ -41,10 +41,11 @@
       "target": "NSIS"
     }
   },
-  "repository": "https://github.com/rookout/rookexp",
+  "repository": "https://github.com/rookout/explorook",
   "keywords": [
     "Rookout",
     "Explorer",
+    "ExploRook",
     "Simple-Https"
   ],
   "author": {
@@ -68,8 +69,10 @@
   "dependencies": {
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
+    "@types/auto-launch": "^5.0.0",
     "@types/lodash": "^4.14.109",
     "@types/ws": "^5.1.2",
+    "auto-launch": "^5.0.5",
     "electron-log": "^2.2.15",
     "electron-store": "^2.0.0",
     "electron-updater": "^2.21.10",
