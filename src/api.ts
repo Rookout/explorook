@@ -9,6 +9,7 @@ interface FileInfo {
   path: string;
   name: string;
   isFolder: boolean;
+  size: number;
 }
 
 const isDirTraversal = (dirPath: string, fullpath: string): boolean => {
@@ -76,6 +77,7 @@ export const resolvers = {
               isFolder: !fstats.isFile(),
               name: f,
               path: join(path, f),
+              size: fstats.size,
             });
           });
           resolve(res);
