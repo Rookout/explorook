@@ -10,12 +10,8 @@ jobs:
       - checkout
 
       - run:
-          name: Install dependencies
+          name: Build and Publish
           command: | 
-            # brew update
-            # brew install node@8
-            # echo 'export PATH="/usr/local/opt/node@8/bin:$PATH"' >> ~/.bash_profile
-            # export PATH="/usr/local/opt/node@8/bin:$PATH"
             npm install
             npm run build
             cd src/webapp
