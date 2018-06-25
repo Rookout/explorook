@@ -21,16 +21,22 @@ class Footer extends Component {
         super(props);
         this.state = {
             autoLaunchEnabled: false,
+            searchEnabled: ipcRenderer.sendSync("is-search-enabled"),
         };
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             this.setState({ autoLaunchEnabled: isEnabled })
         });
+        ipcRenderer.on("search-is-enabled-changed", (event, isEnabled) => {
+            this.setState({ searchEnabled: isEnabled })
+        });
         ipcRenderer.send("auto-launch-is-enabled-req");
-
     }
 
     onAutoLaunchChecked(event) {
         ipcRenderer.send("auto-launch-set", event.target.checked);
+    }
+
+    onSearchEnableChecked(event) {
     }
 
     getPlatformCheckboxText() {
@@ -58,6 +64,15 @@ class Footer extends Component {
                         }}
                     />
                     <p className="gray-shaded">{this.getPlatformCheckboxText()}</p>
+                    <Checkbox
+                        checked={this.state.searchEnabled}
+                        onChange={this.onSearchEnableChecked}
+                        classes={{
+                            root: classes.root,
+                            checked: classes.checked,
+                        }}
+                    />
+                    <p className="gray-shaded">Allow Search Index</p>
                 </ FormGroup>
             </div>
         )

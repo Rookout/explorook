@@ -57,6 +57,7 @@ function registerIpc() {
             al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
         }
     });
+    ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = false);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.get());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
@@ -113,10 +114,10 @@ function showActiveOnBackgroundBalloon() {
 function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        height: 450,
-        width: 600,
-        minWidth: 550,
-        minHeight: 400,
+        height: 550,
+        width: 650,
+        minWidth: 600,
+        minHeight: 500,
         frame: false,
         icon,
     });
