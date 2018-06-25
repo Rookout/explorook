@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  publish:
 
     # Specify the Xcode version to use
     macos:
@@ -20,5 +20,10 @@ jobs:
             mv build/* ../../dist/
             cd ../..
             npm run mac-publish
+
                    
-      
+workflows:
+  version: 2
+  publish-pipeline:
+    jobs:
+      - publish
