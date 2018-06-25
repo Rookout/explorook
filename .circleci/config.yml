@@ -26,4 +26,4 @@ workflows:
   version: 2
   publish-pipeline:
     jobs:
-      - publish
+      - publish 
