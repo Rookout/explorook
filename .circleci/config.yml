@@ -12,6 +12,7 @@ jobs:
       - run:
           name: Install dependencies
           command: | 
+            brew update
             brew install node@8
             npm install
             npm run build
