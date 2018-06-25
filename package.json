@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -37,8 +37,12 @@
       ],
       "category": "Utility"
     },
+    "mac": {
+      "icon": "assets/icons/logo@256x256.png"
+    },
     "win": {
-      "target": "NSIS"
+      "target": "NSIS",
+      "icon": "assets/icons/logo@256x256.png"
     }
   },
   "repository": "https://github.com/rookout/explorook",
