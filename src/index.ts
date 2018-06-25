@@ -1,10 +1,11 @@
-import { app, BrowserWindow, ipcMain, Menu, nativeImage, Notification, Tray } from "electron";
+import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
-import { repStore, Repository } from "./rep-store";
+import AutoLaunch = require("auto-launch");
+import { Repository, repStore } from "./rep-store";
 import * as cdnServer from "./server";
 
 autoUpdater.logger = log;
@@ -24,147 +25,161 @@ const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
-  if (process.platform.match("win32")) {
-    return "/win/icon.ico";
-  } else if (process.platform.match("darwin")) {
-    return "logo.png";
-  } else {
-    return "/logo.png";
-  }
+    if (process.platform.match("win32")) {
+        return "/win/icon.ico";
+    } else if (process.platform.match("darwin")) {
+        return "logo.png";
+    } else {
+        return "/logo.png";
+    }
 }
 
 function getTrayIcon() {
-  if (process.platform.match("darwin")) {
-    return "logo@16x16.png";
-  }
-  return getAppIcon();
+    if (process.platform.match("darwin")) {
+        return "logo@16x16.png";
+    }
+    return getAppIcon();
 }
 
 // registerIpc listens to ipc requests\event
 function registerIpc() {
-  ipcMain.on("hidden", showActiveOnBackgroundBalloon);
-  ipcMain.on("repos-request", (e: any) => e.returnValue = repStore.get());
-  ipcMain.on("version-request", (e: any) => e.returnValue = app.getVersion());
-  ipcMain.on("token-request", (e: any) => e.returnValue = token);
-  ipcMain.on("add-repo", (e: any, repo: Repository) => {
-    repStore.add(repo);
-    e.sender.send("refresh-repos", repStore.get());
-  });
-  ipcMain.on("delete-repo", (e: any, repId: string) => {
-    repStore.remove(repId);
-    e.sender.send("refresh-repos", repStore.get());
-  });
-  ipcMain.on("edit-repo", (e: any, args: { id: string, repoName: string }) => {
-    const { id, repoName } = args;
-    repStore.update(id, repoName);
-    e.sender.send("refresh-repos", repStore.get());
-  });
+    const al = new AutoLaunch({ name: "ExploRook" });
+    ipcMain.on("hidden", showActiveOnBackgroundBalloon);
+    ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
+        al.isEnabled().then((enabled) => {
+            e.sender.send("auto-launch-is-enabled-changed", enabled);
+        });
+    });
+    ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
+        if (enable) {
+            al.enable().then(() => e.sender.send("auto-launch-is-enabled-changed", true));
+        } else {
+            al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
+        }
+    });
+    ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
+    ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.get());
+    ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
+    ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
+    ipcMain.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
+        repStore.add(repo);
+        e.sender.send("refresh-repos", repStore.get());
+    });
+    ipcMain.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
+        repStore.remove(repId);
+        e.sender.send("refresh-repos", repStore.get());
+    });
+    ipcMain.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: string }) => {
+        const { id, repoName } = args;
+        repStore.update(id, repoName);
+        e.sender.send("refresh-repos", repStore.get());
+    });
 }
 
 function main() {
-  const store = new Store();
-  token = store.get("token", null);
-  if (!token) {
-    token = uuidv4();
-    store.set("token", token);
-  }
-  registerIpc();
-  createWindow();
-  spinServer();
-  openTray();
-  autoUpdater.checkForUpdatesAndNotify();
+    const store = new Store();
+    token = store.get("token", null);
+    if (!token) {
+        token = uuidv4();
+        store.set("token", token);
+    }
+    registerIpc();
+    createWindow();
+    spinServer();
+    openTray();
+    autoUpdater.checkForUpdatesAndNotify();
 }
 
 function showActiveOnBackgroundBalloon() {
-  if (tray != null) {
-    if (!process.platform.match("win32")) {
-      const notif = new Notification({
-        title: "I'm still here!",
-        body: "Files are still served in the background", icon: APP_ICON
-      });
-      notif.on("click", (e) => {
-        maximize();
-      });
-      notif.show();
-    } else {
-      tray.displayBalloon({
-        title: "I'm still here!",
-        content: "Files are still served in the background", icon: ROOKOUT_LOGO
-      });
+    if (tray != null) {
+        if (!process.platform.match("win32")) {
+            const notif = new Notification({
+                title: "I'm still here!",
+                body: "Files are still served in the background", icon: APP_ICON
+            });
+            notif.on("click", (e) => {
+                maximize();
+            });
+            notif.show();
+        } else {
+            tray.displayBalloon({
+                title: "I'm still here!",
+                content: "Files are still served in the background", icon: ROOKOUT_LOGO
+            });
+        }
     }
-  }
 }
 
 function createWindow() {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    height: 450,
-    width: 600,
-    minWidth: 550,
-    minHeight: 400,
-    frame: false,
-    icon,
-  });
+    // Create the browser window.
+    mainWindow = new BrowserWindow({
+        height: 450,
+        width: 600,
+        minWidth: 550,
+        minHeight: 400,
+        frame: false,
+        icon,
+    });
 
-  // and load the index.html of the app.
-  if (process.env.development) {
-    mainWindow.loadURL("http://localhost:3000");
-  } else {
-    mainWindow.loadFile(path.join(__dirname, "index.html"));
-  }
+    // and load the index.html of the app.
+    if (process.env.development) {
+        mainWindow.loadURL("http://localhost:3000");
+    } else {
+        mainWindow.loadFile(path.join(__dirname, "index.html"));
+    }
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+    // Open the DevTools.
+    // mainWindow.webContents.openDevTools();
 
-  // Emitted when the window is closed.
-  mainWindow.on("closed", () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
+    // Emitted when the window is closed.
+    mainWindow.on("closed", () => {
+        // Dereference the window object, usually you would store windows
+        // in an array if your app supports multi windows, this is the time
+        // when you should delete the corresponding element.
+        mainWindow = null;
+    });
 }
 
 function maximize() {
-  if (mainWindow === null) {
-    createWindow();
-    return;
-  }
-  if (mainWindow.isMinimized()) {
-    mainWindow.restore();
-    return;
-  }
-  if (process.platform.match("darwin")) {
-    app.dock.show();
-  }
-  mainWindow.show();
-  mainWindow.focus();
+    if (mainWindow === null) {
+        createWindow();
+        return;
+    }
+    if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+        return;
+    }
+    if (process.platform.match("darwin")) {
+        app.dock.show();
+    }
+    mainWindow.show();
+    mainWindow.focus();
 }
 
 function openTray() {
-  tray = new Tray(TRAY_ICON);
-  const contextMenu = Menu.buildFromTemplate([
-    { label: "Config...", icon: SETTINGS_ICON, click: maximize },
-    { label: "Close", icon: CLOSE_ICON, click: app.quit },
-  ]);
-  tray.setToolTip("Rookout");
-  tray.setContextMenu(contextMenu);
+    tray = new Tray(TRAY_ICON);
+    const contextMenu = Menu.buildFromTemplate([
+        { label: "Config...", icon: SETTINGS_ICON, click: maximize },
+        { label: "Close", icon: CLOSE_ICON, click: app.quit },
+    ]);
+    tray.setToolTip("Rookout");
+    tray.setContextMenu(contextMenu);
 }
 
 function spinServer() {
-  cdnServer.start();
+    cdnServer.start();
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  main();
+    main();
 });
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
-  showActiveOnBackgroundBalloon();
+    showActiveOnBackgroundBalloon();
 });
 
 app.on("activate", maximize);

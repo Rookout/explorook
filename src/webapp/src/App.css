@@ -2,6 +2,7 @@ html {
   background-color: #3F4758;
   font-family: Roboto;
   color: white;
+  height: 100%;
 }
 
 .primary {
@@ -14,11 +15,13 @@ html {
 }
 
 body {
+  height: 100%;
   -ms-overflow-style: scrollbar;
 }
 
 .App {
   text-align: center;
+  height: 100%;
 }
 
 
@@ -172,6 +175,12 @@ body {
   cursor: pointer;
 }
 
-#repo-list-container {
-  
+#footer-container {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+#checkboxes-group {
+  margin-left: 20px;
 }
