@@ -44,6 +44,7 @@ export const repoMiddleware = {
   Query: {
     file: filterRepo,
     dir: filterRepo,
+    search: filterRepo,
   }
 };
 
@@ -97,6 +98,10 @@ export const resolvers = {
           resolve(data);
         });
       });
+    },
+    search(parent: any, args: { repo: Repository, query: string }): string[] {
+      const { repo, query } = args;
+      return repo.search(query);
     },
   },
 };

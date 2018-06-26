@@ -21,6 +21,7 @@ const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_1
 let mainWindow: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
+let store: Store<{}>;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -78,7 +79,7 @@ function registerIpc() {
 }
 
 function main() {
-    const store = new Store();
+    store = new Store({ name: "explorook" });
     token = store.get("token", null);
     if (!token) {
         token = uuidv4();
