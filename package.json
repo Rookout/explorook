@@ -38,7 +38,7 @@
       "category": "Utility"
     },
     "mac": {
-      "icon": "assets/icons/logo@256x256.png"
+      "icon": "assets/icons/logo@512x512.png"
     },
     "win": {
       "target": "NSIS",
