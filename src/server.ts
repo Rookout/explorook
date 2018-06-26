@@ -16,7 +16,7 @@ export const start = (accessToken: string) => {
     if (token === accessToken) {
       next();
     } else {
-      res.send(401);
+      res.status(401).send("bad token");
     }
   });
   server.start({ port: 50001 }, (options) => console.log(`Server is running on http://localhost:${options.port}`));
