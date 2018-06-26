@@ -12,6 +12,10 @@ export const start = (accessToken: string) => {
   });
 
   server.express.use((req, res, next) => {
+    if (process.env.EXPLOROOK_NOAUTH) {
+      next();
+      return;
+    }
     const token = req.param("token") || req.header("token") || "";
     if (token === accessToken) {
       next();
@@ -19,6 +23,12 @@ export const start = (accessToken: string) => {
       res.status(401).send("bad token");
     }
   });
-  server.start({ port: 50001 }, (options) => console.log(`Server is running on http://localhost:${options.port}`));
+  try {
+    // tslint:disable-next-line:no-console
+    server.start({ port: 50001 }, (options) => console.log(`Server is running on http://localhost:${options.port}`)); 
+  } catch (error) {
+    // tslint:disable-next-line:no-console
+    console.log("couldn't start server", error);
+  }
 };
 
