@@ -168,7 +168,7 @@ function openTray() {
 }
 
 function spinServer() {
-    cdnServer.start();
+    cdnServer.start(token);
 }
 
 // This method will be called when Electron has finished
