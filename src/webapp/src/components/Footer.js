@@ -26,7 +26,7 @@ class Footer extends Component {
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             this.setState({ autoLaunchEnabled: isEnabled })
         });
-        ipcRenderer.on("search-is-enabled-changed", (event, isEnabled) => {
+        ipcRenderer.on("search-index-enabled-changed", (event, isEnabled) => {
             this.setState({ searchEnabled: isEnabled })
         });
         ipcRenderer.send("auto-launch-is-enabled-req");
@@ -37,6 +37,7 @@ class Footer extends Component {
     }
 
     onSearchEnableChecked(event) {
+        ipcRenderer.send("search-index-set", event.target.checked);
     }
 
     getPlatformCheckboxText() {
