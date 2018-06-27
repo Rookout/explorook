@@ -7,12 +7,13 @@ type Repository {
 type FileInfo {
   path: String!
   name: String!
-  size: Int
   isFolder: Boolean!
+  size: Int
 }
 
 type Query {
   dir(repoId: String!, path: String!): [FileInfo]!
   file(repoId: String!, path: String!): String!
+  search(repoId: String!, query: String!, first: Int): [String]!
   listRepos: [Repository!]!
 }
