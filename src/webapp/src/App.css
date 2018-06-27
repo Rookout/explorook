@@ -68,7 +68,13 @@ body {
   font-size: 20px;
   line-height: 24px;
   margin-bottom: 5px;
-  padding-left: 25px;
+  margin-left: 10px;
+}
+
+.Header-logo {
+  margin-top: 5px;
+  width: 42px;
+  height: 42px;
 }
 
 .Header {
@@ -76,7 +82,8 @@ body {
   -webkit-app-region: drag;
   text-align: left;
   padding-top: 10px;
-  padding-bottom: 10px;
+  padding-bottom: 5px;
+  padding-left: 25px;
 }
 
 #token-box {
