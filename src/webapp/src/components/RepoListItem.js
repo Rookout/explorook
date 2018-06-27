@@ -23,7 +23,7 @@ export class ReposListItem extends Component {
     saveRepoName(e) {
         switch (e.keyCode) {
             case 13: // Enter
-                ipcRenderer.send("edit-repo", { id: this.props.repo.id, repoName: this.state.repoNameEdit })
+                ipcRenderer.sendTo(window.indexWorkerId, "edit-repo", { id: this.props.repo.id, repoName: this.state.repoNameEdit })
                 break;
             case 27: // Esc
                 this.setState({ ...this.state, repoNameEdit: this.props.repo.repoName, editMode: false })

@@ -4,7 +4,7 @@ import blueGrey from '@material-ui/core/colors/blueGrey';
 import { withStyles } from '@material-ui/core/styles';
 import { Checkbox, FormControlLabel, FormGroup } from "@material-ui/core";
 require = window.require;
-const { remote, ipcRenderer } = require('electron');
+const { ipcRenderer } = require('electron');
 
 const styles = {
     root: {
@@ -21,7 +21,7 @@ class Footer extends Component {
         super(props);
         this.state = {
             autoLaunchEnabled: false,
-            searchEnabled: ipcRenderer.sendSync("is-search-enabled"),
+            searchEnabled: false, 
         };
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             this.setState({ autoLaunchEnabled: isEnabled })
@@ -30,6 +30,7 @@ class Footer extends Component {
             this.setState({ searchEnabled: isEnabled })
         });
         ipcRenderer.send("auto-launch-is-enabled-req");
+        ipcRenderer.sendTo(window.indexWorkerId, "is-search-enabled");
     }
 
     onAutoLaunchChecked(event) {
@@ -37,7 +38,7 @@ class Footer extends Component {
     }
 
     onSearchEnableChecked(event) {
-        ipcRenderer.send("search-index-set", event.target.checked);
+        ipcRenderer.sendTo(window.indexWorkerId, "search-index-set", event.target.checked);
     }
 
     getPlatformCheckboxText() {
