@@ -1,12 +1,14 @@
 import { IpcMessageEvent, ipcRenderer } from "electron";
 import Store = require("electron-store");
 import { Repository, repStore } from "./rep-store";
+import * as graphQlServer from "./server";
 
 const store = new Store({ name: "explorook" });
 let mainWindowId = -1;
 
-ipcRenderer.on("main-window-id", (e: IpcMessageEvent, id: number) => {
+ipcRenderer.on("main-window-id", (e: IpcMessageEvent, token: string, id: number) => {
     mainWindowId = id;
+    graphQlServer.start(token);
 });
 
 ipcRenderer.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
