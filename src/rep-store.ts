@@ -39,7 +39,7 @@ class Repo {
 
 // tslint:disable-next-line:max-classes-per-file
 class RepoStore {
-    public allowIndex: boolean;
+    private allowIndex: boolean;
     private store: Store;
     private repos: Repo[];
 
@@ -48,14 +48,24 @@ class RepoStore {
         const models = JSON.parse(this.store.get("repositories", "[]")) as Repository[];
         this.allowIndex = JSON.parse(this.store.get("allow-indexing", "true"));
         this.repos = models.map((m) => new Repo(m));
-        // TODO: load index cache
         if (this.allowIndex) {
             this.repos.forEach((r) => r.indexer.index());
         }
     }
 
+    public getAllowIndex(): boolean {
+        return this.allowIndex;
+    }
+
+    public setAllowIndex(enable: boolean) {
+        if (enable) {
+            this.repos.forEach((r) => r.indexer.index());
+        } else {
+            this.repos.forEach((r) => r.indexer.deleteIndex());
+        }
+    }
+
     public save() {
-        // TODO: save index cache
         const models = this.repos.map((r) => r.toModel());
         this.store.set("repositories", JSON.stringify(models));
     }
@@ -67,7 +77,10 @@ class RepoStore {
         }
         repo.id = uuidv4();
         const r = new Repo(repo);
-        if (this.allowIndex) { r.indexer.index(); }
+        if (this.allowIndex) {
+            // start indexing on next eventloop (so we don't stuck the gui)
+            setTimeout(() => r.indexer.index(), 0);
+        }
         this.repos.push(r);
         this.save();
         return repo.id;
@@ -75,7 +88,7 @@ class RepoStore {
 
     public remove(id: string): boolean {
         const removed = _.remove(this.repos, (r) => r.id === id);
-        removed.forEach((r) => r.indexer.stop());
+        removed.forEach((r) => r.indexer.deleteIndex());
         if (removed) {
             this.save();
         }
@@ -90,7 +103,7 @@ class RepoStore {
         this.save();
     }
 
-    public get(): Repository[] {
+    public getRepositories(): Repository[] {
         return this.repos;
     }
 }
