@@ -44,7 +44,7 @@ function getTrayIcon() {
 
 // registerIpc listens to ipc requests\event
 function registerIpc() {
-    const al = new AutoLaunch({ name: "ExploRook" });
+    const al = new AutoLaunch({ name: "Explorook" });
     ipcMain.on("hidden", showActiveOnBackgroundBalloon);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.getRepositories());
