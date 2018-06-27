@@ -105,7 +105,7 @@ class RepoStore {
     }
 
     public getRepositories(): Repository[] {
-        return this.repos;
+        return this.repos.map((r) => r.toModel());
     }
 }
 

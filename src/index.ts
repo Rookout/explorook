@@ -5,8 +5,6 @@ import { autoUpdater } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
-import { Repository, repStore } from "./rep-store";
-import * as cdnServer from "./server";
 
 autoUpdater.logger = log;
 log.transports.console.level = "warn";
@@ -50,13 +48,6 @@ function registerIpc() {
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
-    // ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.getRepositories());
-    // ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = repStore.getAllowIndex());
-    // ipcMain.on("search-index-set", (e: IpcMessageEvent, enable: boolean) => {
-    //     store.set("allow-indexing", enable.toString());
-    //     repStore.setAllowIndex(enable);
-    //     e.sender.send("search-index-enabled-changed", enable);
-    // });
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
         al.isEnabled().then((enabled) => {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
@@ -69,19 +60,6 @@ function registerIpc() {
             al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
         }
     });
-    // ipcMain.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
-    //     repStore.add(repo);
-    //     e.sender.send("refresh-repos", repStore.getRepositories());
-    // });
-    // ipcMain.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
-    //     repStore.remove(repId);
-    //     e.sender.send("refresh-repos", repStore.getRepositories());
-    // });
-    // ipcMain.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: string }) => {
-    //     const { id, repoName } = args;
-    //     repStore.update(id, repoName);
-    //     e.sender.send("refresh-repos", repStore.getRepositories());
-    // });
 }
 
 function main() {
@@ -93,7 +71,6 @@ function main() {
     }
     registerIpc();
     createWindow();
-    spinServer();
     openTray();
     autoUpdater.checkForUpdatesAndNotify();
 }
@@ -129,7 +106,7 @@ function createWindow() {
             frame: false,
             icon,
         });
-        e.sender.send("main-window-id", mainWindow.webContents.id);
+        e.sender.send("main-window-id", token, mainWindow.webContents.id);
         ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
             ev.sender.send("indexer-worker-id", indexWorker.id);
         });
@@ -142,7 +119,7 @@ function createWindow() {
         }
 
         // Open the DevTools.
-        mainWindow.webContents.openDevTools();
+        // mainWindow.webContents.openDevTools();
 
         // Emitted when the window is closed.
         mainWindow.on("closed", () => {
@@ -153,7 +130,7 @@ function createWindow() {
         });
     });
     indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
-    indexWorker.webContents.openDevTools();
+    // indexWorker.webContents.openDevTools();
 }
 
 function maximize() {
@@ -180,10 +157,6 @@ function openTray() {
     ]);
     tray.setToolTip("Rookout");
     tray.setContextMenu(contextMenu);
-}
-
-function spinServer() {
-    cdnServer.start(token);
 }
 
 // This method will be called when Electron has finished
