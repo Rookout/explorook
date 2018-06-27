@@ -20,7 +20,7 @@ const isDirTraversal = (dirPath: string, fullpath: string): boolean => {
 // and puts the repository on args
 const filterRepo: IMiddlewareFunction = (resolve, parent, args, context, info) => {
   const { repoId } = args;
-  const repos = repStore.get();
+  const repos = repStore.getRepositories();
   const targetRepo = _.find(repos, (rep) => rep.id.toLowerCase() === repoId.toLocaleLowerCase());
   if (!targetRepo) {
     throw new GraphQLError(`repository "${repoId}" not found`);
@@ -58,7 +58,7 @@ export const traversalMiddleware = {
 export const resolvers = {
   Query: {
     listRepos(parent: any, args: any): Repository[] {
-      return repStore.get();
+      return repStore.getRepositories();
     },
     // dir get's a target repository (as a user can expose multiple folders on it's PC) and a relative path
     // and returns a list of all files and folders in that path
@@ -99,9 +99,16 @@ export const resolvers = {
         });
       });
     },
-    search(parent: any, args: { repo: Repository, query: string }): string[] {
-      const { repo, query } = args;
-      return repo.search(query);
+    search(parent: any, args: { repo: Repository, query: string, first: number }): string[] {
+      const { repo, query, first } = args;
+      const res = repo.search(query);
+      if (res == null) {
+        throw new GraphQLError("repository isn't indexed. make sure to enable indexing in order to use the search feature");
+      }
+      if (first) {
+        return res.slice(0, first);
+      }
+      return res;
     },
   },
 };

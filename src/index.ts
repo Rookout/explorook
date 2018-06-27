@@ -46,6 +46,15 @@ function getTrayIcon() {
 function registerIpc() {
     const al = new AutoLaunch({ name: "ExploRook" });
     ipcMain.on("hidden", showActiveOnBackgroundBalloon);
+    ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
+    ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.getRepositories());
+    ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
+    ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
+    ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = repStore.getAllowIndex());
+    ipcMain.on("search-index-set", (e: IpcMessageEvent, enable: boolean) => {
+        repStore.setAllowIndex(enable);
+        e.sender.send("search-index-enabled-changed", enable);
+    });
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
         al.isEnabled().then((enabled) => {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
@@ -58,23 +67,18 @@ function registerIpc() {
             al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
         }
     });
-    ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = false);
-    ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
-    ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.get());
-    ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
-    ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
         repStore.add(repo);
-        e.sender.send("refresh-repos", repStore.get());
+        e.sender.send("refresh-repos", repStore.getRepositories());
     });
     ipcMain.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
         repStore.remove(repId);
-        e.sender.send("refresh-repos", repStore.get());
+        e.sender.send("refresh-repos", repStore.getRepositories());
     });
     ipcMain.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: string }) => {
         const { id, repoName } = args;
         repStore.update(id, repoName);
-        e.sender.send("refresh-repos", repStore.get());
+        e.sender.send("refresh-repos", repStore.getRepositories());
     });
 }
 
