@@ -52,6 +52,7 @@ function registerIpc() {
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = repStore.getAllowIndex());
     ipcMain.on("search-index-set", (e: IpcMessageEvent, enable: boolean) => {
+        store.set("allow-indexing", enable.toString());
         repStore.setAllowIndex(enable);
         e.sender.send("search-index-enabled-changed", enable);
     });

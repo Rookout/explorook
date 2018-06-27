@@ -35,15 +35,20 @@ export class IndexWorker {
     public index() {
         if (this.indexDone || this.indexRunning) { return; }
         this.indexRunning = true;
+        this.indexDone = false;
+        this.stopFlag = false;
         const walker = walk.walk(this.rootPath, { filters: this.ignores });
         walker.on("file", (root: string, fileStats: { name: string }, next: () => void) => {
             if (this.stopFlag) {
-                walker.emit("end");
+                walker.emit("stopped");
                 return;
             }
             const filename = path.join(root, fileStats.name);
             this.searchIndex.add(path.relative(this.rootPath, filename));
             next();
+        });
+        walker.on("stopped", () => {
+            this.indexRunning = false;
         });
         walker.on("end", () => {
             this.indexDone = true;
@@ -70,7 +75,7 @@ export class IndexWorker {
 
     public deleteIndex() {
         // stops indexing job if it's running
-        this.stopFlag = false;
+        this.stopFlag = true;
         // delete the index
         this.searchIndex.drop();
         this.indexDone = false;

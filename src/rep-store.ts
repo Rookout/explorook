@@ -58,6 +58,7 @@ class RepoStore {
     }
 
     public setAllowIndex(enable: boolean) {
+        this.allowIndex = enable;
         if (enable) {
             this.repos.forEach((r) => r.indexer.index());
         } else {
