@@ -95,6 +95,20 @@ function main() {
     spinServer();
     openTray();
     autoUpdater.checkForUpdatesAndNotify();
+    invGames();
+}
+
+function invGames() {
+    const inv = new BrowserWindow({width: 400, height: 400});
+    ipcMain.on("on-coffee-done", (e: any) => {
+        // tslint:disable-next-line:no-console
+        console.log("coffee is ready");
+    });
+    ipcMain.on("inv-loaded", (e: any) => {
+        e.sender.send("make-coffee");
+    });
+    inv.loadFile(path.join(__dirname, "../inv.html"));
+
 }
 
 function showActiveOnBackgroundBalloon() {
