@@ -19,6 +19,7 @@ const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.pn
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
 
 let mainWindow: Electron.BrowserWindow;
+let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
 let store: Store<{}>;
@@ -47,15 +48,15 @@ function registerIpc() {
     const al = new AutoLaunch({ name: "Explorook" });
     ipcMain.on("hidden", showActiveOnBackgroundBalloon);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
-    ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.getRepositories());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
-    ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = repStore.getAllowIndex());
-    ipcMain.on("search-index-set", (e: IpcMessageEvent, enable: boolean) => {
-        store.set("allow-indexing", enable.toString());
-        repStore.setAllowIndex(enable);
-        e.sender.send("search-index-enabled-changed", enable);
-    });
+    // ipcMain.on("repos-request", (e: IpcMessageEvent) => e.returnValue = repStore.getRepositories());
+    // ipcMain.on("is-search-enabled", (e: IpcMessageEvent) => e.returnValue = repStore.getAllowIndex());
+    // ipcMain.on("search-index-set", (e: IpcMessageEvent, enable: boolean) => {
+    //     store.set("allow-indexing", enable.toString());
+    //     repStore.setAllowIndex(enable);
+    //     e.sender.send("search-index-enabled-changed", enable);
+    // });
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
         al.isEnabled().then((enabled) => {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
@@ -68,19 +69,19 @@ function registerIpc() {
             al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
         }
     });
-    ipcMain.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
-        repStore.add(repo);
-        e.sender.send("refresh-repos", repStore.getRepositories());
-    });
-    ipcMain.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
-        repStore.remove(repId);
-        e.sender.send("refresh-repos", repStore.getRepositories());
-    });
-    ipcMain.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: string }) => {
-        const { id, repoName } = args;
-        repStore.update(id, repoName);
-        e.sender.send("refresh-repos", repStore.getRepositories());
-    });
+    // ipcMain.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
+    //     repStore.add(repo);
+    //     e.sender.send("refresh-repos", repStore.getRepositories());
+    // });
+    // ipcMain.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
+    //     repStore.remove(repId);
+    //     e.sender.send("refresh-repos", repStore.getRepositories());
+    // });
+    // ipcMain.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: string }) => {
+    //     const { id, repoName } = args;
+    //     repStore.update(id, repoName);
+    //     e.sender.send("refresh-repos", repStore.getRepositories());
+    // });
 }
 
 function main() {
@@ -95,20 +96,6 @@ function main() {
     spinServer();
     openTray();
     autoUpdater.checkForUpdatesAndNotify();
-    invGames();
-}
-
-function invGames() {
-    const inv = new BrowserWindow({width: 400, height: 400});
-    ipcMain.on("on-coffee-done", (e: any) => {
-        // tslint:disable-next-line:no-console
-        console.log("coffee is ready");
-    });
-    ipcMain.on("inv-loaded", (e: any) => {
-        e.sender.send("make-coffee");
-    });
-    inv.loadFile(path.join(__dirname, "../inv.html"));
-
 }
 
 function showActiveOnBackgroundBalloon() {
@@ -132,33 +119,41 @@ function showActiveOnBackgroundBalloon() {
 }
 
 function createWindow() {
-    // Create the browser window.
-    mainWindow = new BrowserWindow({
-        height: 550,
-        width: 650,
-        minWidth: 600,
-        minHeight: 500,
-        frame: false,
-        icon,
+    indexWorker = new BrowserWindow({width: 400, height: 400 });
+    ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
+        mainWindow = new BrowserWindow({
+            height: 550,
+            width: 650,
+            minWidth: 600,
+            minHeight: 500,
+            frame: false,
+            icon,
+        });
+        e.sender.send("main-window-id", mainWindow.webContents.id);
+        ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
+            ev.sender.send("indexer-worker-id", indexWorker.id);
+        });
+
+        // and load the index.html of the app.
+        if (process.env.development) {
+            mainWindow.loadURL("http://localhost:3000");
+        } else {
+            mainWindow.loadFile(path.join(__dirname, "index.html"));
+        }
+
+        // Open the DevTools.
+        mainWindow.webContents.openDevTools();
+
+        // Emitted when the window is closed.
+        mainWindow.on("closed", () => {
+            // Dereference the window object, usually you would store windows
+            // in an array if your app supports multi windows, this is the time
+            // when you should delete the corresponding element.
+            mainWindow = null;
+        });
     });
-
-    // and load the index.html of the app.
-    if (process.env.development) {
-        mainWindow.loadURL("http://localhost:3000");
-    } else {
-        mainWindow.loadFile(path.join(__dirname, "index.html"));
-    }
-
-    // Open the DevTools.
-    // mainWindow.webContents.openDevTools();
-
-    // Emitted when the window is closed.
-    mainWindow.on("closed", () => {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        mainWindow = null;
-    });
+    indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
+    indexWorker.webContents.openDevTools();
 }
 
 function maximize() {

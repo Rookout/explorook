@@ -12,18 +12,19 @@ export class ReposList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            repos: ipcRenderer.sendSync("repos-request"),
+            repos: [],
         }
         ipcRenderer.on("refresh-repos", (e, repos) => 
         {
             this.setState({...this.state, repos})
         });
+        ipcRenderer.sendTo(window.indexWorkerId, "repos-request");
         this.onRemoveClicked = this.onRemoveClicked.bind(this);
         this.onAddClicked = this.onAddClicked.bind(this);
     }
 
     onRemoveClicked(repoId) {
-        ipcRenderer.send("delete-repo", repoId);
+        ipcRenderer.sendTo(window.indexWorkerId, "delete-repo", repoId);
     }
 
     onAddClicked() {
@@ -35,7 +36,7 @@ export class ReposList extends Component {
         const folder = folders[0];
         const repoName = path.basename(folder);
         const newRepo = { repoName, fullpath: folder };
-        ipcRenderer.send("add-repo", newRepo);
+        ipcRenderer.sendTo(window.indexWorkerId, "add-repo", newRepo);
     }
 
     render() {
