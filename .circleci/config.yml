@@ -1,4 +1,11 @@
 version: 2
+references:
+  filter_master: &filter_master
+    filters:
+      branches:
+        only: master
+
+
 jobs:
   publish:
 
@@ -29,3 +36,5 @@ workflows:
   publish-pipeline:
     jobs:
       - publish 
+          requires:
+          <<: *filter_master
