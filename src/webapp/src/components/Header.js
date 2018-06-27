@@ -26,7 +26,8 @@ export class Header extends Component {
                     <Close id="close-window-btn" onClick={this.closeWindow}/>
                 </div>
                 <div className="Header flex">
-                    <p className="Header-title" title={this.state.version}>Rookout File Explorer</p>
+                    <img src="logo.png" className="Header-logo"/>
+                    <p className="Header-title" title={this.state.version}>Explorook</p>
                     <p className="gray-shaded" id="version-title">{this.state.version}</p>
                 </div>
                 <hr className="Header-line"></hr>
