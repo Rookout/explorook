@@ -14,7 +14,7 @@
   },
   "build": {
     "extends": null,
-    "appId": "rookup",
+    "appId": "Explorook",
     "publish": [
       {
         "provider": "github",
@@ -35,14 +35,15 @@
       "target": [
         "deb"
       ],
-      "category": "Utility"
+      "category": "Utility",
+      "icon": "assets/icons/logo@512x512.png"
     },
     "mac": {
       "icon": "assets/icons/logo@512x512.png"
     },
     "win": {
       "target": "NSIS",
-      "icon": "assets/icons/logo@256x256.png"
+      "icon": "assets/icons/logo@512x512.png"
     }
   },
   "repository": "https://github.com/rookout/explorook",
