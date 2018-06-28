@@ -70,7 +70,7 @@ function main() {
         store.set("token", token);
     }
     registerIpc();
-    createWindow();
+    createWindows();
     openTray();
     autoUpdater.checkForUpdatesAndNotify();
 }
@@ -95,47 +95,51 @@ function showActiveOnBackgroundBalloon() {
     }
 }
 
-function createWindow() {
-    indexWorker = new BrowserWindow({width: 400, height: 400 });
+function createWindows() {
+    indexWorker = new BrowserWindow({width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
-        mainWindow = new BrowserWindow({
-            height: 550,
-            width: 650,
-            minWidth: 600,
-            minHeight: 500,
-            frame: false,
-            icon,
-        });
-        e.sender.send("main-window-id", token, mainWindow.webContents.id);
-        ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
-            ev.sender.send("indexer-worker-id", indexWorker.id);
-        });
-
-        // and load the index.html of the app.
-        if (process.env.development) {
-            mainWindow.loadURL("http://localhost:3000");
-        } else {
-            mainWindow.loadFile(path.join(__dirname, "index.html"));
-        }
-
-        // Open the DevTools.
-        // mainWindow.webContents.openDevTools();
-
-        // Emitted when the window is closed.
-        mainWindow.on("closed", () => {
-            // Dereference the window object, usually you would store windows
-            // in an array if your app supports multi windows, this is the time
-            // when you should delete the corresponding element.
-            mainWindow = null;
-        });
+        createMainWindow(indexWorker);
     });
     indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
     // indexWorker.webContents.openDevTools();
 }
 
+function createMainWindow(indexWorkerWindow: BrowserWindow) {
+    mainWindow = new BrowserWindow({
+        height: 550,
+        width: 650,
+        minWidth: 600,
+        minHeight: 500,
+        frame: false,
+        icon,
+    });
+    indexWorkerWindow.webContents.send("main-window-id", token, mainWindow.webContents.id);
+    ipcMain.once("app-window-up", (ev: IpcMessageEvent) => {
+        ev.sender.send("indexer-worker-id", indexWorker.id);
+    });
+
+    // and load the index.html of the app.
+    if (process.env.development) {
+        mainWindow.loadURL("http://localhost:3000");
+    } else {
+        mainWindow.loadFile(path.join(__dirname, "index.html"));
+    }
+
+    // Open the DevTools.
+    // mainWindow.webContents.openDevTools();
+
+    // Emitted when the window is closed.
+    mainWindow.on("closed", () => {
+        // Dereference the window object, usually you would store windows
+        // in an array if your app supports multi windows, this is the time
+        // when you should delete the corresponding element.
+        mainWindow = null;
+    });
+}
+
 function maximize() {
     if (mainWindow === null) {
-        createWindow();
+        createMainWindow(indexWorker);
         return;
     }
     if (mainWindow.isMinimized()) {

@@ -24,6 +24,7 @@ export class ReposListItem extends Component {
         switch (e.keyCode) {
             case 13: // Enter
                 ipcRenderer.sendTo(window.indexWorkerId, "edit-repo", { id: this.props.repo.id, repoName: this.state.repoNameEdit })
+                this.setState({ ...this.state, repoNameEdit: this.state.repoNameEdit, editMode: false })
                 break;
             case 27: // Esc
                 this.setState({ ...this.state, repoNameEdit: this.props.repo.repoName, editMode: false })
