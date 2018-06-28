@@ -105,7 +105,9 @@ function createWindows() {
         createMainWindow(indexWorker);
     });
     indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
-    // indexWorker.webContents.openDevTools();
+    if (process.env.development) {
+        indexWorker.webContents.openDevTools();
+    }
 }
 
 function createMainWindow(indexWorkerWindow: BrowserWindow) {
@@ -130,7 +132,9 @@ function createMainWindow(indexWorkerWindow: BrowserWindow) {
     }
 
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools();
+    if (process.env.development) {
+        mainWindow.webContents.openDevTools();
+    }
 
     // Emitted when the window is closed.
     mainWindow.on("closed", () => {

@@ -14,8 +14,9 @@ ipcRenderer.on("main-window-id", (e: IpcMessageEvent, token: string, id: number)
 });
 
 ipcRenderer.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
-    repStore.add(repo);
-    ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+    repStore.add(repo).then((repoId) => {
+        ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+    });
 });
 ipcRenderer.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
     repStore.remove(repId);
