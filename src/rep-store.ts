@@ -1,6 +1,8 @@
 import Store = require("electron-store");
 import fs = require("fs");
+import git = require("isomorphic-git");
 import _ = require("lodash");
+import path = require("path");
 import { IndexWorker } from "./fsIndexer";
 const uuidv4 = require("uuid/v4");
 
@@ -47,10 +49,8 @@ class RepoStore {
         this.store = new Store({ name: "explorook" });
         const models = JSON.parse(this.store.get("repositories", "[]")) as Repository[];
         this.allowIndex = JSON.parse(this.store.get("allow-indexing", "true"));
-        this.repos = models.map((m) => new Repo(m));
-        if (this.allowIndex) {
-            this.repos.forEach((r) => r.indexer.index());
-        }
+        this.repos = [];
+        models.forEach((m) => this.add(m));
     }
 
     public getAllowIndex(): boolean {
@@ -71,12 +71,14 @@ class RepoStore {
         this.store.set("repositories", JSON.stringify(models));
     }
 
-    public add(repo: Repository): string {
+    public async add(repo: Repository): Promise<string> {
         const exists = fs.existsSync(repo.fullpath);
         if (!exists) {
             return null;
         }
-        repo.id = uuidv4();
+        if (!repo.id) {
+            repo.id = await this.getRepoId(repo);
+        }
         const r = new Repo(repo);
         if (this.allowIndex) {
             // start indexing on next eventloop (so we don't stuck the gui)
@@ -106,6 +108,21 @@ class RepoStore {
 
     public getRepositories(): Repo[] {
         return this.repos;
+    }
+
+    private async getRepoId(repo: Repository): Promise<string> {
+        // trying to create a unique id with the git remote path and relative filesystem path
+        // this way, when different clients share the same workspace they automatically
+        // connect to the same repository on different machines
+        try {
+            const gitRoot = await git.findRoot({ fs, filepath: repo.fullpath });
+            const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
+            const remote = await git.config({fs, dir: gitRoot, path: "remote.origin.url"});
+            return remote.concat("/").concat(gitRootRelPath);
+        } catch (error) {
+            // no git found
+            return uuidv4();
+        }
     }
 }
 
