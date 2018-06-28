@@ -63,6 +63,10 @@ function registerIpc() {
 }
 
 function main() {
+    const shouldQuit = app.makeSingleInstance((argv: any, workingDir: any) => {
+        maximize();
+    });
+    if (shouldQuit) { app.quit(); }
     store = new Store({ name: "explorook" });
     token = store.get("token", null);
     if (!token) {
