@@ -6,9 +6,24 @@ import { Header } from './components/Header'
 import Footer from './components/Footer'
 import { Token } from './components/Token'
 import { ReposList } from './components/ReposList'
+require = window.require;
+const { ipcRenderer } = require('electron');
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true
+    }
+    ipcRenderer.on("indexer-worker-id", (e, id) => {
+      window.indexWorkerId = id;
+      this.setState({ loading: false })
+    });
+    ipcRenderer.send("app-window-up");
+  }
+
   render() {
+    if (this.state.loading) return (<div />);
     return (
       <table className="App">
         <tbody>

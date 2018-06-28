@@ -13,8 +13,9 @@
     "start": "npm run build && (set development=1 || export development=1) && electron ./dist/index.js"
   },
   "build": {
+    "productName": "Explorook",
     "extends": null,
-    "appId": "Explorook",
+    "appId": "com.rookout.explorook",
     "publish": [
       {
         "provider": "github",
@@ -29,6 +30,7 @@
       "dist",
       "assets",
       "graphql",
+      "index-worker.html",
       "assets/icons/**/*"
     ],
     "linux": {

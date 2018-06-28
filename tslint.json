@@ -13,7 +13,8 @@
     "no-consecutive-blank-lines": false,
     "object-literal-sort-keys": false,
     "interface-name": false,
-    "trailing-comma": false
+    "trailing-comma": false,
+    "no-var-requires": false
   },
   "jsRules": {
     "max-line-length": {
