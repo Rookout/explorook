@@ -138,7 +138,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow) {
 }
 
 function maximize() {
-    if (mainWindow === null) {
+    if (!mainWindow) {
         createMainWindow(indexWorker);
         return;
     }
