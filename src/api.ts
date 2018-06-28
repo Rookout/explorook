@@ -58,7 +58,7 @@ export const traversalMiddleware = {
 export const resolvers = {
   Query: {
     listRepos(parent: any, args: any): Repository[] {
-      return repStore.getRepositories();
+      return repStore.getRepositories().map((r) => r.toModel());
     },
     // dir get's a target repository (as a user can expose multiple folders on it's PC) and a relative path
     // and returns a list of all files and folders in that path
