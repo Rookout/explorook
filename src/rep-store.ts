@@ -104,7 +104,7 @@ class RepoStore {
         this.save();
     }
 
-    public getRepositories(): Repository[] {
+    public getRepositories(): Repo[] {
         return this.repos;
     }
 }
