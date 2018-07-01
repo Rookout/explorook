@@ -7,18 +7,7 @@ references:
 
 
 jobs:
-  version_validation:
-    macos:
-      xcode: "9.2.0"
-    steps:
-      - checkout
-      - run:
-          name: Validate version has no release yet
-          command: ./version_tag_exists.sh
-
   publish:
-
-    # Specify the Xcode version to use
     macos:
       xcode: "9.2.0"
 
@@ -38,11 +27,21 @@ jobs:
             cd ../..
             npm run mac-publish
 
+  version_validation:
+    macos:
+      xcode: "9.2.0"
+    steps:
+      - checkout
+      - run:
+          name: Validate version has no release yet
+          command: ./version_tag_exists.sh
+
                    
 workflows:
   version: 2
   publish-pipeline:
     jobs:
+      - version_validation
       - publish:
           requires:
             - version_validation
