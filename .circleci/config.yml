@@ -45,4 +45,5 @@ workflows:
     jobs:
       - publish:
           requires:
+            - version_validation
           <<: *filter_master
