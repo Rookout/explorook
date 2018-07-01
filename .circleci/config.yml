@@ -34,7 +34,7 @@ jobs:
       - checkout
       - run:
           name: Validate version has no release yet
-          command: ./validate_version.sh
+          command: sh ./validate_version.sh
 
                    
 workflows:
