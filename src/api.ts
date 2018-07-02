@@ -2,8 +2,10 @@ import fs = require("fs");
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
-import { join } from "path";
+import { posix } from "path";
 import { Repository, repStore } from "./rep-store";
+// using posix api makes paths consistent across different platforms
+const join = posix.join;
 
 interface FileInfo {
   path: string;
@@ -74,10 +76,15 @@ export const resolvers = {
           const res: FileInfo[] = [];
           files.forEach((f) => {
             const fstats = fs.statSync(join(repo.fullpath, path, f));
+            let fPath = join(path, f);
+            if (fPath.startsWith("/")) {
+              // if path starts with "/" the path looks absolute but it's relative so we remove it
+              fPath = fPath.slice(1); 
+            }
             res.push({
               isFolder: !fstats.isFile(),
               name: f,
-              path: join(path, f),
+              path: fPath,
               size: fstats.size,
             });
           });
