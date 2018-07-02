@@ -41,8 +41,9 @@ workflows:
   version: 2
   publish-pipeline:
     jobs:
-      - version_validation
+      - version_validation:
+          requires:
+            <<: *filter_master
       - publish:
           requires:
             - version_validation
-          <<: *filter_master
