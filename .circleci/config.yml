@@ -43,7 +43,7 @@ workflows:
     jobs:
       - version_validation:
           requires:
-            <<: *filter_master
+          <<: *filter_master
       - publish:
           requires:
             - version_validation
