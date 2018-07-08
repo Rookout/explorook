@@ -56,7 +56,7 @@ function v0016patch(al: AutoLaunch) {
 function registerIpc() {
     const al = new AutoLaunch({ name: "Explorook", isHidden: true });
     v0016patch(al)
-    ipcMain.on("hidden", showActiveOnBackgroundBalloon);
+    ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
@@ -89,32 +89,42 @@ function main() {
     registerIpc();
     createWindows();
     openTray();
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.checkForUpdatesAndNotify().then(updateData => {
+        if (updateData != null) {
+            displayNotification("Update available", "Click here to restart Explorook and get the latest update",
+            (e) => app.relaunch());
+        }
+    });
 }
 
-function showActiveOnBackgroundBalloon() {
-    if (tray != null) {
-        if (!process.platform.match("win32")) {
-            const notif = new Notification({
-                title: "I'm still here!",
-                silent: true,
-                body: "Files are still served in the background", icon: APP_ICON
-            });
-            notif.on("click", (e) => {
-                maximize();
-            });
-            notif.show();
-        } else {
-            tray.displayBalloon({
-                title: "I'm still here!",
-                content: "Files are still served in the background", icon: ROOKOUT_LOGO
-            });
-        }
+function displayWindowHiddenNotification() {
+    displayNotification("I'm still here!", "Files are still served in the background");
+}
+
+function displayNotification(title: string, body: string, onClick?: (event: Electron.Event) => void) {
+    if (onClick == null) {
+        onClick = (e) => maximize();
+    }
+    if (!process.platform.match("win32")) {
+        const notif = new Notification({
+            title: title,
+            silent: true,
+            body: body,
+            icon: process.platform.match("darwin") ? undefined : APP_ICON,
+        });
+        notif.on("click", onClick);
+        notif.show();
+    } else if (tray != null) {
+        tray.displayBalloon({
+            title: title,
+            content: body,
+            icon: ROOKOUT_LOGO,
+        });
     }
 }
 
 function createWindows() {
-    indexWorker = new BrowserWindow({width: 400, height: 400, show: !!process.env.development });
+    indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
         createMainWindow(indexWorker);
     });
@@ -195,7 +205,7 @@ app.on("ready", () => {
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
-    showActiveOnBackgroundBalloon();
+    displayWindowHiddenNotification()
 });
 
 app.on("activate", maximize);
