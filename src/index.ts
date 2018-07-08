@@ -89,12 +89,7 @@ function main() {
     registerIpc();
     createWindows();
     openTray();
-    autoUpdater.checkForUpdatesAndNotify().then(updateData => {
-        if (updateData != null) {
-            displayNotification("Update available", "Click here to restart Explorook and get the latest update",
-            (e) => app.relaunch());
-        }
-    });
+    autoUpdater.checkForUpdatesAndNotify();
 }
 
 function displayWindowHiddenNotification() {
