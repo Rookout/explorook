@@ -97,6 +97,7 @@ function showActiveOnBackgroundBalloon() {
         if (!process.platform.match("win32")) {
             const notif = new Notification({
                 title: "I'm still here!",
+                silent: true,
                 body: "Files are still served in the background", icon: APP_ICON
             });
             notif.on("click", (e) => {
