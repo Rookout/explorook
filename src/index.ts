@@ -5,6 +5,7 @@ import { autoUpdater } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
+import _ = require("lodash");
 
 autoUpdater.logger = log;
 log.transports.console.level = "warn";
@@ -21,6 +22,7 @@ let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
 let store: Store<{}>;
+let shouldStartMinimized: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -41,9 +43,19 @@ function getTrayIcon() {
     return getAppIcon();
 }
 
+// in v0.0.16 I changed autolaunch to start with "--hidden" arg.
+// older versions will not get updated unless they re-enable auto launch
+function v0016patch(al: AutoLaunch) {
+    if (al.isEnabled()) {
+        al.disable();
+        al.enable();
+    }
+}
+
 // registerIpc listens to ipc requests\event
 function registerIpc() {
-    const al = new AutoLaunch({ name: "Explorook" });
+    const al = new AutoLaunch({ name: "Explorook", isHidden: true });
+    v0016patch(al)
     ipcMain.on("hidden", showActiveOnBackgroundBalloon);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
@@ -67,6 +79,7 @@ function main() {
         maximize();
     });
     if (shouldQuit) { app.quit(); }
+    shouldStartMinimized = _.includes(process.argv, "--hidden");
     store = new Store({ name: "explorook" });
     token = store.get("token", null);
     if (!token) {
@@ -118,6 +131,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow) {
         minHeight: 500,
         frame: false,
         icon,
+        show: !shouldStartMinimized,
     });
     indexWorkerWindow.webContents.send("main-window-id", token, mainWindow.webContents.id);
     ipcMain.once("app-window-up", (ev: IpcMessageEvent) => {
