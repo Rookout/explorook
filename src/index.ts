@@ -38,7 +38,7 @@ function getAppIcon() {
 
 function getTrayIcon() {
     if (process.platform.match("darwin")) {
-        return "logo@16x16.png";
+        return "mac/explorook_tray@21x21.png";
     }
     return getAppIcon();
 }
