@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray } from "electron";
+import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater } from "electron-updater";
@@ -16,6 +16,7 @@ const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
+const COPY_ICON = path.join(__dirname, ICONS_DIR, "content_copy_black_24x24.png");
 
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
@@ -54,7 +55,14 @@ function v0016patch(al: AutoLaunch) {
 
 // registerIpc listens to ipc requests\event
 function registerIpc() {
-    const al = new AutoLaunch({ name: "Explorook", isHidden: true });
+    let alConfig = { name: "Explorook", isHidden: true };
+    // When bundled inside Appimage the executable itself is run from a tmp dir.
+    // we need to reference the parent executable which is the Appimage file.
+    // The name of the executable is passes as this environment variable
+    if (process.env.APPIMAGE) {
+        alConfig = Object.assign(alConfig, { path: process.env.APPIMAGE })
+    }
+    const al = new AutoLaunch(alConfig);
     v0016patch(al)
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
@@ -184,6 +192,7 @@ function maximize() {
 function openTray() {
     tray = new Tray(TRAY_ICON);
     const contextMenu = Menu.buildFromTemplate([
+        { label: "Copy Token", icon: COPY_ICON, click: () => clipboard.writeText(token) },
         { label: "Config...", icon: SETTINGS_ICON, click: maximize },
         { label: "Close", icon: CLOSE_ICON, click: app.quit },
     ]);
