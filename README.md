@@ -27,7 +27,7 @@ The invisible worker window runs the GraphQL server and manages all operations o
 The reason we open an invisible windows (and not use the main process for that) is because the indexing job is cpu heavy and we cannot block the main process, as it blocks renderer processes as well ([reference](https://medium.com/actualbudget/the-horror-of-blocking-electrons-main-process-351bf11a763c))
 
 # The access Token
-Because we listen on http://localhost:50001 (which is the graphql endpoint we spin), every website running on the client's machine has access to our API.  
+Because we listen on http://localhost:44512 (which is the graphql endpoint we spin), every website running on the client's machine has access to our API.  
 In order to restrict access we use an access token whitout which every call to our API will return ``status 401`` [see auth middleware](https://github.com/Rookout/explorook/blob/22079b3b34d5006e2b19b88ee31883cb8064b1f2/src/server.ts#L15)
 
 # Project initialization

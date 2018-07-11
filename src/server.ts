@@ -25,7 +25,7 @@ export const start = (accessToken: string) => {
   });
   try {
     // tslint:disable-next-line:no-console
-    server.start({ port: 50001 }, (options) => console.log(`Server is running on http://localhost:${options.port}`)); 
+    server.start({ port: 44512 }, (options) => console.log(`Server is running on http://localhost:${options.port}`)); 
   } catch (error) {
     // tslint:disable-next-line:no-console
     console.log("couldn't start server", error);
