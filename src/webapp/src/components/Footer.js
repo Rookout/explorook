@@ -21,7 +21,8 @@ class Footer extends Component {
         super(props);
         this.state = {
             autoLaunchEnabled: false,
-            searchEnabled: false, 
+            searchEnabled: false,
+            rookoutEnabled: false, 
         };
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             this.setState({ autoLaunchEnabled: isEnabled })
@@ -29,8 +30,12 @@ class Footer extends Component {
         ipcRenderer.on("search-index-enabled-changed", (event, isEnabled) => {
             this.setState({ searchEnabled: isEnabled })
         });
+        ipcRenderer.on("rookout-enabled-changed", (event, isEnabled) => {
+            this.setState({ rookoutEnabled: isEnabled })
+        });
         ipcRenderer.send("auto-launch-is-enabled-req");
         ipcRenderer.sendTo(window.indexWorkerId, "is-search-enabled");
+        ipcRenderer.send("rookout-is-enabled-req");
     }
 
     onAutoLaunchChecked(event) {
@@ -39,6 +44,10 @@ class Footer extends Component {
 
     onSearchEnableChecked(event) {
         ipcRenderer.sendTo(window.indexWorkerId, "search-index-set", event.target.checked);
+    }
+
+    onRookoutEnableChecked(event) {
+        ipcRenderer.send("rookout-set", event.target.checked);
     }
 
     getPlatformCheckboxText() {
@@ -75,6 +84,15 @@ class Footer extends Component {
                         }}
                     />
                     <p className="gray-shaded">Allow Search Index</p>
+                    <Checkbox
+                        checked={this.state.rookoutEnabled}
+                        onChange={this.onRookoutEnableChecked}
+                        classes={{
+                            root: classes.root,
+                            checked: classes.checked,
+                        }}
+                    />
+                    <p className="gray-shaded">Allow data collection</p>
                 </ FormGroup>
             </div>
         )

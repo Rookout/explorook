@@ -24,7 +24,9 @@ export class ReposList extends Component {
     }
 
     onRemoveClicked(repoId) {
-        ipcRenderer.sendTo(window.indexWorkerId, "delete-repo", repoId);
+        if (window.confirm("Are you sure you want to delete this repository?")){
+            ipcRenderer.sendTo(window.indexWorkerId, "delete-repo", repoId);
+        }
     }
 
     onAddClicked() {
@@ -51,7 +53,13 @@ export class ReposList extends Component {
                         <AddCircle className="primary" />
                     </IconButton>
                 </div>
-                {this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)}
+                { this.state.repos.length > 0 ?
+                    this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)
+                    :
+                    <p className="gray-shaded" style={{textAlign: "center", fontSize:"x-large"}}>
+                    nothing here just yet!
+                    </p>
+                }
             </div>
         )
     }
