@@ -6,6 +6,9 @@ import { Checkbox, FormControlLabel, FormGroup } from "@material-ui/core";
 require = window.require;
 const { ipcRenderer } = require('electron');
 
+const SEARCH_EXPLAINATION = "Enable Explorook to index local repositories for search in Rookout's IDE";
+const AUTO_LAUNCH_EXPLAINATION = "Run Explorook on machine startup";
+
 const styles = {
     root: {
         color: blueGrey[500],
@@ -74,7 +77,7 @@ class Footer extends Component {
                             checked: classes.checked,
                         }}
                     />
-                    <p className="gray-shaded">{this.getPlatformCheckboxText()}</p>
+                    <p title={AUTO_LAUNCH_EXPLAINATION} className="gray-shaded">{this.getPlatformCheckboxText()}</p>
                     <Checkbox
                         checked={this.state.searchEnabled}
                         onChange={this.onSearchEnableChecked}
@@ -83,7 +86,7 @@ class Footer extends Component {
                             checked: classes.checked,
                         }}
                     />
-                    <p className="gray-shaded">Allow Search Index</p>
+                    <p title={SEARCH_EXPLAINATION} className="gray-shaded">Enable Search Index</p>
                     <Checkbox
                         checked={this.state.rookoutEnabled}
                         onChange={this.onRookoutEnableChecked}

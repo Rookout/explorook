@@ -29,6 +29,10 @@ body {
   width: 100%;
 }
 
+div, span {
+  text-transform: none !important;
+ }
+
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
