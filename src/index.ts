@@ -1,5 +1,12 @@
-const rook = require("rookout");
 import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
+// enabling rookout to work
+app.commandLine.appendSwitch("inspect");
+// Rookout's token
+process.env.ROOKOUT_TOKEN="d1fee9a4a26620c993fb180677fad4ea6939677b82e6082265f889026f1cd71a";
+process.env.ROOKOUT_AGENT_HOST="cloud.agent.rookout.com"
+process.env.ROOKOUT_AGENT_PORT="443"
+process.env.ROOKOUT_ROOK_TAGS="Explorook"
+const rook = require("rookout");
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater } from "electron-updater";
