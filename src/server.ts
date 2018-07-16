@@ -2,7 +2,7 @@ import { GraphQLServer } from "graphql-yoga";
 import { join } from "path";
 import { repoMiddleware, resolvers, traversalMiddleware } from "./api";
 
-export const start = (accessToken: string) => {
+export const start = (accessToken: string, port: number = 44512) => {
   const typeDefs = join(__dirname, `../graphql/schema.graphql`);
 
   const server = new GraphQLServer({
@@ -25,7 +25,7 @@ export const start = (accessToken: string) => {
   });
   try {
     // tslint:disable-next-line:no-console
-    server.start({ port: 44512 }, (options) => console.log(`Server is running on http://localhost:${options.port}`)); 
+    server.start({ port: port }, (options) => console.log(`Server is running on http://localhost:${options.port}`)); 
   } catch (error) {
     // tslint:disable-next-line:no-console
     console.log("couldn't start server", error);

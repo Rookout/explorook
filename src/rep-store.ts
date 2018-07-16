@@ -1,9 +1,11 @@
-import Store = require("electron-store");
+import Store = require("electron-store");   
 import fs = require("fs");
 import git = require("isomorphic-git");
 import _ = require("lodash");
 import path = require("path");
 import { IndexWorker } from "./fsIndexer";
+import MemStore from "./mem-store";
+
 const uuidv4 = require("uuid/v4");
 
 export interface Repository {
@@ -11,6 +13,11 @@ export interface Repository {
     fullpath: string;
     id: string;
     search?(query: string): string[];
+}
+
+interface IStore {
+    get(key: string, defaultValue?: string): string
+    set(key: string, value: string): void
 }
 
 class Repo {
@@ -42,11 +49,16 @@ class Repo {
 // tslint:disable-next-line:max-classes-per-file
 class RepoStore {
     private allowIndex: boolean;
-    private store: Store;
+    private store: IStore;
     private repos: Repo[];
 
     constructor() {
-        this.store = new Store({ name: "explorook" });
+        try {
+            this.store = new Store({ name: "explorook" });   
+        } catch (error) { // probably headless mode - defaulting to memory store
+            console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
+            this.store = new MemStore();
+        }
         const models = JSON.parse(this.store.get("repositories", "[]")) as Repository[];
         this.allowIndex = JSON.parse(this.store.get("allow-indexing", "true"));
         this.repos = [];
