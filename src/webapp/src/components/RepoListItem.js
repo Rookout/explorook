@@ -58,9 +58,7 @@ export class ReposListItem extends Component {
                     <IconButton aria-label="Edit" onClick={this.toggleEdit}>
                         <Edit className="small-icon" />
                     </IconButton> */}
-                    <IconButton aria-label="Delete" onClick={() => this.props.removeClicked(repo.id)}>
-                        <Delete className="small-icon" />
-                    </IconButton>
+                    <Delete aria-label="Delete" style={{cursor: "pointer"}} className="small-icon" onClick={() => this.props.removeClicked(repo.id)} />
                 </div>
             </div>
         )

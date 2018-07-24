@@ -11,7 +11,7 @@
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "npm run build && cross-env development=1 electron ./dist/index.js --inspect"
+    "start": "npm run build && cross-env development=1 electron ./dist/index.js"
   },
   "build": {
     "productName": "Explorook",
@@ -86,7 +86,6 @@
     "graphql-yoga": "^1.14.8",
     "isomorphic-git": "^0.19.9",
     "lodash": "^4.17.10",
-    "rookout": "^0.1.17",
     "uuid": "^3.2.1",
     "walk": "^2.3.13"
   }

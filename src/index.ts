@@ -1,12 +1,12 @@
 import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
-// enabling rookout to work
-app.commandLine.appendSwitch("inspect");
-// Rookout's token
-process.env.ROOKOUT_TOKEN="d1fee9a4a26620c993fb180677fad4ea6939677b82e6082265f889026f1cd71a";
-process.env.ROOKOUT_AGENT_HOST="cloud.agent.rookout.com"
-process.env.ROOKOUT_AGENT_PORT="443"
-process.env.ROOKOUT_ROOK_TAGS="Explorook"
-const rook = require("rookout");
+// // enabling rookout to work
+// app.commandLine.appendSwitch("inspect");
+// // Rookout's token
+// process.env.ROOKOUT_TOKEN="d1fee9a4a26620c993fb180677fad4ea6939677b82e6082265f889026f1cd71a";
+// process.env.ROOKOUT_AGENT_HOST="cloud.agent.rookout.com"
+// process.env.ROOKOUT_AGENT_PORT="443"
+// process.env.ROOKOUT_ROOK_TAGS="Explorook"
+// const rook = require("rookout");
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater } from "electron-updater";
@@ -84,15 +84,15 @@ function registerIpc() {
     ipcMain.on("rookout-is-enabled-req", (e: IpcMessageEvent) => {
         e.sender.send("rookout-enabled-changed", rookoutEnabled);
     });
-    ipcMain.on("rookout-set", (e: IpcMessageEvent, enable: boolean) => {
-        store.set("rookoutEnabled", enable);
-        if (enable) {
-            enableRookout();
-        } else {
-            disableRookout();
-        }
-        e.sender.send("rookout-enabled-changed", enable);
-    });
+    // ipcMain.on("rookout-set", (e: IpcMessageEvent, enable: boolean) => {
+    //     store.set("rookoutEnabled", enable);
+    //     if (enable) {
+    //         enableRookout();
+    //     } else {
+    //         disableRookout();
+    //     }
+    //     e.sender.send("rookout-enabled-changed", enable);
+    // });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
         if (enable) {
             al.enable().then(() => e.sender.send("auto-launch-is-enabled-changed", true));
@@ -114,10 +114,10 @@ function main() {
     // store helps us store data in local disk
     store = new Store({ name: "explorook" });
     // If user enabled rookout (aka "data collection") - activate the rook
-    rookoutEnabled = store.get("rookoutEnabled", false)
-    if (rookoutEnabled) {
-        enableRookout();
-    }
+    // rookoutEnabled = store.get("rookoutEnabled", false)
+    // if (rookoutEnabled) {
+    //     enableRookout();
+    // }
     
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
@@ -136,23 +136,23 @@ function main() {
     autoUpdater.checkForUpdatesAndNotify();
 }
 
-function enableRookout() {
-    try {
-        rook.connect();
-    } catch (e) {
-        console.error("Rook failed to connect to the agent - will continue attempting in the background.");
-        console.error(e.stack || e);
-    }
-}
+// function enableRookout() {
+//     try {
+//         rook.connect();
+//     } catch (e) {
+//         console.error("Rook failed to connect to the agent - will continue attempting in the background.");
+//         console.error(e.stack || e);
+//     }
+// }
 
-function disableRookout() {
-    try {
-        rook.close();   
-    } catch (e) {
-        console.error("Rook failed to close");
-        console.error(e.stack || e);
-    }
-}
+// function disableRookout() {
+//     try {
+//         rook.close();   
+//     } catch (e) {
+//         console.error("Rook failed to close");
+//         console.error(e.stack || e);
+//     }
+// }
 
 function displayWindowHiddenNotification() {
     displayNotification("I'm still here!", "Files are still served in the background");

@@ -33,12 +33,12 @@ class Footer extends Component {
         ipcRenderer.on("search-index-enabled-changed", (event, isEnabled) => {
             this.setState({ searchEnabled: isEnabled })
         });
-        ipcRenderer.on("rookout-enabled-changed", (event, isEnabled) => {
-            this.setState({ rookoutEnabled: isEnabled })
-        });
+        // ipcRenderer.on("rookout-enabled-changed", (event, isEnabled) => {
+        //     this.setState({ rookoutEnabled: isEnabled })
+        // });
         ipcRenderer.send("auto-launch-is-enabled-req");
         ipcRenderer.sendTo(window.indexWorkerId, "is-search-enabled");
-        ipcRenderer.send("rookout-is-enabled-req");
+        // ipcRenderer.send("rookout-is-enabled-req");
     }
 
     onAutoLaunchChecked(event) {
@@ -86,7 +86,7 @@ class Footer extends Component {
                             checked: classes.checked,
                         }}
                     />
-                    <p title={SEARCH_EXPLAINATION} className="gray-shaded">Enable Search Index</p>
+                    {/* <p title={SEARCH_EXPLAINATION} className="gray-shaded">Enable Search Index</p>
                     <Checkbox
                         checked={this.state.rookoutEnabled}
                         onChange={this.onRookoutEnableChecked}
@@ -94,7 +94,7 @@ class Footer extends Component {
                             root: classes.root,
                             checked: classes.checked,
                         }}
-                    />
+                    /> */}
                     <p className="gray-shaded">Allow data collection</p>
                 </ FormGroup>
             </div>
