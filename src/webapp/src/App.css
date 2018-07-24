@@ -29,6 +29,10 @@ body {
   width: 100%;
 }
 
+div, span {
+  text-transform: none !important;
+ }
+
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
@@ -162,7 +166,6 @@ body {
   margin-top: -10px !important;
   position: absolute !important;
   right: 25px !important;
-  /* margin-left: 200px !important; */
 }
 
 #version-title {
