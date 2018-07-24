@@ -1,4 +1,12 @@
 import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
+// // enabling rookout to work
+// app.commandLine.appendSwitch("inspect");
+// // Rookout's token
+// process.env.ROOKOUT_TOKEN="d1fee9a4a26620c993fb180677fad4ea6939677b82e6082265f889026f1cd71a";
+// process.env.ROOKOUT_AGENT_HOST="cloud.agent.rookout.com"
+// process.env.ROOKOUT_AGENT_PORT="443"
+// process.env.ROOKOUT_ROOK_TAGS="Explorook"
+// const rook = require("rookout");
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater } from "electron-updater";
@@ -23,7 +31,7 @@ let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
 let store: Store<{}>;
-let shouldStartMinimized: boolean;
+let rookoutEnabled: boolean = false;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -73,6 +81,18 @@ function registerIpc() {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
         });
     });
+    ipcMain.on("rookout-is-enabled-req", (e: IpcMessageEvent) => {
+        e.sender.send("rookout-enabled-changed", rookoutEnabled);
+    });
+    // ipcMain.on("rookout-set", (e: IpcMessageEvent, enable: boolean) => {
+    //     store.set("rookoutEnabled", enable);
+    //     if (enable) {
+    //         enableRookout();
+    //     } else {
+    //         disableRookout();
+    //     }
+    //     e.sender.send("rookout-enabled-changed", enable);
+    // });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
         if (enable) {
             al.enable().then(() => e.sender.send("auto-launch-is-enabled-changed", true));
@@ -83,22 +103,56 @@ function registerIpc() {
 }
 
 function main() {
+    // check if another instance of this app is already open
     const shouldQuit = app.makeSingleInstance((argv: any, workingDir: any) => {
+        // this action is triggered in first instance when another instance is trying to load
+        // e.g: Explorook runs in user's machine and the user open Explorook again
         maximize();
     });
     if (shouldQuit) { app.quit(); }
-    shouldStartMinimized = _.includes(process.argv, "--hidden");
+
+    // store helps us store data in local disk
     store = new Store({ name: "explorook" });
+    // If user enabled rookout (aka "data collection") - activate the rook
+    // rookoutEnabled = store.get("rookoutEnabled", false)
+    // if (rookoutEnabled) {
+    //     enableRookout();
+    // }
+    
+    // access token used to access this app's GraphQL api
     token = store.get("token", null);
+    // if first run - there's no token in store - and we create one
     if (!token) {
         token = uuidv4();
         store.set("token", token);
     }
+    // listen to RPC's coming from windows
     registerIpc();
+    // open windows (index worker and main config window)
     createWindows();
+    // pop tray icon
     openTray();
+    // look for updates
     autoUpdater.checkForUpdatesAndNotify();
 }
+
+// function enableRookout() {
+//     try {
+//         rook.connect();
+//     } catch (e) {
+//         console.error("Rook failed to connect to the agent - will continue attempting in the background.");
+//         console.error(e.stack || e);
+//     }
+// }
+
+// function disableRookout() {
+//     try {
+//         rook.close();   
+//     } catch (e) {
+//         console.error("Rook failed to close");
+//         console.error(e.stack || e);
+//     }
+// }
 
 function displayWindowHiddenNotification() {
     displayNotification("I'm still here!", "Files are still served in the background");
@@ -127,9 +181,11 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
 }
 
 function createWindows() {
+    // we don't want to open a window on machine startup (only tray pops)
+    const hidden = _.includes(process.argv, "--hidden");
     indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
-        createMainWindow(indexWorker);
+        createMainWindow(indexWorker, hidden);
     });
     indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
     if (process.env.development) {
@@ -137,7 +193,7 @@ function createWindows() {
     }
 }
 
-function createMainWindow(indexWorkerWindow: BrowserWindow) {
+function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = false) {
     mainWindow = new BrowserWindow({
         height: 550,
         width: 650,
@@ -145,10 +201,10 @@ function createMainWindow(indexWorkerWindow: BrowserWindow) {
         minHeight: 500,
         frame: false,
         icon,
-        show: !shouldStartMinimized,
+        show: !hidden,
     });
     indexWorkerWindow.webContents.send("main-window-id", token, mainWindow.webContents.id);
-    ipcMain.once("app-window-up", (ev: IpcMessageEvent) => {
+    ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
         ev.sender.send("indexer-worker-id", indexWorker.id);
     });
 

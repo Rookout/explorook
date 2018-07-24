@@ -12,27 +12,28 @@ export class ReposListItem extends Component {
             repoNameEdit: props.repo.repoName,
         }
         this.toggleEdit = this.toggleEdit.bind(this);
-        this.saveRepoName = this.saveRepoName.bind(this);
+        // this.saveRepoName = this.saveRepoName.bind(this);
         this.repoNameEdit = this.repoNameEdit.bind(this);
     }
 
     toggleEdit() {
-        this.setState({ ...this.state, editMode: !this.state.editMode })
+        // this.setState({ ...this.state, editMode: !this.state.editMode })
     }
 
-    saveRepoName(e) {
-        switch (e.keyCode) {
-            case 13: // Enter
-                ipcRenderer.sendTo(window.indexWorkerId, "edit-repo", { id: this.props.repo.id, repoName: this.state.repoNameEdit })
-                this.setState({ ...this.state, repoNameEdit: this.state.repoNameEdit, editMode: false })
-                break;
-            case 27: // Esc
-                this.setState({ ...this.state, repoNameEdit: this.props.repo.repoName, editMode: false })
-                break;
-            default:
-                break;
-        }
-    }
+    // feature disabled
+    // saveRepoName(e) {
+    //     switch (e.keyCode) {
+    //         case 13: // Enter
+    //             ipcRenderer.sendTo(window.indexWorkerId, "edit-repo", { id: this.props.repo.id, repoName: this.state.repoNameEdit })
+    //             this.setState({ ...this.state, repoNameEdit: this.state.repoNameEdit, editMode: false })
+    //             break;
+    //         case 27: // Esc
+    //             this.setState({ ...this.state, repoNameEdit: this.props.repo.repoName, editMode: false })
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
 
     repoNameEdit(e) {
         this.setState({ ...this.state, repoNameEdit: e.target.value });
@@ -53,12 +54,11 @@ export class ReposListItem extends Component {
                         <p className="gray-shaded repo-name" onDoubleClick={this.toggleEdit} title={repo.fullpath} aria-label={repo.fullpath}>{repo.repoName}</p>
                     )}
                 <div id="repo-buttons">
+                    {/* feature disabled
                     <IconButton aria-label="Edit" onClick={this.toggleEdit}>
                         <Edit className="small-icon" />
-                    </IconButton>
-                    <IconButton aria-label="Delete" onClick={() => this.props.removeClicked(repo.id)}>
-                        <Delete className="small-icon" />
-                    </IconButton>
+                    </IconButton> */}
+                    <Delete aria-label="Delete" style={{cursor: "pointer"}} className="small-icon" onClick={() => this.props.removeClicked(repo.id)} />
                 </div>
             </div>
         )

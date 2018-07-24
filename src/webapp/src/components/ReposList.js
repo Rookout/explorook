@@ -24,7 +24,9 @@ export class ReposList extends Component {
     }
 
     onRemoveClicked(repoId) {
-        ipcRenderer.sendTo(window.indexWorkerId, "delete-repo", repoId);
+        if (window.confirm("Are you sure you want to delete this repository?")){
+            ipcRenderer.sendTo(window.indexWorkerId, "delete-repo", repoId);
+        }
     }
 
     onAddClicked() {
@@ -44,14 +46,22 @@ export class ReposList extends Component {
             display: 'flex',
         };
         return (
-            <div id="repo-list-container">
+            <div>
                 <div style={divStyle}>
                     <p className="gray-shaded">Local Repositories</p>
                     <IconButton variant="fab" aria-label="add" onClick={this.onAddClicked}>
                         <AddCircle className="primary" />
                     </IconButton>
                 </div>
-                {this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)}
+                <div id="repo-list-container">
+                { this.state.repos.length > 0 ?
+                    this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)
+                    :
+                    <p className="gray-shaded" style={{textAlign: "center", fontSize:"x-large"}}>
+                    nothing here just yet!
+                    </p>
+                }
+                </div>
             </div>
         )
     }
