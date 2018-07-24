@@ -86,16 +86,16 @@ class Footer extends Component {
                             checked: classes.checked,
                         }}
                     />
-                    {/* <p title={SEARCH_EXPLAINATION} className="gray-shaded">Enable Search Index</p>
-                    <Checkbox
+                    <p title={SEARCH_EXPLAINATION} className="gray-shaded">Enable Search Index</p>
+                    {/* <Checkbox
                         checked={this.state.rookoutEnabled}
                         onChange={this.onRookoutEnableChecked}
                         classes={{
                             root: classes.root,
                             checked: classes.checked,
                         }}
-                    /> */}
-                    <p className="gray-shaded">Allow data collection</p>
+                    />
+                    <p className="gray-shaded">Allow data collection</p> */}
                 </ FormGroup>
             </div>
         )
