@@ -6,6 +6,7 @@ import { Header } from './components/Header'
 import Footer from './components/Footer'
 import { Token } from './components/Token'
 import { ReposList } from './components/ReposList'
+import EulaModal from './components/EulaModal'
 require = window.require;
 const { ipcRenderer } = require('electron');
 
@@ -33,6 +34,7 @@ class App extends Component {
               <div id="content-container">
                 <Token />
                 <ReposList />
+                <EulaModal />
               </div>
             </td>
           </tr>

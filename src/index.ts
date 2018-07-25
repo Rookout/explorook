@@ -84,6 +84,13 @@ function registerIpc() {
     ipcMain.on("rookout-is-enabled-req", (e: IpcMessageEvent) => {
         e.sender.send("rookout-enabled-changed", rookoutEnabled);
     });
+    ipcMain.on("is-first-launch", (e: IpcMessageEvent) => {
+        const firstLaunch = store.get("is-first-launch", true);
+        if (firstLaunch) {
+            store.set("is-first-launch", false)
+        }
+        e.returnValue = firstLaunch;
+    });
     // ipcMain.on("rookout-set", (e: IpcMessageEvent, enable: boolean) => {
     //     store.set("rookoutEnabled", enable);
     //     if (enable) {
