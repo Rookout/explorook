@@ -1,5 +1,6 @@
 import fs = require("fs");
 import path = require("path");
+import _ = require("lodash");
 const ftsl = require("full-text-search-light");
 const walk = require("walk");
 
@@ -68,6 +69,7 @@ export class IndexWorker {
             res = res.concat(this.searchIndex.search(q));
         });
         res = res.concat(this.searchIndex.search(queries.join("")));
+        res = _.uniq(res);
         // order results by the number of words appearance
         res.sort(this.genResultsComparer(queries));
         return res;
