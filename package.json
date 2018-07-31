@@ -45,6 +45,7 @@
       "icon": "assets/icons/mac/icons.icns"
     },
     "win": {
+      "publisherName": "Rookout",
       "target": "NSIS",
       "icon": "assets/icons/logo@512x512.png"
     }
@@ -71,7 +72,7 @@
     "@types/ws": "^5.1.2",
     "cross-env": "^5.2.0",
     "electron": "^2.0.2",
-    "electron-builder": "^20.19.2",
+    "electron-builder": "^20.26.1",
     "electron-builder-lib": "^20.15.3",
     "graphql-middleware": "^1.3.0",
     "tslint": "^5.10.0",
@@ -82,7 +83,7 @@
     "auto-launch": "^5.0.5",
     "electron-log": "^2.2.15",
     "electron-store": "^2.0.0",
-    "electron-updater": "^2.21.10",
+    "electron-updater": "^3.0.3",
     "graphql-yoga": "^1.14.8",
     "isomorphic-git": "^0.19.9",
     "lodash": "^4.17.10",
