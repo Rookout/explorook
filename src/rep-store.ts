@@ -12,7 +12,7 @@ export interface Repository {
     repoName: string;
     fullpath: string;
     id: string;
-    search?(query: string): string[];
+    listTree?(): string[];
 }
 
 interface IStore {
@@ -33,8 +33,8 @@ class Repo {
         this.indexer = new IndexWorker(this.fullpath);
     }
 
-    public search(query: string): string[] {
-        return this.indexer.search(query);
+    public listTree(): string[] {
+        return this.indexer.treeList;
     }
 
     public toModel(): Repository {
