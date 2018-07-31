@@ -14,6 +14,6 @@ type FileInfo {
 type Query {
   dir(repoId: String!, path: String!): [FileInfo]!
   file(repoId: String!, path: String!): String!
-  search(repoId: String!, query: String!, first: Int): [String]!
+  listTree(repoId: String!): [String]!
   listRepos: [Repository!]!
 }
