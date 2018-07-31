@@ -45,6 +45,7 @@
       "icon": "assets/icons/mac/icons.icns"
     },
     "win": {
+      "publisherName": "Rookout",
       "target": "NSIS",
       "icon": "assets/icons/logo@512x512.png"
     }
