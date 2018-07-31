@@ -27,14 +27,6 @@ ipcRenderer.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: s
     repStore.update(id, repoName);
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
 });
-ipcRenderer.on("is-search-enabled", (e: IpcMessageEvent) =>
-    ipcRenderer.sendTo(mainWindowId, "search-index-enabled-changed", repStore.getAllowIndex()));
-
-ipcRenderer.on("search-index-set", (e: IpcMessageEvent, enable: boolean) => {
-        store.set("allow-indexing", enable.toString());
-        repStore.setAllowIndex(enable);
-        ipcRenderer.sendTo(mainWindowId, "search-index-enabled-changed", enable);
-    });
 
 ipcRenderer.on("repos-request", (e: IpcMessageEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));
 

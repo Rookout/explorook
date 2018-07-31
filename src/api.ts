@@ -41,12 +41,12 @@ const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: { repo: 
   return resolve(parent, args, context, info);
 };
 
-// Apply both middlewares on both resolvers
+// Apply both middlewares on resolvers
 export const repoMiddleware = {
   Query: {
     file: filterRepo,
     dir: filterRepo,
-    search: filterRepo,
+    listTree: filterRepo,
   }
 };
 
@@ -106,16 +106,9 @@ export const resolvers = {
         });
       });
     },
-    search(parent: any, args: { repo: Repository, query: string, first: number }): string[] {
-      const { repo, query, first } = args;
-      const res = repo.search(query);
-      if (res == null) {
-        throw new GraphQLError("repository isn't indexed. make sure to enable indexing in order to use the search feature");
-      }
-      if (first) {
-        return res.slice(0, first);
-      }
-      return res;
-    },
+    listTree(parent: any, args: { repo: Repository }): string[] {
+      const { repo } = args;
+      return repo.listTree()
+    }
   },
 };
