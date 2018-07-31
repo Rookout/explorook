@@ -15,16 +15,28 @@ jobs:
       - checkout
       - run:
           name: Build and Publish
-          command: | 
+          command: |
+            # install electron main window dependencies 
             npm install
+            # build code (mostly compile typescript)
             npm run build
+            # go to react windows folder
             cd src/webapp
+            # install yarn
             npm install -g yarn
+            # install dependencies
             yarn
+            # CircleCI sets CI=true which makes react return an error when there are warnings in the code
             export CI=false
+            # build react app
             yarn run build
+            # copy react bundle to dist directory
             mv build/* ../../dist/
             cd ../..
+            # save windows certificate locally (WIN_CERT) is base64 of our certificate
+            echo $WIN_CERT_BASE64 | base64 --decode > rookout.p12
+            export WIN_CSC_LINK=rookout.p12
+            # package code for every distribution (mac,win,linux) and publish as github release
             npm run mac-publish
 
   version_validation:
