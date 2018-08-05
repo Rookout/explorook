@@ -216,6 +216,13 @@ div, span {
   height: 65%;
 }
 
+.eula-modal .eula-box {
+  width: 100%;
+  height: 65%;
+  overflow: auto;
+  background-color: gray;
+}
+
 .eula-modal .actions {
   display: flex;
   flex-direction: row;
