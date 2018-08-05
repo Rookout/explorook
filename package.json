@@ -6,7 +6,7 @@
   "scripts": {
     "publish": "build.sh && build --win -p always",
     "build": "tsc",
-    "build-linux": "./build.sh && build --linux APPIMAGE",
+    "build-linux": "build --linux APPIMAGE",
     "dist": "build",
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "watch": "tsc -w",
@@ -83,7 +83,7 @@
     "auto-launch": "^5.0.5",
     "electron-log": "^2.2.15",
     "electron-store": "^2.0.0",
-    "electron-updater": "^2.23.3",
+    "electron-updater": "^2.21.10",
     "graphql-yoga": "^1.14.8",
     "isomorphic-git": "^0.19.9",
     "lodash": "^4.17.10",
