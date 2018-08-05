@@ -41,7 +41,7 @@ class EulaModal extends React.Component {
 
         this.state = {
             isConfirmChecked: false,
-            show: true
+            show: !ipcRenderer.sendSync("has-signed-eula")
         };
     }
 
@@ -50,6 +50,7 @@ class EulaModal extends React.Component {
     };
 
     handleUserConfirmation = () => {
+        ipcRenderer.send("signed-eula");
         this.setState({ show: false })
     };
 

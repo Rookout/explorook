@@ -68,6 +68,7 @@ function registerIpc() {
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
+    ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
         al.isEnabled().then((enabled) => {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
@@ -76,12 +77,11 @@ function registerIpc() {
     ipcMain.on("rookout-is-enabled-req", (e: IpcMessageEvent) => {
         e.sender.send("rookout-enabled-changed", rookoutEnabled);
     });
-    ipcMain.on("is-first-launch", (e: IpcMessageEvent) => {
-        const firstLaunch = store.get("is-first-launch", true);
-        if (firstLaunch) {
-            store.set("is-first-launch", false)
-        }
-        e.returnValue = firstLaunch;
+    ipcMain.on("has-signed-eula", (e: IpcMessageEvent) => {
+        e.returnValue = store.get("has-signed-eula", false);
+    });
+    ipcMain.on("signed-eula", (e: IpcMessageEvent) => {
+        store.set("has-signed-eula", true);
     });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
         if (enable) {

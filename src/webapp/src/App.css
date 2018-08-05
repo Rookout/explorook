@@ -163,7 +163,6 @@ div, span {
 }
 
 #repo-buttons {
-  margin-top: -10px !important;
   position: absolute !important;
   right: 25px !important;
 }
