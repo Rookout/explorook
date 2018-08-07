@@ -34,8 +34,8 @@ jobs:
             mv build/* ../../dist/
             cd ../..
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
-            echo $WIN_CERT_BASE64 | base64 --decode > rookout.p12
-            export WIN_CSC_LINK=rookout.p12
+            #echo $WIN_CERT_BASE64 | base64 --decode > rookout.p12
+            #export WIN_CSC_LINK=rookout.p12
             # package code for every distribution (mac,win,linux) and publish as github release
             npm run mac-publish
 
