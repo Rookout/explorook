@@ -7,3 +7,5 @@ release-builds
 installers
 
 analyze/
+
+*.p12
