@@ -1,3 +1,4 @@
+import { init as sentryInit } from '@sentry/electron';
 import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
@@ -100,6 +101,9 @@ function main() {
         maximize();
     });
     if (shouldQuit) { app.quit(); }
+    sentryInit({
+        dsn: 'https://e860d220250640e581535a5cec2118d0@sentry.io/1260942'
+    });
 
     // store helps us store data in local disk
     store = new Store({ name: "explorook" });

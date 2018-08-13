@@ -1,9 +1,12 @@
 import { IpcMessageEvent, ipcRenderer } from "electron";
-import Store = require("electron-store");
 import { Repository, repStore } from "./rep-store";
 import * as graphQlServer from "./server";
 
-const store = new Store({ name: "explorook" });
+// configure Sentry
+import * as Raven from 'raven-js';
+Raven.config('https://e860d220250640e581535a5cec2118d0@sentry.io/1260942')
+     .install();
+
 let mainWindowId = -1;
 
 const getRepos = () => repStore.getRepositories().map((r) => r.toModel());

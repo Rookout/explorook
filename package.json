@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -79,6 +79,7 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
+    "@sentry/electron": "^0.8.1",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
     "electron-log": "^2.2.15",
@@ -87,6 +88,7 @@
     "graphql-yoga": "^1.14.8",
     "isomorphic-git": "^0.19.9",
     "lodash": "^4.17.10",
+    "raven-js": "^3.26.4",
     "uuid": "^3.2.1",
     "walk": "^2.3.13"
   }
