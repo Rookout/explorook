@@ -47,7 +47,7 @@
     "win": {
       "target": "NSIS",
       "icon": "assets/icons/logo@512x512.png",
-      "publisherName": "Rookout"
+      // "publisherName": "Rookout"
     }
   },
   "repository": "https://github.com/rookout/explorook",
