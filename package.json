@@ -46,7 +46,7 @@
     },
     "win": {
       "target": "NSIS",
-      "icon": "assets/icons/logo@512x512.png",
+      "icon": "assets/icons/logo@512x512.png"
       // "publisherName": "Rookout"
     }
   },
