@@ -198,7 +198,7 @@ div, span {
   flex-direction: column;
   background: white;
   font-family: Roboto, sans-serif;
-  width: 100%;
+  height: 100%;
   padding-left: 5%;
   padding-right: 5%;
 }
