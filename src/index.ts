@@ -17,7 +17,7 @@ const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
-const COPY_ICON = path.join(__dirname, ICONS_DIR, "content_copy_black_24x24.png");
+const COPY_ICON = path.join(__dirname, ICONS_DIR, "content_copy_black_18x18.png");
 
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
@@ -98,7 +98,7 @@ function main() {
     const shouldQuit = app.makeSingleInstance((argv: any, workingDir: any) => {
         // this action is triggered in first instance when another instance is trying to load
         // e.g: Explorook runs in user's machine and the user open Explorook again
-        maximize();
+        app.on("ready", maximize);
     });
     if (shouldQuit) { app.quit(); }
     sentryInit({
