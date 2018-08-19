@@ -98,7 +98,7 @@ function main() {
     const shouldQuit = app.makeSingleInstance((argv: any, workingDir: any) => {
         // this action is triggered in first instance when another instance is trying to load
         // e.g: Explorook runs in user's machine and the user open Explorook again
-        app.on("ready", maximize);
+        maximize();
     });
     if (shouldQuit) { app.quit(); }
     sentryInit({
@@ -244,4 +244,8 @@ app.on("window-all-closed", () => {
     displayWindowHiddenNotification()
 });
 
-app.on("activate", maximize);
+app.on("activate", () => {
+    if (app.isReady()) {
+        maximize();
+    }
+});
