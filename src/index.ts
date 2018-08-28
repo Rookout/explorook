@@ -45,15 +45,6 @@ function getTrayIcon() {
     return getAppIcon();
 }
 
-// in v0.0.16 I changed autolaunch to start with "--hidden" arg.
-// older versions will not get updated unless they re-enable auto launch
-function v0016patch(al: AutoLaunch) {
-    if (al.isEnabled()) {
-        al.disable();
-        al.enable();
-    }
-}
-
 // registerIpc listens to ipc requests\event
 function registerIpc() {
     let alConfig = { name: "Explorook", isHidden: true };
@@ -64,7 +55,6 @@ function registerIpc() {
         alConfig = Object.assign(alConfig, { path: process.env.APPIMAGE })
     }
     const al = new AutoLaunch(alConfig);
-    v0016patch(al)
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
