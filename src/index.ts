@@ -220,6 +220,9 @@ function openTray() {
     ]);
     tray.setToolTip("Rookout");
     tray.setContextMenu(contextMenu);
+    if (process.platform.match("darwin")) {
+        tray.on('right-click', (e) => tray.popUpContextMenu())
+    }
 }
 
 // This method will be called when Electron has finished
