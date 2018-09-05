@@ -7,7 +7,7 @@ const args = require("args-parser")(process.argv);
 
 if (args.help || !args.repo) {
     console.log("add repository using --repo=<name>,<path>");
-    console.log("customize listen port with --port of -p");
+    console.log("customize listen port with --port or -p");
     process.exit(0);
 }
 

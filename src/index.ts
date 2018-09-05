@@ -91,17 +91,14 @@ function main() {
         maximize();
     });
     if (shouldQuit) { app.quit(); }
-    sentryInit({
-        dsn: 'https://e860d220250640e581535a5cec2118d0@sentry.io/1260942'
-    });
+    if (!process.env.development) {
+        sentryInit({
+            dsn: 'https://e860d220250640e581535a5cec2118d0@sentry.io/1260942'
+        });
+    }
 
     // store helps us store data in local disk
     store = new Store({ name: "explorook" });
-    // If user enabled rookout (aka "data collection") - activate the rook
-    // rookoutEnabled = store.get("rookoutEnabled", false)
-    // if (rookoutEnabled) {
-    //     enableRookout();
-    // }
     
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
