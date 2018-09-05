@@ -85,9 +85,9 @@ function registerIpc() {
 
 function main() {
     // check if another instance of this app is already open
-    const shouldQuit = app.makeSingleInstance((argv: any, workingDir: any) => {
+    const shouldQuit = app.makeSingleInstance(() => {
         // this action is triggered in first instance when another instance is trying to load
-        // e.g: Explorook runs in user's machine and the user open Explorook again
+        // e.g: Explorook runs on user's machine and the user opens Explorook again
         maximize();
     });
     if (shouldQuit) { app.quit(); }
@@ -97,7 +97,7 @@ function main() {
         });
     }
 
-    // store helps us store data in local disk
+    // store helps us store data on local disk
     store = new Store({ name: "explorook" });
     
     // access token used to access this app's GraphQL api
@@ -145,7 +145,8 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
 
 function createWindows() {
     // we don't want to open a window on machine startup (only tray pops)
-    const hidden = _.includes(process.argv, "--hidden");
+    const startOptions = app.getLoginItemSettings();
+    const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
     indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
         createMainWindow(indexWorker, hidden);
