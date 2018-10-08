@@ -3,9 +3,9 @@ import _ = require("lodash");
 const walk = require("walk");
 
 // tslint:disable-next-line:max-line-length
-const defaultIgnores = [".git", ".svn", ".hg", "CVS", ".DS_Store",
-    "site-packages", "node_modules", "bower_components",
-    ".venv"];
+const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
+    /site\-packages/, /node_modules/, /bower_components/,
+    /\.venv/]
 // TODO: check performance to the limit and increase as necessary
 const listLimit = 20000;
 
