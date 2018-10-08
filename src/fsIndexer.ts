@@ -19,9 +19,9 @@ export class IndexWorker {
 
     private stopFlag: boolean;
     private rootPath: string;
-    private ignores: string[];
+    private ignores: RegExp[];
 
-    constructor(rootPath: string, ignores?: string[]) {
+    constructor(rootPath: string, ignores?: RegExp[]) {
         this.stopFlag = false;
         this.rootPath = rootPath;
         this.ignores = ignores || defaultIgnores;
