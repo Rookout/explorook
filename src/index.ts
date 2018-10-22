@@ -18,6 +18,7 @@ const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
 const COPY_ICON = path.join(__dirname, ICONS_DIR, "content_copy_black_18x18.png");
+const TEN_MINUTES = 1000 * 60 * 10;
 
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
@@ -99,7 +100,7 @@ function main() {
 
     // store helps us store data on local disk
     store = new Store({ name: "explorook" });
-    
+
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
     // if first run - there's no token in store - and we create one
@@ -113,8 +114,14 @@ function main() {
     createWindows();
     // pop tray icon
     openTray();
-    // look for updates
-    autoUpdater.checkForUpdatesAndNotify();
+
+    const updateAction = () => {
+        autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+            console.error("failed to update", err)
+        });
+    }
+    updateAction();
+    setInterval(updateAction, TEN_MINUTES);
 }
 
 function displayWindowHiddenNotification() {
@@ -170,6 +177,9 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     indexWorkerWindow.webContents.send("main-window-id", token, mainWindow.webContents.id);
     ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
         ev.sender.send("indexer-worker-id", indexWorker.id);
+        if (hidden && process.platform === "darwin") {
+            app.dock.hide();
+        }
     });
 
     // and load the index.html of the app.
