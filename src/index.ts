@@ -178,7 +178,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
         ev.sender.send("indexer-worker-id", indexWorker.id);
         if (hidden && process.platform === "darwin") {
-            app.dock.hide(); 
+            app.dock.hide();
         }
     });
 
