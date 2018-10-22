@@ -12,6 +12,7 @@ export interface Repository {
     repoName: string;
     fullpath: string;
     id: string;
+    indexDone?: boolean;
     listTree?(): string[];
 }
 
@@ -42,6 +43,7 @@ class Repo {
             repoName: this.repoName,
             fullpath: this.fullpath,
             id: this.id,
+            indexDone: this.indexer.indexDone,
         };
     }
 }

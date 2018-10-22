@@ -4,10 +4,11 @@ const walk = require("walk");
 
 // tslint:disable-next-line:max-line-length
 const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
-    /site\-packages/, /node_modules/, /bower_components/,
-    /\.venv/]
+    /site\-packages/, /node_modules/, /bower_components/, /\.venv/, /\.idea/,
+    /\.project/, /\.cache/, /\.gradle/, /\.idea/, /\.kube/, /\.vscode/, /\.history/, /\.eggs/];
+const ignoreRegex = /.*(\.pyc|\.class\|.jar)$/;
 // TODO: check performance to the limit and increase as necessary
-const listLimit = 20000;
+const listLimit = 30000;
 
 // This worker used to index all the filenames in the repository
 // but we changed it to just keep a list of all the files instead.
@@ -32,6 +33,7 @@ export class IndexWorker {
 
     public index() {
         if (this.indexDone || this.indexRunning) { return; }
+        console.time(this.rootPath);
         this.indexRunning = true;
         this.indexDone = false;
         this.stopFlag = false;
@@ -40,6 +42,9 @@ export class IndexWorker {
             if (this.stopFlag || this.treeList.length >= listLimit) {
                 walker.emit("stopped");
                 return;
+            }
+            if (ignoreRegex.test(fileStats.name)) {
+                return next();
             }
             const filename = path.join(root, fileStats.name);
             const relPath = path.relative(this.rootPath, filename);
@@ -50,6 +55,7 @@ export class IndexWorker {
             this.indexRunning = false;
         });
         walker.on("end", () => {
+            console.timeEnd(this.rootPath);
             this.indexDone = true;
             this.indexRunning = false;
         });

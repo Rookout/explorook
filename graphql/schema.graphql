@@ -2,6 +2,7 @@ type Repository {
   fullpath: String!
   repoName: String!
   id: String!
+  indexDone: Boolean
 }
 
 type FileInfo {
