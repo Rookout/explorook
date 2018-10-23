@@ -1,5 +1,6 @@
 import path = require("path");
 import _ = require("lodash");
+import slash = require("slash");
 const walk = require("walk");
 
 // tslint:disable-next-line:max-line-length
@@ -48,7 +49,7 @@ export class IndexWorker {
             }
             const filename = path.join(root, fileStats.name);
             const relPath = path.relative(this.rootPath, filename);
-            this.treeList.push(relPath);
+            this.treeList.push(slash(relPath));
             next();
         });
         walker.on("stopped", () => {
