@@ -119,13 +119,14 @@ function main() {
     // pop tray icon
     openTray();
 
-    const updateAction = () => {
-        autoUpdater.checkForUpdatesAndNotify().catch((err) => {
-            console.error("failed to update", err)
-        });
-    }
-    updateAction();
-    setInterval(updateAction, TEN_MINUTES);
+    let updateInterval: NodeJS.Timer = null;
+    autoUpdater.signals.updateDownloaded(()=>{
+        if (updateInterval !== null) {
+            clearInterval(updateInterval);
+        }
+    })
+    autoUpdater.checkForUpdatesAndNotify();
+    updateInterval = setInterval(autoUpdater.checkForUpdatesAndNotify, TEN_MINUTES);
 }
 
 function displayWindowHiddenNotification() {
