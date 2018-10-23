@@ -23,24 +23,25 @@ class Footer extends Component {
         super(props);
         this.state = {
             autoLaunchEnabled: false,
-            rookoutEnabled: false, 
+            sentryEnabled: false, 
         };
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             this.setState({ autoLaunchEnabled: isEnabled })
         });
-        // ipcRenderer.on("rookout-enabled-changed", (event, isEnabled) => {
-        //     this.setState({ rookoutEnabled: isEnabled })
-        // });
+        ipcRenderer.on("sentry-enabled-changed", (event, isEnabled) => {
+            this.setState({ sentryEnabled: isEnabled })
+        });
         ipcRenderer.send("auto-launch-is-enabled-req");
-        // ipcRenderer.send("rookout-is-enabled-req");
+        ipcRenderer.send("sentry-is-enabled-req");
     }
 
     onAutoLaunchChecked(event) {
         ipcRenderer.send("auto-launch-set", event.target.checked);
     }
 
-    onRookoutEnableChecked(event) {
-        ipcRenderer.send("rookout-set", event.target.checked);
+    onSentryEnableChecked(event) {
+        ipcRenderer.send("sentry-enabled-set", event.target.checked);
+        alert("Changes will take effect after you restart Explorook");
     }
 
     getPlatformCheckboxText() {
@@ -68,15 +69,15 @@ class Footer extends Component {
                         }}
                     />
                     <p title={AUTO_LAUNCH_EXPLAINATION} className="gray-shaded">{this.getPlatformCheckboxText()}</p>
-                    {/* <Checkbox
-                        checked={this.state.rookoutEnabled}
-                        onChange={this.onRookoutEnableChecked}
+                    <Checkbox
+                        checked={this.state.sentryEnabled}
+                        onChange={this.onSentryEnableChecked}
                         classes={{
                             root: classes.root,
                             checked: classes.checked,
                         }}
                     />
-                    <p className="gray-shaded">Allow data collection</p> */}
+                    <p title="Allow reporting erros to our servers" className="gray-shaded">Allow errors collection</p>
                 </ FormGroup>
             </div>
         )

@@ -25,7 +25,7 @@ let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
 let token: string;
 let store: Store<{}>;
-let rookoutEnabled: boolean = false;
+let sentryEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -66,8 +66,12 @@ function registerIpc() {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
         });
     });
-    ipcMain.on("rookout-is-enabled-req", (e: IpcMessageEvent) => {
-        e.sender.send("rookout-enabled-changed", rookoutEnabled);
+    ipcMain.on("sentry-is-enabled-req", (e: IpcMessageEvent) => {
+        e.sender.send("sentry-enabled-changed", sentryEnabled);
+    });
+    ipcMain.on("sentry-enabled-set", (e: IpcMessageEvent, enable: boolean) => {
+        store.set("sentry-enabled", enable);
+        e.sender.send("sentry-enabled-changed", enable);
     });
     ipcMain.on("has-signed-eula", (e: IpcMessageEvent) => {
         e.returnValue = store.get("has-signed-eula", false);
@@ -92,15 +96,15 @@ function main() {
         maximize();
     });
     if (shouldQuit) { app.quit(); }
-    if (!process.env.development) {
+
+    // store helps us store data on local disk
+    store = new Store({ name: "explorook" });
+    sentryEnabled = store.get('sentry-enabled', true);
+    if (sentryEnabled && !process.env.development) {
         sentryInit({
             dsn: 'https://e860d220250640e581535a5cec2118d0@sentry.io/1260942'
         });
     }
-
-    // store helps us store data on local disk
-    store = new Store({ name: "explorook" });
-
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
     // if first run - there's no token in store - and we create one
