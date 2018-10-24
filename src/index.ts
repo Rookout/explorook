@@ -1,4 +1,4 @@
-import { init as sentryInit } from '@sentry/electron';
+import { init as sentryInit, captureException } from '@sentry/electron';
 import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
@@ -23,8 +23,10 @@ const TEN_MINUTES = 1000 * 60 * 10;
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
+let al: AutoLaunch;
 let token: string;
 let store: Store<{}>;
+let willUpdateOnClose: boolean = false;
 let sentryEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 
@@ -46,6 +48,20 @@ function getTrayIcon() {
     return getAppIcon();
 }
 
+function linuxAutoLaunchPatch() {
+    if (process.platform === "linux" && store.get("linux-start-with-os", false)) {
+        // AppImage filename changes after every update so we need to make sure we disable
+        // autolaunch before update is installed and re-enable it on the next startup - which is now
+        al.isEnabled().then(isEnabled => {
+            if (!isEnabled) {
+                al.enable();
+            }
+        }).catch(err => {
+            captureException(err);
+        });
+    }
+}
+
 // registerIpc listens to ipc requests\event
 function registerIpc() {
     let alConfig = { name: "Explorook", isHidden: true };
@@ -55,7 +71,8 @@ function registerIpc() {
     if (process.env.APPIMAGE) {
         alConfig = Object.assign(alConfig, { path: process.env.APPIMAGE })
     }
-    const al = new AutoLaunch(alConfig);
+    al = new AutoLaunch(alConfig);
+    linuxAutoLaunchPatch();
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
@@ -81,8 +98,10 @@ function registerIpc() {
     });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
         if (enable) {
+            store.set("linux-start-with-os", true);
             al.enable().then(() => e.sender.send("auto-launch-is-enabled-changed", true));
         } else {
+            store.set("linux-start-with-os", false);
             al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
         }
     });
@@ -120,7 +139,8 @@ function main() {
     openTray();
 
     let updateInterval: NodeJS.Timer = null;
-    autoUpdater.signals.updateDownloaded(()=>{
+    autoUpdater.signals.updateDownloaded(() => {
+        willUpdateOnClose = true;
         if (updateInterval !== null) {
             clearInterval(updateInterval);
         }
@@ -253,5 +273,19 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
     if (app.isReady()) {
         maximize();
+    }
+});
+
+app.on('quit', async () => {
+    // on linux: AppImage filename changes after every update so we need to make sure we disable
+    // autolaunch before update is installed and re-enable it on the next startup
+    // so this is where we disable it
+    if (al && process.platform === "linux" && willUpdateOnClose) {
+        try {
+            await al.disable();
+        } catch (error) {
+            // bummer
+            captureException(error);
+        }
     }
 });
