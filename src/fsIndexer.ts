@@ -7,7 +7,7 @@ const walk = require("walk");
 const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
     /site\-packages/, /node_modules/, /bower_components/, /\.venv/, /\.idea/,
     /\.project/, /\.cache/, /\.gradle/, /\.idea/, /\.kube/, /\.vscode/, /\.history/, /\.eggs/];
-const ignoreRegex = /.*(\.pyc|\.class\|.jar)$/;
+const ignoreRegex = /.*(\.pyc|\.class|\.jar)$/;
 // TODO: check performance to the limit and increase as necessary
 const listLimit = 30000;
 
