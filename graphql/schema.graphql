@@ -17,4 +17,5 @@ type Query {
   file(repoId: String!, path: String!): String!
   listTree(repoId: String!): [String]!
   listRepos: [Repository!]!
+  refreshIndex(repoId: String!): Boolean
 }

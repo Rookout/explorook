@@ -1,12 +1,13 @@
 {
   "name": "explorook",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
     "publish": "build.sh && build --win -p always",
     "build": "tsc",
     "build-linux": "build --linux APPIMAGE",
+    "build-windows": "build --win",
     "dist": "build",
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "watch": "tsc -w",
