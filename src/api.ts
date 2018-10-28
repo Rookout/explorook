@@ -47,6 +47,7 @@ export const repoMiddleware = {
     file: filterRepo,
     dir: filterRepo,
     listTree: filterRepo,
+    refreshIndex: filterRepo,
   }
 };
 
@@ -109,6 +110,10 @@ export const resolvers = {
     listTree(parent: any, args: { repo: Repository }): string[] {
       const { repo } = args;
       return repo.listTree()
+    },
+    refreshIndex(parent: any, args: { repo: Repository }): Boolean {
+      args.repo.reIndex();
+      return true;
     }
   },
 };

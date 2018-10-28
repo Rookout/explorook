@@ -14,6 +14,7 @@ export interface Repository {
     id: string;
     indexDone?: boolean;
     listTree?(): string[];
+    reIndex?(): void;
 }
 
 interface IStore {
@@ -36,6 +37,27 @@ class Repo {
 
     public listTree(): string[] {
         return this.indexer.treeList;
+    }
+
+    public reIndex() {
+        this.indexer.deleteIndex();
+        let retry = 0;
+        const maxRetries = 10;
+        const indexWhenJobStops = () => {
+            retry+=1;
+            if (retry === maxRetries) {
+                return;
+            }
+            if (!this.indexer.indexRunning) {
+                // wait till index job stops
+                return this.indexer.index();
+            }
+            // didn't get the message yet
+            setTimeout(indexWhenJobStops, 150);
+        }
+        // wait for other io callbacks from fsIndexer to run and evaluate new value of indexRunning flag and stop the indexing job
+        setImmediate(indexWhenJobStops);
+        return this.indexer.index();
     }
 
     public toModel(): Repository {

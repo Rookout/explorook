@@ -2,7 +2,7 @@ import { init as sentryInit, captureException } from '@sentry/electron';
 import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
-import { autoUpdater } from "electron-updater";
+import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
@@ -139,14 +139,15 @@ function main() {
     openTray();
 
     let updateInterval: NodeJS.Timer = null;
-    autoUpdater.signals.updateDownloaded(() => {
+    autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
         willUpdateOnClose = true;
         if (updateInterval !== null) {
             clearInterval(updateInterval);
         }
+        displayNotification(`Update available (${info.version})`, "a new version of Explorook is available and will be installed on next exit");
     })
-    autoUpdater.checkForUpdatesAndNotify();
-    updateInterval = setInterval(autoUpdater.checkForUpdatesAndNotify, TEN_MINUTES);
+    autoUpdater.checkForUpdates();
+    updateInterval = setInterval(autoUpdater.checkForUpdates, TEN_MINUTES);
 }
 
 function displayWindowHiddenNotification() {
