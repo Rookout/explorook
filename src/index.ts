@@ -1,5 +1,5 @@
 import { init as sentryInit, captureException } from '@sentry/electron';
-import { app, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
+import { app, systemPreferences, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
@@ -43,7 +43,7 @@ function getAppIcon() {
 
 function getTrayIcon() {
     if (process.platform.match("darwin")) {
-        return "mac/explorook_tray@21x21.png";
+        return systemPreferences.isDarkMode() ? "mac/explorook_white_tray@21x21.png" : "mac/explorook_tray@21x21.png";
     }
     return getAppIcon();
 }
