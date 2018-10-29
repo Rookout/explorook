@@ -259,6 +259,11 @@ function openTray() {
     }
 }
 
+// trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
+process.on('uncaughtException', (err: Error) => {
+    captureException(err);
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
