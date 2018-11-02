@@ -65,6 +65,13 @@ function linuxAutoLaunchPatch() {
     }
 }
 
+function firstTimeAutoLaunch(al: AutoLaunch) {
+    const firstTime = store.get("first-time-launch", true);
+    if (!firstTime) return;
+    store.set("first-time-launch", false);
+    al.enable();
+}
+
 // registerIpc listens to ipc requests\event
 function registerIpc() {
     let alConfig = { name: "Explorook", isHidden: true };
@@ -76,6 +83,7 @@ function registerIpc() {
     }
     al = new AutoLaunch(alConfig);
     linuxAutoLaunchPatch();
+    firstTimeAutoLaunch(al);
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
