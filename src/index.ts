@@ -26,6 +26,7 @@ const TEN_MINUTES = 1000 * 60 * 10;
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
+let firstTimeLaunch = false;
 let al: AutoLaunch;
 let token: string;
 let store: Store<{}>;
@@ -66,9 +67,7 @@ function linuxAutoLaunchPatch() {
 }
 
 function firstTimeAutoLaunch(al: AutoLaunch) {
-    const firstTime = store.get("first-time-launch", true);
-    if (!firstTime) return;
-    store.set("first-time-launch", false);
+    if (!firstTimeLaunch) return;
     al.enable();
 }
 
@@ -139,6 +138,7 @@ function main() {
     token = store.get("token", null);
     // if first run - there's no token in store - and we create one
     if (!token) {
+        firstTimeLaunch = true;
         token = uuidv4();
         store.set("token", token);
     }
