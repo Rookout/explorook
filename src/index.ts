@@ -15,9 +15,12 @@ const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
 const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
-const CLOSE_ICON = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
-const SETTINGS_ICON = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
-const COPY_ICON = path.join(__dirname, ICONS_DIR, "content_copy_black_18x18.png");
+const CLOSE_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
+const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
+const COPY_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_file_copy_black_18dp.png");
+const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
+const SETTINGS_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_settings_white_18dp.png");
+const COPY_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_file_copy_white_18dp.png");
 const TEN_MINUTES = 1000 * 60 * 10;
 
 let mainWindow: Electron.BrowserWindow;
@@ -246,11 +249,15 @@ function maximize() {
 }
 
 function openTray() {
+    let darkMode = false;
+    if (process.platform === "darwin") {
+        darkMode = systemPreferences.isDarkMode();
+    }
     tray = new Tray(TRAY_ICON);
     const contextMenu = Menu.buildFromTemplate([
-        { label: "Copy Token", icon: COPY_ICON, click: () => clipboard.writeText(token) },
-        { label: "Config...", icon: SETTINGS_ICON, click: maximize },
-        { label: "Close", icon: CLOSE_ICON, click: app.quit },
+        { label: "Copy Token", icon: darkMode ? COPY_ICON_WHITE : COPY_ICON_BLACK, click: () => clipboard.writeText(token) },
+        { label: "Config...", icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK, click: maximize },
+        { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: app.quit },
     ]);
     tray.setToolTip("Rookout");
     tray.setContextMenu(contextMenu);
