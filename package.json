@@ -2,7 +2,7 @@
   "name": "explorook",
   "version": "0.3.10",
   "description": "Rookout's site addon to support local files and folders",
-  "main": "dist/index.js",
+  "main": "dist/index.js", 
   "scripts": {
     "publish": "build.sh && build --win -p always",
     "build": "tsc",
