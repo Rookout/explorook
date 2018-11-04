@@ -12,8 +12,7 @@ jobs:
       xcode: "9.2.0"
     steps:
       - restore_cache:
-        keys:
-          - homebrew-{{ checksum ".circleci/config.yml" }}
+        key: homebrew-{{ checksum ".circleci/config.yml" }}
       - checkout
       - run:
           name: Build and Publish
