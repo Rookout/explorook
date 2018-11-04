@@ -12,7 +12,7 @@ jobs:
       xcode: "9.2.0"
     steps:
       - restore_cache:
-        key: homebrew-{{ checksum ".circleci/config.yml" }}
+          key: homebrew-{{ checksum ".circleci/config.yml" }}
       - checkout
       - run:
           name: Build and Publish
@@ -42,9 +42,9 @@ jobs:
             # package code for every distribution (mac,win,linux) and publish as github release
             npm run mac-publish
       - save_cache:
-        key: homebrew-{{ checksum ".circleci/config.yml" }}
-        paths:
-          - /usr/local/Homebrew
+          key: homebrew-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - /usr/local/Homebrew
   version_validation:
     macos:
       xcode: "9.2.0"
