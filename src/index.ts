@@ -52,23 +52,29 @@ function getTrayIcon() {
     return getAppIcon();
 }
 
-function linuxAutoLaunchPatch() {
-    if (process.platform === "linux" && store.get("linux-start-with-os", false)) {
-        // AppImage filename changes after every update so we need to make sure we disable
-        // autolaunch before update is installed and re-enable it on the next startup - which is now
-        al.isEnabled().then(isEnabled => {
-            if (!isEnabled) {
-                al.enable();
-            }
-        }).catch(err => {
-            captureException(err);
-        });
+async function linuxAutoLaunchPatch() {
+    if (process.platform !== "linux" || !store.get("linux-start-with-os", false)) {
+        return;
     }
+    // AppImage filename changes after every update so we need to make sure we disable
+    // autolaunch before update is installed and re-enable it on the next startup - which is now
+    await enableAutoLaunch();
 }
 
-function firstTimeAutoLaunch(al: AutoLaunch) {
+async function firstTimeAutoLaunch() {
     if (!firstTimeLaunch) return;
-    al.enable();
+    await enableAutoLaunch();
+}
+
+async function enableAutoLaunch() {
+    try {
+        const isEnabled = await al.isEnabled();
+        if (!isEnabled) {
+            await al.enable();
+        }
+    } catch (error) {
+        captureException(error);
+    }
 }
 
 // registerIpc listens to ipc requests\event
@@ -82,7 +88,7 @@ function registerIpc() {
     }
     al = new AutoLaunch(alConfig);
     linuxAutoLaunchPatch();
-    firstTimeAutoLaunch(al);
+    firstTimeAutoLaunch();
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
