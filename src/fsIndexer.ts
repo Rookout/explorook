@@ -1,6 +1,7 @@
 import path = require("path");
 import _ = require("lodash");
 import slash = require("slash");
+import { captureMessage } from 'raven-js';
 const walk = require("walk");
 
 // tslint:disable-next-line:max-line-length
@@ -41,6 +42,7 @@ export class IndexWorker {
         const walker = walk.walk(this.rootPath, { filters: this.ignores });
         walker.on("file", (root: string, fileStats: { name: string }, next: () => void) => {
             if (this.stopFlag || this.treeList.length >= listLimit) {
+                this.reportLimitReached();
                 walker.emit("stopped");
                 return;
             }
@@ -60,6 +62,22 @@ export class IndexWorker {
             this.indexDone = true;
             this.indexRunning = false;
         });
+    }
+
+    reportLimitReached(): any {
+        const stats = new Map<string, number>();
+        this.treeList.forEach(filename => {
+            const ext = path.extname(filename);
+            stats.set(ext, (stats.get(ext) || 0) + 1);
+        });
+        let str = "";
+        stats.forEach((count, ext) => {
+            str += `${ext}: ${count}\n`;
+        })
+        
+        captureMessage(`index limit reached. stats:\n${str}`, {
+            level: "warning"
+        })
     }
 
     public deleteIndex() {
