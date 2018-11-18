@@ -15,6 +15,7 @@ const listLimit = 30000;
 // This worker used to index all the filenames in the repository
 // but we changed it to just keep a list of all the files instead.
 // the FE will be incharge of the search algorithm itself
+// test
 export class IndexWorker {
     public indexDone: boolean;
     public indexRunning: boolean;
