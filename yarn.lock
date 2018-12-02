@@ -697,7 +697,7 @@ buffer@^5.1.0:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
 
-builder-util-runtime@4.4.1, builder-util-runtime@^4.4.1, builder-util-runtime@~4.4.0:
+builder-util-runtime@4.4.1, builder-util-runtime@^4.4.1:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-4.4.1.tgz#2770d03241e51fde46acacc7ed3ed8a9f45f02cb"
   dependencies:
@@ -706,7 +706,7 @@ builder-util-runtime@4.4.1, builder-util-runtime@^4.4.1, builder-util-runtime@~4
     fs-extra-p "^4.6.1"
     sax "^1.2.4"
 
-builder-util-runtime@8.0.2, builder-util-runtime@^8.0.2:
+builder-util-runtime@8.0.2, builder-util-runtime@^8.0.2, builder-util-runtime@~8.0.2:
   version "8.0.2"
   resolved "https://registry.yarnpkg.com/builder-util-runtime/-/builder-util-runtime-8.0.2.tgz#9d638a266ca3aa25ced1cff4df74c8fd97dd78cf"
   dependencies:
@@ -1293,10 +1293,6 @@ electron-fetch@^1.1.0:
   dependencies:
     encoding "^0.1.12"
 
-electron-is-dev@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-0.3.0.tgz#14e6fda5c68e9e4ecbeff9ccf037cbd7c05c5afe"
-
 electron-log@^2.2.15:
   version "2.2.17"
   resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-2.2.17.tgz#e71e2ebb949fc96ded7cdb99eeee7202e48981d2"
@@ -1353,19 +1349,19 @@ electron-store@^2.0.0:
   dependencies:
     conf "^2.0.0"
 
-electron-updater@^2.21.10:
-  version "2.23.3"
-  resolved "https://registry.yarnpkg.com/electron-updater/-/electron-updater-2.23.3.tgz#7bf054075f0cef2cd832cb533cf21adcdd5780b8"
+electron-updater@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/electron-updater/-/electron-updater-4.0.5.tgz#0d35f13b539d0dde5a1ee18f676ea87c37bf5f4a"
   dependencies:
-    bluebird-lst "^1.0.5"
-    builder-util-runtime "~4.4.0"
-    electron-is-dev "^0.3.0"
-    fs-extra-p "^4.6.1"
+    bluebird-lst "^1.0.6"
+    builder-util-runtime "~8.0.2"
+    fs-extra-p "^7.0.0"
     js-yaml "^3.12.0"
     lazy-val "^1.0.3"
     lodash.isequal "^4.5.0"
-    semver "^5.5.0"
-    source-map-support "^0.5.6"
+    pako "^1.0.6"
+    semver "^5.6.0"
+    source-map-support "^0.5.9"
 
 electron@^2.0.8:
   version "2.0.14"
