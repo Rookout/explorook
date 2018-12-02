@@ -32,13 +32,13 @@ In order to restrict access we use an access token whitout which every call to o
 
 # Project initialization
 1. run ``yarn`` in ``/src/webapp`` to install webapp dependencies
-1. run ``npm install`` in root directory to install electron's dependencies
+1. run ``yarn`` in root directory to install electron's dependencies
 
 # Run in development
 In development we run the webpack server to serve the react web app. We do this because we get hot reload when we modify the react code.  
 To run the webapp server:
 1. run ``yarn run start`` in ``/src/webapp`` to run development server
-1. run ``npm start`` in the root directory to run the electron app
+1. run ``yarn start`` in the root directory to run the electron app
 
 # Build for production
 TODO (see circleci yaml)
