@@ -9,7 +9,7 @@ references:
 jobs:
   publish:
     macos:
-      xcode: "9.2.0"
+      xcode: "10.1.0"
     steps:
       - checkout
       - restore_cache:
@@ -19,8 +19,6 @@ jobs:
           command: |
             # wine is required to sign windows executables
             brew install wine
-            # install yarn
-            npm install -g yarn
             # install electron main window dependencies 
             yarn install
             # build code (mostly compile typescript)
