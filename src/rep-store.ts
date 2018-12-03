@@ -1,6 +1,7 @@
 import Store = require("electron-store");   
 import fs = require("fs");
 import git = require("isomorphic-git");
+import parseRepo = require('parse-repo');
 import _ = require("lodash");
 import path = require("path");
 import { IndexWorker } from "./fsIndexer";
@@ -152,9 +153,9 @@ class RepoStore {
         // connect to the same repository on different machines
         try {
             const gitRoot = await git.findRoot({ fs, filepath: repo.fullpath });
-            const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
             const remote = await git.config({fs, dir: gitRoot, path: "remote.origin.url"});
-            return remote.concat("/").concat(gitRootRelPath);
+            const repoInfo = parseRepo(remote);
+            return repoInfo.repository;
         } catch (error) {
             // no git found
             return uuidv4();
