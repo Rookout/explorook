@@ -9,7 +9,7 @@ references:
 jobs:
   publish:
     macos:
-      xcode: "9.2.0"
+      xcode: "10.1.0"
     steps:
       - checkout
       - restore_cache:
