@@ -1,5 +1,7 @@
 import Store = require("electron-store");   
 import fs = require("fs");
+import git = require("isomorphic-git");
+import parseRepo = require('parse-repo');
 import _ = require("lodash");
 import { IndexWorker } from "./fsIndexer";
 import MemStore from "./mem-store";
