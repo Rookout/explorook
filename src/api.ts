@@ -3,7 +3,9 @@ import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
-import { Repository, repStore } from "./rep-store";
+import { repStore, Repo } from "./rep-store";
+import { Repository } from "./common/repository";
+import { getLastCommitDescription as getLastCommitDescription } from "./git";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -48,6 +50,7 @@ export const repoMiddleware = {
     dir: filterRepo,
     listTree: filterRepo,
     refreshIndex: filterRepo,
+    repository: filterRepo
   }
 };
 
@@ -58,8 +61,16 @@ export const traversalMiddleware = {
   }
 };
 
+
 export const resolvers = {
   Query: {
+    async repository(parent: any, args: { repo: Repo, path: string }) {
+      const { repo } = args;
+      return {
+        ...repo.toModel(),
+        lastCommitDescription: async () => await getLastCommitDescription(repo)
+      }
+    },
     listRepos(parent: any, args: any): Repository[] {
       return repStore.getRepositories().map((r) => r.toModel());
     },

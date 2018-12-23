@@ -1,28 +1,17 @@
 import Store = require("electron-store");   
 import fs = require("fs");
-import git = require("isomorphic-git");
 import _ = require("lodash");
-import path = require("path");
 import { IndexWorker } from "./fsIndexer";
 import MemStore from "./mem-store";
-
-const uuidv4 = require("uuid/v4");
-
-export interface Repository {
-    repoName: string;
-    fullpath: string;
-    id: string;
-    indexDone?: boolean;
-    listTree?(): string[];
-    reIndex?(): void;
-}
+import { Repository } from './common/repository'
+import { getRepoId } from "./git";
 
 interface IStore {
     get(key: string, defaultValue?: string): string
     set(key: string, value: string): void
 }
 
-class Repo {
+export class Repo {
     public repoName: string;
     public fullpath: string;
     public id: string;
@@ -60,6 +49,8 @@ class Repo {
         return this.indexer.index();
     }
 
+    // used to convert this class to a plain object representation
+    // (e.g when passing through electron RPC you don't want to pass this.indexer and all the data it holds [mainly the files tree])
     public toModel(): Repository {
         return {
             repoName: this.repoName,
@@ -113,7 +104,7 @@ class RepoStore {
             return null;
         }
         if (!repo.id) {
-            repo.id = await this.getRepoId(repo);
+            repo.id = await getRepoId(repo);
         }
         const r = new Repo(repo);
         if (this.allowIndex) {
@@ -144,21 +135,6 @@ class RepoStore {
 
     public getRepositories(): Repo[] {
         return this.repos;
-    }
-
-    private async getRepoId(repo: Repository): Promise<string> {
-        // trying to create a unique id with the git remote path and relative filesystem path
-        // this way, when different clients share the same workspace they automatically
-        // connect to the same repository on different machines
-        try {
-            const gitRoot = await git.findRoot({ fs, filepath: repo.fullpath });
-            const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
-            const remote = await git.config({fs, dir: gitRoot, path: "remote.origin.url"});
-            return remote.concat("/").concat(gitRootRelPath);
-        } catch (error) {
-            // no git found
-            return uuidv4();
-        }
     }
 }
 
