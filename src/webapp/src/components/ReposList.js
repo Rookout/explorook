@@ -57,9 +57,17 @@ export class ReposList extends Component {
                 { this.state.repos.length > 0 ?
                     this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)
                     :
-                    <p className="gray-shaded" style={{textAlign: "center", fontSize:"x-large"}}>
-                    Click the + button to add folders that will be accessable in app.rookout.com
-                    </p>
+                    <>
+                        <p style={{ textAlign: "center" }}>
+                            <img src="folders.svg" style={{width: 70, textAlign: "center", pointerEvents: "none"}} />
+                        </p>
+                        <p className="rookout-gray" style={{marginBottom: 0, textAlign: "center", fontSize:"large"}}>
+                        Click the + button to add folders that will be
+                        </p>
+                        <p className="rookout-gray" style={{marginTop: 0, textAlign: "center", fontSize:"large"}}>
+                        accessable in app.rookout.com
+                        </p>
+                    </>
                 }
                 </div>
             </div>

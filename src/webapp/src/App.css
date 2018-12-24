@@ -18,6 +18,10 @@ html {
   color: #B6C8D4;
 }
 
+.rookout-gray {
+  color: #6E7A89;
+}
+
 body {
   height: 100%;
   -ms-overflow-style: scrollbar;
