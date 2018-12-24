@@ -58,7 +58,7 @@ export class ReposList extends Component {
                     this.state.repos.map(rep => <ReposListItem repo={rep} removeClicked={this.onRemoveClicked} key={rep.id} />)
                     :
                     <p className="gray-shaded" style={{textAlign: "center", fontSize:"x-large"}}>
-                    nothing here just yet!
+                    Click the + button to add folders that will be accessable in app.rookout.com
                     </p>
                 }
                 </div>
