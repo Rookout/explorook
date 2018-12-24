@@ -3,6 +3,7 @@ type Repository {
   repoName: String!
   id: String!
   indexDone: Boolean
+  lastCommitDescription: CommitDescription
 }
 
 type FileInfo {
@@ -24,19 +25,11 @@ type CommitDescription {
   oid: String!
 }
 
-type RepositoryV3 {
-  lastCommitDescription: CommitDescription
-  fullpath: String!
-  repoName: String!
-  id: String!
-  indexDone: Boolean!
-}
-
 type Query {
   dir(repoId: String!, path: String!): [FileInfo]!
   file(repoId: String!, path: String!): String!
   listTree(repoId: String!): [String]!
   listRepos: [Repository!]!
   refreshIndex(repoId: String!): Boolean
-  repository(repoId: String): RepositoryV3!
+  repository(repoId: String!): Repository!
 }

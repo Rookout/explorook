@@ -63,13 +63,16 @@ export const traversalMiddleware = {
 
 
 export const resolvers = {
+  Repository: {
+    lastCommitDescription: async (parent: Repository) => {
+      const repo = repStore.getRepositories().find(r => r.id === parent.id)
+      return await getLastCommitDescription(repo);
+    },
+  },
   Query: {
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
-      return {
-        ...repo.toModel(),
-        lastCommitDescription: async () => await getLastCommitDescription(repo)
-      }
+      return repo.toModel()
     },
     listRepos(parent: any, args: any): Repository[] {
       return repStore.getRepositories().map((r) => r.toModel());

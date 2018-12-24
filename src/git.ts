@@ -1,4 +1,5 @@
 import { Repository } from "./common/repository";
+import path = require("path");
 import parseRepo = require('parse-repo');
 import { captureMessage } from 'raven-js';
 import * as igit from "isomorphic-git";
@@ -13,8 +14,9 @@ export async function getRepoId(repo: Repository): Promise<string> {
     try {
         const gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
         const remote = await igit.config({fs, dir: gitRoot, path: "remote.origin.url"});
+        const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
         const repoInfo = parseRepo(remote);
-        return repoInfo.repository;
+        return `${repoInfo.repository}/${gitRootRelPath}`;
     } catch (error) {
         // no git found
         return uuidv4();
