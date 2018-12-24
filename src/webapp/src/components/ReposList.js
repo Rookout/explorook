@@ -65,7 +65,7 @@ export class ReposList extends Component {
                         Click the + button to add folders that will be
                         </p>
                         <p className="rookout-gray" style={{marginTop: 0, textAlign: "center", fontSize:"large"}}>
-                        accessable in app.rookout.com
+                        accessible in app.rookout.com
                         </p>
                     </>
                 }
