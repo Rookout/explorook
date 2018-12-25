@@ -25,12 +25,17 @@ export async function getRepoId(repo: Repository): Promise<string> {
 
 export async function getLastCommitDescription(repo: Repository): Promise<igit.CommitDescription> {
     try {
-        const gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
+        let gitRoot = null;
+        try {
+            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
+        } catch (err) {
+            // not inside a git repository
+        }
         if (!gitRoot) return null;
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })))
     } catch(error) {
         captureMessage(`Failed to read repository info ${JSON.stringify(repo)}`, {
-            extra: { repo }
+            extra: { repo, error }
         })
         return null;
     }
