@@ -1,5 +1,6 @@
 import { IpcMessageEvent, ipcRenderer } from "electron";
-import { Repository, repStore } from "./rep-store";
+import { repStore } from "./rep-store";
+import { Repository } from "./common/repository";
 import * as graphQlServer from "./server";
 
 // configure Sentry
