@@ -12,7 +12,8 @@
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "npm run build && cross-env development=1 electron ./dist/index.js"
+    "start": "npm run build && cross-env development=1 electron ./dist/index.js",
+    "debug": "npm run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
   },
   "build": {
     "productName": "Explorook",
