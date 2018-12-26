@@ -1,6 +1,4 @@
 import fs = require("fs");
-import { GraphQLError } from "graphql";
-import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
 import { repStore, Repo } from "./rep-store";
@@ -15,52 +13,6 @@ interface FileInfo {
   isFolder: boolean;
   size: number;
 }
-
-const isDirTraversal = (dirPath: string, fullpath: string): boolean => {
-  return !fullpath.startsWith(dirPath);
-};
-
-// filterRepo makes sure the request sends a valid and existing repo name
-// and puts the repository on args
-const filterRepo: IMiddlewareFunction = (resolve, parent, args, context, info) => {
-  const { repoId } = args;
-  const repos = repStore.getRepositories();
-  const targetRepo = _.find(repos, (rep) => rep.id.toLowerCase() === repoId.toLocaleLowerCase());
-  if (!targetRepo) {
-    throw new GraphQLError(`repository "${repoId}" not found`);
-  }
-  return resolve(parent, { ...args, repo: targetRepo }, context, info);
-};
-
-// Makes sure target path of the request doesn't go backwards (using "../.." syntax or whatever)
-// tslint:disable-next-line:max-line-length
-const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: { repo: Repository, path: string }, context, info) => {
-  const { repo, path } = args;
-  const targetPath = join(repo.fullpath, path);
-  if (isDirTraversal(repo.fullpath, targetPath)) {
-    throw new GraphQLError(`directory traversal detected. "${targetPath}" does not start with ${repo.fullpath}`);
-  }
-  return resolve(parent, args, context, info);
-};
-
-// Apply both middlewares on resolvers
-export const repoMiddleware = {
-  Query: {
-    file: filterRepo,
-    dir: filterRepo,
-    listTree: filterRepo,
-    refreshIndex: filterRepo,
-    repository: filterRepo
-  }
-};
-
-export const traversalMiddleware = {
-  Query: {
-    file: filterDirTraversal,
-    dir: filterDirTraversal,
-  }
-};
-
 
 export const resolvers = {
   Repository: {
