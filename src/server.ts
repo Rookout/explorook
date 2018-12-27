@@ -1,7 +1,8 @@
 import { GraphQLServer } from "graphql-yoga";
 import { join } from "path";
-import { repoMiddleware, resolvers, traversalMiddleware } from "./api";
+import { resolvers } from "./api";
 import { Request, Response, NextFunction } from "express";
+import { logMiddleware, filterDirTraversal, resolveRepoFromId } from "./middlewares";
 
 export const start = (accessToken: string, port: number = 44512) => {
   const typeDefs = join(__dirname, `../graphql/schema.graphql`);
@@ -9,7 +10,7 @@ export const start = (accessToken: string, port: number = 44512) => {
   const server = new GraphQLServer({
     resolvers,
     typeDefs,
-    middlewares: [traversalMiddleware, repoMiddleware],
+    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal],
   });
 
   server.express.use((req: Request, res: Response, next: NextFunction) => {
