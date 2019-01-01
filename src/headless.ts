@@ -7,7 +7,8 @@ const args = require("args-parser")(process.argv);
 
 if (args.help || !args.repo) {
     console.log("add repository using --repo=<name>,<path>");
-    console.log("customize listen port with --port of -p");
+    console.log("customize listen port with --port or -p");
+    console.log("customize access token with --token");
     process.exit(0);
 }
 
@@ -26,10 +27,10 @@ repos.forEach((repo: any) => {
         fullpath: repo.path,
         repoName: repo.name,
         id: undefined,
-    }).then((repId: string) => {
+    }).then(() => {
     }).catch(err => {
         throw err;
     });
 });
 
-graphQlServer.start("", args.p || args.port || undefined);
+graphQlServer.start(args.token || "", args.p || args.port || undefined);
