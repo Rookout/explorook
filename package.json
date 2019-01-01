@@ -84,6 +84,7 @@
     "@sentry/electron": "^0.8.1",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
+    "cors": "^2.8.5",
     "electron-log": "^2.2.15",
     "electron-store": "^2.0.0",
     "electron-updater": "^2.21.10",

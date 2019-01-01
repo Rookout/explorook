@@ -1,5 +1,6 @@
 import { GraphQLServer } from "graphql-yoga";
 import { join } from "path";
+import * as cors from "cors";
 import { resolvers } from "./api";
 import { Request, Response, NextFunction } from "express";
 import { logMiddleware, filterDirTraversal, resolveRepoFromId } from "./middlewares";
@@ -13,7 +14,7 @@ export const start = (accessToken: string, port: number = 44512) => {
     middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal],
   });
 
-  server.express.use((req: Request, res: Response, next: NextFunction) => {
+  server.express.use(cors(), (req: Request, res: Response, next: NextFunction) => {
     if (process.env.EXPLOROOK_NOAUTH) {
       next();
       return;
