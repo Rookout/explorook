@@ -4,6 +4,7 @@ import { posix } from "path";
 import { repStore, Repo } from "./rep-store";
 import { Repository } from "./common/repository";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
+import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -20,6 +21,11 @@ export const resolvers = {
       const repo = repStore.getRepositories().find(r => r.id === parent.id)
       return await getLastCommitDescription(repo);
     },
+  },
+  Mutation: {
+    addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
+      return context.onAddRepoRequest(args.fullpath);
+    }
   },
   Query: {
     async repository(parent: any, args: { repo: Repo, path: string }) {

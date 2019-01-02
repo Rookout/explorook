@@ -2,6 +2,7 @@ import { IpcMessageEvent, ipcRenderer } from "electron";
 import { repStore } from "./rep-store";
 import { Repository } from "./common/repository";
 import * as graphQlServer from "./server";
+import { basename } from "path"
 
 // configure Sentry
 import * as Raven from 'raven-js';
@@ -23,11 +24,22 @@ ipcRenderer.once("sentry-enabled-changed", (e: IpcMessageEvent, enabled: boolean
 
 ipcRenderer.on("main-window-id", (e: IpcMessageEvent, token: string, id: number) => {
     mainWindowId = id;
-    graphQlServer.start(token);
+    graphQlServer.start({ accessToken: token, onAddRepoRequest: async (fullpath) => {
+        if (fullpath) {
+            // add repository
+            await repStore.add({ fullpath, repoName: basename(fullpath), id: undefined })
+            // tell webview to refresh repos view
+            ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+        } else {
+            // will pop the menu for the user to choose repository
+            ipcRenderer.sendTo(mainWindowId, 'pop-choose-repository')
+        }
+        return true;
+    } });
 });
 
 ipcRenderer.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
-    repStore.add(repo).then((repoId) => {
+    repStore.add(repo).then(() => {
         ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
     });
 });
