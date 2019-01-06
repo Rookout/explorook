@@ -33,4 +33,4 @@ repos.forEach((repo: any) => {
     });
 });
 
-graphQlServer.start(args.token || "", args.p || args.port || undefined);
+graphQlServer.start({ port: args.p || args.port || "", accessToken: args.token || "" });
