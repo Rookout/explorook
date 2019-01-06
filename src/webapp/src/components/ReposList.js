@@ -14,6 +14,9 @@ export class ReposList extends Component {
         this.state = {
             repos: [],
         }
+        ipcRenderer.on('pop-choose-repository', () => {
+            this.onAddClicked();
+        })
         ipcRenderer.on("refresh-repos", (e, repos) => 
         {
             this.setState({...this.state, repos})
