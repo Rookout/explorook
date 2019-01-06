@@ -7,7 +7,7 @@ import fs = require("fs");
 import _ = require("lodash");
 const uuidv4 = require("uuid/v4");
 
-export async function getRepoId(repo: Repository): Promise<string> {
+export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
     // trying to create a unique id with the git remote path and relative filesystem path
     // this way, when different clients share the same workspace they automatically
     // connect to the same repository on different machines
@@ -16,7 +16,12 @@ export async function getRepoId(repo: Repository): Promise<string> {
         const remote = await igit.config({fs, dir: gitRoot, path: "remote.origin.url"});
         const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
         const repoInfo = parseRepo(remote);
-        return `${repoInfo.repository}/${gitRootRelPath}`;
+        let repoId = `${repoInfo.repository}/${gitRootRelPath}`;
+        if (_.includes(idList, repoId)) {
+            const branch = await igit.currentBranch({ fs, dir: gitRoot, fullname: false });
+            repoId = `${repoId}:${branch}`;
+        }
+        return repoId;
     } catch (error) {
         // no git found
         return uuidv4();

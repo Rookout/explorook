@@ -1,4 +1,4 @@
-import Store = require("electron-store");   
+import Store = require("electron-store");
 import fs = require("fs");
 import git = require("isomorphic-git");
 import parseRepo = require('parse-repo');
@@ -71,7 +71,7 @@ class RepoStore {
 
     constructor() {
         try {
-            this.store = new Store({ name: "explorook" });   
+            this.store = new Store({ name: "explorook" });
         } catch (error) { // probably headless mode - defaulting to memory store
             console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
             this.store = new MemStore();
@@ -106,14 +106,14 @@ class RepoStore {
             return null;
         }
         if (!repo.id) {
-            repo.id = await getRepoId(repo);
+            repo.id = await getRepoId(repo, this.getRepositories().map((r) => r.id));
         }
-        const r = new Repo(repo);
+        const repoObj = new Repo(repo);
         if (this.allowIndex) {
             // start indexing on next eventloop (so we don't stuck the gui)
-            setTimeout(() => r.indexer.index(), 0);
+            setTimeout(() => repoObj.indexer.index(), 0);
         }
-        this.repos.push(r);
+        this.repos.push(repoObj);
         this.save();
         return repo.id;
     }
