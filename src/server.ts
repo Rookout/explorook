@@ -1,9 +1,9 @@
 import { GraphQLServer } from "graphql-yoga";
 import { join } from "path";
 import * as cors from "cors";
+import * as _ from "lodash";
 import { resolvers } from "./api";
-import { Request, Response, NextFunction } from "express";
-import { logMiddleware, filterDirTraversal, resolveRepoFromId } from "./middlewares";
+import { logMiddleware, filterDirTraversal, resolveRepoFromId, authenticateController, authorizationMiddleware } from "./middlewares";
 
 export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
 
@@ -28,21 +28,14 @@ export const start = (options: StartOptions) => {
     middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal],
   });
 
-  server.express.use(cors(), (req: Request, res: Response, next: NextFunction) => {
-    if (process.env.EXPLOROOK_NOAUTH) {
-      next();
-      return;
-    }
-    const token = req.param("token") || req.header("token") || "";
-    if (token === settings.accessToken) {
-      next();
-    } else {
-      res.status(401).send("bad token");
-    }
-  });
+  server.express.use(cors());
+  // indicates that the authorization feature is available
+  server.express.get('/authorize/', (req, res) => res.status(200).send("AVAILABLE"));
+  server.express.post('/authorize/:env', authenticateController(settings.accessToken));
+  server.express.use(authorizationMiddleware(settings.accessToken));
   try {
     // tslint:disable-next-line:no-console
-    server.start({ port: settings.port }, (options: { port: number }) => console.log(`Server is running on http://localhost:${options.port}`)); 
+    server.start({ port: settings.port }, (options: { port: number }) => console.log(`Server is running on http://localhost:${options.port}`));
   } catch (error) {
     // tslint:disable-next-line:no-console
     console.log("couldn't start server", error);
