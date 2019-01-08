@@ -7,6 +7,7 @@ import { GraphQLError } from 'graphql';
 import { Repository } from "./common/repository";
 import { RequestHandler } from "express";
 import { shell } from "electron";
+import opn = require('opn');
 import _ = require('lodash');
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
@@ -57,21 +58,33 @@ export const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: {
 
 type AuthenticateController = (token: string) => RequestHandler;
 export const authenticateController: AuthenticateController = token => {
-  const envDic = new Map<string, string>();
-  envDic.set('development', 'https://localhost:8080');
-  envDic.set('staging', 'https://staging.rookout.com');
-  envDic.set('production', 'https://app.rookout.com');
-  const supportedEnvs = Array.from(envDic.keys());
+  // rookout env to url map
+  const envDict = new Map<string, string>();
+  envDict.set('development', 'https://localhost:8080');
+  envDict.set('staging', 'https://staging.rookout.com');
+  envDict.set('production', 'https://app.rookout.com');
+  const supportedEnvs = Array.from(envDict.keys());
+  // platform name to chrome app name
+  const chromeDict = new Map<string, string>();
+  chromeDict.set('darwin', 'google chrome');
+  chromeDict.set('linux', 'google-chrome');
+  chromeDict.set('win32', 'chrome');
 
-  return (req, res) => {
+  return async (req, res) => {
     const env = req.params.env as string;
     if (!_.includes(supportedEnvs, env)) {
       res.status(400).send(`expected env param to be one of [${supportedEnvs}] but got ${env || "nothing"}`)
       return;
     }
-    const domain: string = envDic.get(env);
+    const domain: string = envDict.get(env);
     const targetUrl = `${domain}/authorize/explorook#token=${token}`;
-    shell.openExternal(targetUrl);
+    try {
+      // try opening specifically chrome - if it fails - open the default browser
+      const app = chromeDict.has(process.platform) ? chromeDict.get(process.platform) : 'google-chrome';
+      await opn(targetUrl, { app })
+    } catch (err) {
+      shell.openExternal(targetUrl);
+    }
     res.status(200).send("OK");
   }
 }
