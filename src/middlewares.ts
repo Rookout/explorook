@@ -5,6 +5,9 @@ import { repStore } from "./rep-store";
 import { posix } from "path";
 import { GraphQLError } from 'graphql';
 import { Repository } from "./common/repository";
+import { RequestHandler } from "express";
+import { shell } from "electron";
+import opn = require('opn');
 import _ = require('lodash');
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
@@ -16,9 +19,9 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
   } catch (error) {
     // ignore repository not found errors
     if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
-        Raven.captureException(error, {
-            extra: { root, args, context, info }
-        })
+      Raven.captureException(error, {
+        extra: { root, args, context, info }
+      })
     }
     throw error
   }
@@ -52,3 +55,51 @@ export const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: {
   }
   return resolve(parent, args, context, info);
 };
+
+type AuthenticateController = (token: string) => RequestHandler;
+export const authenticateController: AuthenticateController = token => {
+  // rookout env to url map
+  const envDict = new Map<string, string>();
+  envDict.set('development', 'https://localhost:8080');
+  envDict.set('staging', 'https://staging.rookout.com');
+  envDict.set('production', 'https://app.rookout.com');
+  const supportedEnvs = Array.from(envDict.keys());
+  // platform name to chrome app name
+  const chromeDict = new Map<string, string>();
+  chromeDict.set('darwin', 'google chrome');
+  chromeDict.set('linux', 'google-chrome');
+  chromeDict.set('win32', 'chrome');
+
+  return async (req, res) => {
+    const env = req.params.env as string;
+    if (!_.includes(supportedEnvs, env)) {
+      res.status(400).send(`expected env param to be one of [${supportedEnvs}] but got ${env || "nothing"}`)
+      return;
+    }
+    const domain: string = envDict.get(env);
+    const targetUrl = `${domain}/authorize/explorook#token=${token}`;
+    try {
+      // try opening specifically chrome - if it fails - open the default browser
+      const app = chromeDict.has(process.platform) ? chromeDict.get(process.platform) : 'google-chrome';
+      await opn(targetUrl, { app })
+    } catch (err) {
+      shell.openExternal(targetUrl);
+    }
+    res.status(200).send("OK");
+  }
+}
+
+type AuthorizationMiddleware = (token: string) => RequestHandler;
+export const authorizationMiddleware: AuthorizationMiddleware = token =>
+  (req, res, next) => {
+    if (process.env.EXPLOROOK_NOAUTH) {
+      next();
+      return;
+    }
+    const reqToken = req.param("token") || req.header("token") || "";
+    if (reqToken === token) {
+      next();
+    } else {
+      res.status(401).send("bad token");
+    }
+  }
