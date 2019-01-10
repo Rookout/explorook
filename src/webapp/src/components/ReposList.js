@@ -40,12 +40,11 @@ export class ReposList extends Component {
             reHide = true;
         }
         this.onAddClicked();
-        if (reHide) {
-            if (window.process.platform.match("darwin")) {
-                remote.app.dock.hide();
-            }
-            win.hide();
+        if (!reHide) return;
+        if (window.process.platform.match("darwin")) {
+            remote.app.dock.hide();
         }
+        win.hide();
     }
 
     onAddClicked() {
