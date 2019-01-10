@@ -20,6 +20,7 @@ jobs:
             brew cleanup
             # wine is required to sign windows executables
             brew install wine
+            brew install wine
             # install electron main window dependencies 
             npm install
             # build code (mostly compile typescript)
