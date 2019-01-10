@@ -19,7 +19,9 @@ jobs:
             # homebrew started throwing error when installing wine and cleanup helped
             brew cleanup
             # wine is required to sign windows executables
-            brew install wine
+            (
+              brew install wine
+            )
             brew install wine
             # install electron main window dependencies 
             npm install
