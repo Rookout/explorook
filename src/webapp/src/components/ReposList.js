@@ -15,7 +15,7 @@ export class ReposList extends Component {
             repos: [],
         }
         ipcRenderer.on('pop-choose-repository', () => {
-            this.onAddClicked();
+            this.onPopDialogRequested();
         })
         ipcRenderer.on("refresh-repos", (e, repos) => 
         {
@@ -32,16 +32,33 @@ export class ReposList extends Component {
         }
     }
 
+    onPopDialogRequested() {
+        const win = remote.getCurrentWindow();
+        let reHide = false;
+        if (!win.isVisible()) {
+            win.show();
+            reHide = true;
+        }
+        this.onAddClicked();
+        if (reHide) {
+            if (window.process.platform.match("darwin")) {
+                remote.app.dock.hide();
+            }
+            win.hide();
+        }
+    }
+
     onAddClicked() {
         const win = remote.getCurrentWindow();
-        const folders = dialog.showOpenDialog(win, { properties: ["openDirectory"] });
+        const folders = dialog.showOpenDialog(win, { properties: ["openDirectory", "multiSelections"] });
         if (!folders) { // user closed dialog without choosing
             return;
         }
-        const folder = folders[0];
-        const repoName = path.basename(folder);
-        const newRepo = { repoName, fullpath: folder };
-        ipcRenderer.sendTo(window.indexWorkerId, "add-repo", newRepo);
+        folders.forEach(folder => {
+            const repoName = path.basename(folder);
+            const newRepo = { repoName, fullpath: folder };
+            ipcRenderer.sendTo(window.indexWorkerId, "add-repo", newRepo);
+        })
     }
 
     render() {
