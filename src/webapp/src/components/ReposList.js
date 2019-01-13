@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { ReposListItem } from "./RepoListItem"
-import { IconButton } from '@material-ui/core';
+import { IconButton, Button } from '@material-ui/core';
 import { AddCircle } from "@material-ui/icons"
+import { Confirm } from './ConfirmModal';
 const igit = require("isomorphic-git");
 require = window.require;
 const { ipcRenderer, remote } = require("electron");
@@ -14,6 +15,7 @@ export class ReposList extends Component {
         super(props);
         this.state = {
             repos: [],
+            nonGitFullpath: ""
         }
         ipcRenderer.on('pop-choose-repository', () => {
             this.onPopDialogRequested();
@@ -25,6 +27,7 @@ export class ReposList extends Component {
         ipcRenderer.sendTo(window.indexWorkerId, "repos-request");
         this.onRemoveClicked = this.onRemoveClicked.bind(this);
         this.onAddClicked = this.onAddClicked.bind(this);
+        this.postDialog = () => {};
     }
 
     onRemoveClicked(repoId) {
@@ -73,7 +76,13 @@ export class ReposList extends Component {
             const shouldWarn = await this.shouldWarnNonGit(folder);
             let shouldAdd = true;
             if (shouldWarn) {
-                shouldAdd = window.confirm("Are you sure you want to add a non-git repository folder?")
+                shouldAdd = await new Promise((resolve) => {
+                    this.postDialog = doAdd => {
+                        resolve(doAdd)
+                        this.setState({ confirmOpen: false }) 
+                    }
+                    this.setState({ confirmOpen: true, nonGitFullpath: folder });
+                })
             }
             if (shouldAdd) {
                 ipcRenderer.sendTo(window.indexWorkerId, "add-repo", newRepo);
@@ -109,6 +118,18 @@ export class ReposList extends Component {
                         </p>
                     </>
                 }
+                <Confirm
+                    open={this.state.confirmOpen}
+                    title="You are about to add a non-git repository"
+                    body={
+                        <>
+                            <p className="gray-shaded" style={{ marginBottom: 0 }}>{`The folder: ${this.state.nonGitFullpath} is not a git repository`}</p>
+                            <p className="gray-shaded" style={{ marginTop: 0 }}>{`Are you sure you want to add this folder?`}</p>
+                        </>
+                    }
+                    onClose={() => this.postDialog(false)}
+                    onCancel={() => this.postDialog(false)}
+                    onAgree={() => this.postDialog(true)} />
                 </div>
             </div>
         )

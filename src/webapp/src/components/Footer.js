@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Close } from '@material-ui/icons';
 import blueGrey from '@material-ui/core/colors/blueGrey';
 import { withStyles } from '@material-ui/core/styles';
-import { Checkbox, FormControlLabel, FormGroup } from "@material-ui/core";
+import { Checkbox, FormGroup } from "@material-ui/core";
 require = window.require;
 const { ipcRenderer } = require('electron');
 
