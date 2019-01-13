@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import blueGrey from '@material-ui/core/colors/blueGrey';
 import { withStyles } from '@material-ui/core/styles';
 import { Checkbox, FormGroup } from "@material-ui/core";
-require = window.require;
-const { ipcRenderer } = require('electron');
+import { ipcRenderer } from 'electron';
 
 const AUTO_LAUNCH_EXPLAINATION = "Run Explorook on machine startup";
 

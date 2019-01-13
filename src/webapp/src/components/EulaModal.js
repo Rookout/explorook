@@ -4,9 +4,7 @@ import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-
-require = window.require;
-const { ipcRenderer } = require('electron');
+import { ipcRenderer } from 'electron';
 
 const styles = {
     disagreeButton: {

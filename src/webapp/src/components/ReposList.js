@@ -3,19 +3,21 @@ import { ReposListItem } from "./RepoListItem"
 import { IconButton, Button } from '@material-ui/core';
 import { AddCircle } from "@material-ui/icons"
 import { Confirm } from './ConfirmModal';
-const igit = require("isomorphic-git");
-require = window.require;
-const { ipcRenderer, remote } = require("electron");
-const path = require("path");
-const fs = require("fs");
+import * as igit from "isomorphic-git";
+import { ipcRenderer, remote } from "electron";
+import path from "path";
+import fs from "fs";
+import * as Store from "electron-store";
 const dialog = remote.dialog;
+
+const store = new Store({ name: "explorook" })
 
 export class ReposList extends Component {
     constructor(props) {
         super(props);
         this.state = {
             repos: [],
-            nonGitFullpath: ""
+            nonGitFullpath: "",
         }
         ipcRenderer.on('pop-choose-repository', () => {
             this.onPopDialogRequested();
@@ -73,7 +75,7 @@ export class ReposList extends Component {
             const folder = folders[i];
             const repoName = path.basename(folder);
             const newRepo = { repoName, fullpath: folder };
-            const shouldWarn = await this.shouldWarnNonGit(folder);
+            const shouldWarn = !store.get("non-git-dialog-never-ask-again", false) && await this.shouldWarnNonGit(folder);
             let shouldAdd = true;
             if (shouldWarn) {
                 shouldAdd = await new Promise((resolve) => {

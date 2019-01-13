@@ -7,8 +7,7 @@ import Footer from './components/Footer'
 import { Token } from './components/Token'
 import { ReposList } from './components/ReposList'
 import EulaModal from './components/EulaModal'
-require = window.require;
-const { ipcRenderer } = require('electron');
+import { ipcRenderer } from 'electron';
 
 class App extends Component {
   constructor(props) {
