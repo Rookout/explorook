@@ -1,5 +1,5 @@
-import { init as sentryInit, captureException } from '@sentry/electron';
-import { app, systemPreferences, BrowserWindow, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, Tray, clipboard } from "electron";
+import { captureException, init as sentryInit } from "@sentry/electron";
+import { app, BrowserWindow, clipboard, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, systemPreferences, Tray } from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
@@ -62,7 +62,7 @@ async function linuxAutoLaunchPatch() {
 }
 
 async function firstTimeAutoLaunch() {
-    if (!firstTimeLaunch) return;
+    if (!firstTimeLaunch) { return; }
     await enableAutoLaunch();
 }
 
@@ -84,7 +84,7 @@ function registerIpc() {
     // we need to reference the parent executable which is the Appimage file.
     // The name of the executable is passes as this environment variable
     if (process.env.APPIMAGE) {
-        alConfig = Object.assign(alConfig, { path: process.env.APPIMAGE })
+        alConfig = Object.assign(alConfig, { path: process.env.APPIMAGE });
     }
     al = new AutoLaunch(alConfig);
     linuxAutoLaunchPatch();
@@ -134,10 +134,10 @@ function main() {
 
     // store helps us store data on local disk
     store = new Store({ name: "explorook" });
-    sentryEnabled = store.get('sentry-enabled', true);
+    sentryEnabled = store.get("sentry-enabled", true);
     if (sentryEnabled && !process.env.development) {
         sentryInit({
-            dsn: 'https://e860d220250640e581535a5cec2118d0@sentry.io/1260942'
+            dsn: "https://e860d220250640e581535a5cec2118d0@sentry.io/1260942"
         });
     }
     // access token used to access this app's GraphQL api
@@ -162,7 +162,7 @@ function main() {
             clearInterval(updateInterval);
         }
         displayNotification(`Update available (${info.version})`, "a new version of Explorook is available and will be installed on next exit");
-    })
+    });
     autoUpdater.checkForUpdates();
     updateInterval = setInterval(autoUpdater.checkForUpdates, TEN_MINUTES);
 }
@@ -177,16 +177,16 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
     }
     if (!process.platform.match("win32")) {
         const notif = new Notification({
-            title: title,
+            title,
             silent: true,
-            body: body,
+            body,
             icon: process.platform.match("darwin") ? undefined : APP_ICON,
         });
         notif.on("click", onClick);
         notif.show();
     } else if (tray != null) {
         tray.displayBalloon({
-            title: title,
+            title,
             content: body,
             icon: ROOKOUT_LOGO,
         });
@@ -276,14 +276,14 @@ function openTray() {
     tray.setToolTip("Rookout");
     tray.setContextMenu(contextMenu);
     if (process.platform.match("darwin")) {
-        tray.on('right-click', (e) => tray.popUpContextMenu())
+        tray.on("right-click", (e) => tray.popUpContextMenu());
     }
 }
 
 // trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
-process.on('uncaughtException', (err: Error) => {
+process.on("uncaughtException", (err: Error) => {
     captureException(err);
-})
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -294,7 +294,7 @@ app.on("ready", () => {
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
-    displayWindowHiddenNotification()
+    displayWindowHiddenNotification();
 });
 
 app.on("activate", () => {
@@ -303,7 +303,7 @@ app.on("activate", () => {
     }
 });
 
-app.on('quit', async () => {
+app.on("quit", async () => {
     // on linux: AppImage filename changes after every update so we need to make sure we disable
     // autolaunch before update is installed and re-enable it on the next startup
     // so this is where we disable it

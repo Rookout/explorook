@@ -8,6 +8,7 @@
     "@material-ui/icons": "^1.1.0",
     "electron": "^2.0.2",
     "electron-store": "^2.0.0",
+    "isomorphic-git": "^0.51.4",
     "raven-js": "^3.26.4",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",

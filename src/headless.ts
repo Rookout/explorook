@@ -1,4 +1,4 @@
-import { repStore } from "./rep-store";
+import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
 // headless mode lets you run Explorook server without GUI
@@ -12,7 +12,7 @@ if (args.help || !args.repo) {
     process.exit(0);
 }
 
-let repos: Array<any> = [];
+let repos: any[] = [];
 
 try { // Allow for multiple repos as an array of objects
     repos = JSON.parse(args.repo);
@@ -27,9 +27,6 @@ repos.forEach((repo: any) => {
         fullpath: repo.path,
         repoName: repo.name,
         id: undefined,
-    }).then(() => {
-    }).catch(err => {
-        throw err;
     });
 });
 

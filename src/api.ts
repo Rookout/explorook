@@ -1,9 +1,9 @@
 import fs = require("fs");
 import _ = require("lodash");
 import { posix } from "path";
-import { repStore, Repo } from "./rep-store";
 import { Repository } from "./common/repository";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
+import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
@@ -18,7 +18,7 @@ interface FileInfo {
 export const resolvers = {
   Repository: {
     lastCommitDescription: async (parent: Repository) => {
-      const repo = repStore.getRepositories().find(r => r.id === parent.id)
+      const repo = repStore.getRepositories().find((r) => r.id === parent.id);
       return await getLastCommitDescription(repo);
     },
   },
@@ -30,7 +30,7 @@ export const resolvers = {
   Query: {
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
-      return repo.toModel()
+      return repo.toModel();
     },
     listRepos(parent: any, args: any): Repository[] {
       return repStore.getRepositories().map((r) => r.toModel());
@@ -52,7 +52,7 @@ export const resolvers = {
             let fPath = join(path, f);
             if (fPath.startsWith("/")) {
               // if path starts with "/" the path looks absolute but it's relative so we remove it
-              fPath = fPath.slice(1); 
+              fPath = fPath.slice(1);
             }
             res.push({
               isFolder: !fstats.isFile(),
@@ -81,9 +81,9 @@ export const resolvers = {
     },
     listTree(parent: any, args: { repo: Repository }): string[] {
       const { repo } = args;
-      return repo.listTree()
+      return repo.listTree();
     },
-    refreshIndex(parent: any, args: { repo: Repository }): Boolean {
+    refreshIndex(parent: any, args: { repo: Repository }): boolean {
       args.repo.reIndex();
       return true;
     }
