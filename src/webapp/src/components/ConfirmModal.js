@@ -46,7 +46,7 @@ class ConfirmModal extends React.Component {
                         })
                     }} />}
                     label="Never ask again" />
-                    <Button onClick={onCancel} style={{ color: "white" }}>
+                    <Button onClick={onCancel} style={{ color: "#B6C8D4" }}>
                     Cancel
                     </Button>
                     <Button onClick={onAgree} style={{ color: "#955FF8" }} autoFocus>
