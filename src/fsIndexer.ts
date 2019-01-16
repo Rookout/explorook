@@ -4,7 +4,6 @@ import slash = require("slash");
 import { captureMessage } from 'raven-js';
 const walk = require("walk");
 
-// tslint:disable-next-line:max-line-length
 const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
     /site\-packages/, /node_modules/, /bower_components/, /\.venv/, /\.idea/,
     /\.project/, /\.cache/, /\.gradle/, /\.idea/, /\.kube/, /\.vscode/, /\.history/, /\.eggs/];

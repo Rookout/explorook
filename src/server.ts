@@ -34,10 +34,8 @@ export const start = (options: StartOptions) => {
   server.express.post('/authorize/:env', authenticateController(settings.accessToken));
   server.express.use(authorizationMiddleware(settings.accessToken));
   try {
-    // tslint:disable-next-line:no-console
     server.start({ port: settings.port }, (options: { port: number }) => console.log(`Server is running on http://localhost:${options.port}`));
   } catch (error) {
-    // tslint:disable-next-line:no-console
     console.log("couldn't start server", error);
   }
 };

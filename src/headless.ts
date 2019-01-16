@@ -33,12 +33,10 @@ repos.forEach((repo: any) => {
 });
 
 process.on("uncaughtException", (error) => {
-    // tslint:disable-next-line:no-console
     console.error("unhandled exception thrown", error);
 });
 
 process.on("unhandledRejection", (error) => {
-    // tslint:disable-next-line:no-console
     console.error("unhandled rejection thrown", error);
 });
 
