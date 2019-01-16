@@ -45,7 +45,6 @@ const isDirTraversal = (dirPath: string, fullpath: string): boolean => {
 };
 
 // Makes sure target path of the request doesn't go backwards (using "../.." syntax or whatever)
-// tslint:disable-next-line:max-line-length
 export const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: { repo: Repository, path: string }, context, info) => {
   const { repo, path } = args;
   if (!path || !repo) return resolve(parent, args, context, info);

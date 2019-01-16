@@ -11,10 +11,13 @@
     "no-bitwise": true,
     "no-conditional-assignment": true,
     "no-consecutive-blank-lines": false,
+    "no-console": false,
     "object-literal-sort-keys": false,
     "interface-name": false,
     "trailing-comma": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "curly": false,
+    "arrow-parens": false
   },
   "jsRules": {
     "max-line-length": {

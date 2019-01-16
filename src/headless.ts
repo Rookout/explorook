@@ -12,7 +12,7 @@ if (args.help || !args.repo) {
     process.exit(0);
 }
 
-let repos: Array<any> = [];
+let repos = [];
 
 try { // Allow for multiple repos as an array of objects
     repos = JSON.parse(args.repo);
@@ -27,10 +27,17 @@ repos.forEach((repo: any) => {
         fullpath: repo.path,
         repoName: repo.name,
         id: undefined,
-    }).then(() => {
-    }).catch(err => {
+    }).catch((err) => {
         throw err;
     });
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("unhandled exception thrown", error);
+});
+
+process.on("unhandledRejection", (error) => {
+    console.error("unhandled rejection thrown", error);
 });
 
 graphQlServer.start({ port: args.p || args.port || "", accessToken: args.token || "" });
