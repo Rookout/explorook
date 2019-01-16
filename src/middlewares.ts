@@ -7,7 +7,7 @@ import { GraphQLError } from 'graphql';
 import { Repository } from "./common/repository";
 import { RequestHandler } from "express";
 import { shell } from "electron";
-import chromeOpn = require('chrome-opn');
+import opn = require('opn');
 import _ = require('lodash');
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
@@ -64,6 +64,11 @@ export const authenticateController: AuthenticateController = token => {
   envDict.set('staging', 'https://staging.rookout.com');
   envDict.set('production', 'https://app.rookout.com');
   const supportedEnvs = Array.from(envDict.keys());
+  // platform name to chrome app name
+  const chromeDict = new Map<string, string>();
+  chromeDict.set('darwin', 'google chrome');
+  chromeDict.set('linux', 'google-chrome');
+  chromeDict.set('win32', 'chrome');
 
   return async (req, res) => {
     const env = req.params.env as string;
@@ -74,7 +79,9 @@ export const authenticateController: AuthenticateController = token => {
     const domain: string = envDict.get(env);
     const targetUrl = `${domain}/authorize/explorook#token=${token}`;
     try {
-      await chromeOpn(targetUrl)
+      // try opening specifically chrome - if it fails - open the default browser
+      const app = chromeDict.has(process.platform) ? chromeDict.get(process.platform) : 'google-chrome';
+      await opn(targetUrl, { app })
     } catch (err) {
       shell.openExternal(targetUrl);
     }
