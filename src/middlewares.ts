@@ -9,6 +9,10 @@ import { posix } from "path";
 import * as Raven from "raven-js";
 import { Repository } from "./common/repository";
 import { repStore } from "./repoStore";
+import { RequestHandler } from "express";
+import { shell } from "electron";
+import chromeOpn = require('chrome-opn');
+import _ = require('lodash');
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -45,7 +49,6 @@ const isDirTraversal = (dirPath: string, fullpath: string): boolean => {
 };
 
 // Makes sure target path of the request doesn't go backwards (using "../.." syntax or whatever)
-// tslint:disable-next-line:max-line-length
 export const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: { repo: Repository, path: string }, context, info) => {
   const { repo, path } = args;
   if (!path || !repo) { return resolve(parent, args, context, info); }
@@ -64,11 +67,6 @@ export const authenticateController: AuthenticateController = (token) => {
   envDict.set("staging", "https://staging.rookout.com");
   envDict.set("production", "https://app.rookout.com");
   const supportedEnvs = Array.from(envDict.keys());
-  // platform name to chrome app name
-  const chromeDict = new Map<string, string>();
-  chromeDict.set("darwin", "google chrome");
-  chromeDict.set("linux", "google-chrome");
-  chromeDict.set("win32", "chrome");
 
   return async (req, res) => {
     const env = req.params.env as string;
@@ -79,9 +77,7 @@ export const authenticateController: AuthenticateController = (token) => {
     const domain: string = envDict.get(env);
     const targetUrl = `${domain}/authorize/explorook#token=${token}`;
     try {
-      // try opening specifically chrome - if it fails - open the default browser
-      const app = chromeDict.has(process.platform) ? chromeDict.get(process.platform) : "google-chrome";
-      await opn(targetUrl, { app });
+      await chromeOpn(targetUrl)
     } catch (err) {
       shell.openExternal(targetUrl);
     }

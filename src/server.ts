@@ -37,7 +37,6 @@ export const start = (options: StartOptions) => {
     // tslint:disable-next-line:no-console
     server.start({ port: settings.port }, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
   } catch (error) {
-    // tslint:disable-next-line:no-console
     console.log("couldn't start server", error);
   }
 };
