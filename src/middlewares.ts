@@ -1,18 +1,14 @@
 // configure Sentry
+import chromeOpn = require("chrome-opn");
 import { shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
-import opn = require("opn");
 import { posix } from "path";
 import * as Raven from "raven-js";
 import { Repository } from "./common/repository";
 import { repStore } from "./repoStore";
-import { RequestHandler } from "express";
-import { shell } from "electron";
-import chromeOpn = require('chrome-opn');
-import _ = require('lodash');
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
