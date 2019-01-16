@@ -12,7 +12,7 @@ if (args.help || !args.repo) {
     process.exit(0);
 }
 
-let repos: Array<any> = [];
+let repos = [];
 
 try { // Allow for multiple repos as an array of objects
     repos = JSON.parse(args.repo);
