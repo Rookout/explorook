@@ -27,10 +27,19 @@ repos.forEach((repo: any) => {
         fullpath: repo.path,
         repoName: repo.name,
         id: undefined,
-    }).then(() => {
-    }).catch(err => {
+    }).catch((err) => {
         throw err;
     });
+});
+
+process.on("uncaughtException", (error) => {
+    // tslint:disable-next-line:no-console
+    console.error("unhandled exception thrown", error);
+});
+
+process.on("unhandledRejection", (error) => {
+    // tslint:disable-next-line:no-console
+    console.error("unhandled rejection thrown", error);
 });
 
 graphQlServer.start({ port: args.p || args.port || "", accessToken: args.token || "" });
