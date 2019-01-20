@@ -3,9 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-const Raven = require('raven-js');
-require = window.require;
-const { ipcRenderer } = require('electron');
+import Raven from 'raven-js';
+import { ipcRenderer } from 'electron';
 
 // a request will be emitted from Footer.js
 ipcRenderer.once("sentry-enabled-changed", (event, enabled) => {

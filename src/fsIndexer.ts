@@ -1,7 +1,7 @@
-import path = require("path");
 import _ = require("lodash");
+import path = require("path");
+import { captureMessage } from "raven-js";
 import slash = require("slash");
-import { captureMessage } from 'raven-js';
 const walk = require("walk");
 
 const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
@@ -63,20 +63,20 @@ export class IndexWorker {
         });
     }
 
-    reportLimitReached(): any {
+    public reportLimitReached(): any {
         const stats = new Map<string, number>();
-        this.treeList.forEach(filename => {
+        this.treeList.forEach((filename) => {
             const ext = path.extname(filename);
             stats.set(ext, (stats.get(ext) || 0) + 1);
         });
         let str = "";
         stats.forEach((count, ext) => {
             str += `${ext}: ${count}\n`;
-        })
-        
+        });
+
         captureMessage(`index limit reached. stats:\n${str}`, {
             level: "warning"
-        })
+        });
     }
 
     public deleteIndex() {

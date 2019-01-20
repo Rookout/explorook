@@ -1,16 +1,16 @@
 import Store = require("electron-store");
 import fs = require("fs");
 import git = require("isomorphic-git");
-import parseRepo = require('parse-repo');
 import _ = require("lodash");
+import parseRepo = require("parse-repo");
+import { Repository } from "./common/repository";
 import { IndexWorker } from "./fsIndexer";
-import MemStore from "./mem-store";
-import { Repository } from './common/repository'
 import { getRepoId } from "./git";
+import MemStore from "./mem-store";
 
 interface IStore {
-    get(key: string, defaultValue?: string): string
-    set(key: string, value: string): void
+    get(key: string, defaultValue?: string): string;
+    set(key: string, value: string): void;
 }
 
 export class Repo {
@@ -35,7 +35,7 @@ export class Repo {
         let retry = 0;
         const maxRetries = 10;
         const indexWhenJobStops = () => {
-            retry+=1;
+            retry += 1;
             if (retry === maxRetries) {
                 return;
             }
@@ -45,7 +45,7 @@ export class Repo {
             }
             // didn't get the message yet
             setTimeout(indexWhenJobStops, 150);
-        }
+        };
         // wait for other io callbacks from fsIndexer to run and evaluate new value of indexRunning flag and stop the indexing job
         setImmediate(indexWhenJobStops);
         return this.indexer.index();
@@ -73,6 +73,7 @@ class RepoStore {
         try {
             this.store = new Store({ name: "explorook" });
         } catch (error) { // probably headless mode - defaulting to memory store
+            // tslint:disable-next-line:no-console
             console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
             this.store = new MemStore();
         }

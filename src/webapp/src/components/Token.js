@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { Button } from '@material-ui/core';
 import { VisibilityOff, Visibility, ContentCopy } from '@material-ui/icons'
 import { copyText } from '../utils'
-require = window.require;
-const { ipcRenderer } = require("electron");
+import { ipcRenderer } from "electron";
 
 const hiddenToken = "⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎"
 

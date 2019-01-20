@@ -1,4 +1,4 @@
-import { repStore } from "./rep-store";
+import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
 // headless mode lets you run Explorook server without GUI
