@@ -5,6 +5,8 @@ import parseRepo = require("parse-repo");
 import path = require("path");
 import { captureMessage } from "raven-js";
 import { Repository } from "./common/repository";
+// for normalization of windows paths to linux style paths
+import slash = require("slash");
 const uuidv4 = require("uuid/v4");
 
 export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
@@ -16,7 +18,7 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
         const remote = await igit.config({fs, dir: gitRoot, path: "remote.origin.url"});
         const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
         const repoInfo = parseRepo(remote);
-        let repoId = `${repoInfo.repository}/${gitRootRelPath}`;
+        let repoId = `${repoInfo.repository}/${slash(gitRootRelPath)}`;
         if (_.includes(idList, repoId)) {
             const branch = await igit.currentBranch({ fs, dir: gitRoot, fullname: false });
             repoId = `${repoId}:${branch}`;
