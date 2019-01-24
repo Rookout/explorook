@@ -88,7 +88,7 @@ export const authenticateController: AuthenticateController = (token) => {
     const domain: string = envDict.get(env);
     const targetUrl = `${domain}/authorize/explorook#token=${token}`;
     try {
-      await chromeOpn(targetUrl)
+      await chromeOpn(targetUrl);
     } catch (err) {
       shell.openExternal(targetUrl);
     }
