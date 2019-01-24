@@ -1,16 +1,29 @@
-// configure Sentry
 import chromeOpn = require("chrome-opn");
-import { shell } from "electron";
+import { IpcMessageEvent, ipcRenderer, shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
-import * as Raven from "raven-js";
 import { Repository } from "./common/repository";
 import { repStore } from "./repoStore";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
+
+import * as BugsnagCore from "@bugsnag/core";
+let exceptionManagerInstance: BugsnagCore.Client;
+let exceptionManagerEnabled: boolean;
+
+ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
+  if (enabled) {
+    console.log("enabling bugsnag on main window");
+    exceptionManagerEnabled = true;
+    exceptionManagerInstance = require("./exceptionManager");
+  } else {
+    console.log("bugsnag disabled on main window");
+    exceptionManagerEnabled = false;
+  }
+});
 
 
 export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, context, info) => {
@@ -19,9 +32,11 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
   } catch (error) {
     // ignore repository not found errors
     if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
-      Raven.captureException(error, {
-        extra: { root, args, context, info }
-      });
+       if (exceptionManagerEnabled && exceptionManagerInstance) {
+         exceptionManagerInstance.notify(error, {
+           metaData : { root, args, context, info }
+         });
+       }
     }
     throw error;
   }

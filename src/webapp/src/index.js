@@ -3,18 +3,21 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-import Raven from 'raven-js';
+import bugsnag from '@bugsnag/js';
 import { ipcRenderer } from 'electron';
 
 // a request will be emitted from Footer.js
-ipcRenderer.once("sentry-enabled-changed", (event, enabled) => {
+ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
     if (enabled) {
-        console.log('enabling sentry on main window');
-        Raven
-            .config('https://e860d220250640e581535a5cec2118d0@sentry.io/1260942')
-            .install();
+        console.log('enabling bugsnag on main window');
+        bugsnag({
+            apiKey: '6e673fda179162f48a2c6b5d159552d2',
+            appVersion: ipcRenderer.sendSync("version-request"),
+            appType: 'explorook-react',
+            releaseStage: ipcRenderer.sendSync("is-dev") ? 'development' : 'production'
+        });
     } else {
-        console.log('sentry disabled on main window');
+        console.log('bugsnag disabled on main window');
     }
 });
 

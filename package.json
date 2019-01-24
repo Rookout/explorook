@@ -64,6 +64,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@bugsnag/core": "^6.0.0-alpha.0",
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
     "@playlyfe/gql": "^2.6.0",
@@ -81,7 +82,7 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "@sentry/electron": "^0.8.1",
+    "@bugsnag/js": "^5.2.0",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
     "chrome-opn": "^1.0.1",
@@ -93,7 +94,6 @@
     "isomorphic-git": "^0.37.3",
     "lodash": "^4.17.10",
     "parse-repo": "^1.0.4",
-    "raven-js": "^3.26.4",
     "slash": "^2.0.0",
     "uuid": "^3.2.1",
     "walk": "^2.3.13"
