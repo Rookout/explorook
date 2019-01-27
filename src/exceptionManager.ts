@@ -1,6 +1,6 @@
 import * as BugsnagCore from "@bugsnag/core";
 import bugsnag from "@bugsnag/js";
-import {app, IpcMessageEvent, ipcRenderer} from "electron";
+import { app, IpcMessageEvent, ipcRenderer } from "electron";
 
 let exceptionManagerInstance: BugsnagCore.Client | null = null;
 

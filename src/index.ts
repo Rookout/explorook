@@ -151,7 +151,7 @@ function main() {
     // store helps us store data on local disk
     store = new Store({ name: "explorook" });
     exceptionManagerEnabled = store.get("exception-manager-enabled", true);
-    if (exceptionManagerEnabled && !process.env.development) {
+    if (exceptionManagerEnabled) {
         exceptionManagerInstance = require("./exceptionManager");
     }
     // access token used to access this app's GraphQL api

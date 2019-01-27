@@ -1,20 +1,11 @@
-import { IpcMessageEvent, ipcRenderer } from "electron";
 import path = require("path");
 import slash = require("slash");
 const walk = require("walk");
 
 import * as BugsnagCore from "@bugsnag/core";
-let exceptionManagerInstance: BugsnagCore.Client;
-let exceptionManagerEnabled: boolean;
+const exceptionManagerInstance: BugsnagCore.Client | null = require("./exceptionManager");
 
-ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
-    if (enabled) {
-        exceptionManagerEnabled = true;
-        exceptionManagerInstance = require("./exceptionManager");
-    } else {
-        exceptionManagerEnabled = false;
-    }
-});
+
 
 const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
     /site\-packages/, /node_modules/, /bower_components/, /\.venv/, /\.idea/,
@@ -86,7 +77,7 @@ export class IndexWorker {
             str += `${ext}: ${count}\n`;
         });
 
-        if (exceptionManagerEnabled && exceptionManagerInstance) {
+        if (exceptionManagerInstance) {
             exceptionManagerInstance.notify(`index limit reached. stats:\n${str}`, {
                 metaData : { level: "warning" }
             });
