@@ -1,5 +1,5 @@
 import chromeOpn = require("chrome-opn");
-import { IpcMessageEvent, ipcRenderer, shell } from "electron";
+import { shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
@@ -11,19 +11,8 @@ import { repStore } from "./repoStore";
 const join = posix.join;
 
 import * as BugsnagCore from "@bugsnag/core";
-let exceptionManagerInstance: BugsnagCore.Client;
-let exceptionManagerEnabled: boolean;
+const exceptionManagerInstance: BugsnagCore.Client | null = require("./exceptionManager");
 
-ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
-  if (enabled) {
-    console.log("enabling bugsnag on main window");
-    exceptionManagerEnabled = true;
-    exceptionManagerInstance = require("./exceptionManager");
-  } else {
-    console.log("bugsnag disabled on main window");
-    exceptionManagerEnabled = false;
-  }
-});
 
 
 export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, context, info) => {
@@ -32,7 +21,7 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
   } catch (error) {
     // ignore repository not found errors
     if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
-       if (exceptionManagerEnabled && exceptionManagerInstance) {
+       if (exceptionManagerInstance) {
          exceptionManagerInstance.notify(error, {
            metaData : { root, args, context, info }
          });

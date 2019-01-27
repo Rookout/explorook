@@ -44,7 +44,7 @@ let token: string;
 let store: Store<{}>;
 let willUpdateOnClose: boolean = false;
 let exceptionManagerEnabled: boolean;
-let exceptionManagerInstance: BugsnagCore.Client;
+let exceptionManagerInstance: BugsnagCore.Client | null;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -86,7 +86,7 @@ async function enableAutoLaunch() {
             await al.enable();
         }
     } catch (error) {
-        if (exceptionManagerEnabled && exceptionManagerInstance) {
+        if (exceptionManagerInstance) {
             exceptionManagerInstance.notify(error);
         }
     }
@@ -296,7 +296,7 @@ function openTray() {
 
 // trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
 process.on("uncaughtException", (err: Error) => {
-    if (exceptionManagerEnabled && exceptionManagerInstance) {
+    if (exceptionManagerInstance) {
         exceptionManagerInstance.notify(err);
     }
 });
@@ -328,7 +328,7 @@ app.on("quit", async () => {
             await al.disable();
         } catch (error) {
             // bummer
-            if (exceptionManagerEnabled && exceptionManagerInstance) {
+            if (exceptionManagerInstance) {
                 exceptionManagerInstance.notify(error);
             }
         }
