@@ -13,16 +13,10 @@ const join = posix.join;
 
 import * as BugsnagCore from "@bugsnag/core";
 let exceptionManagerInstance: BugsnagCore.Client;
-let exceptionManagerEnabled: boolean;
 
 ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
   if (enabled) {
-    console.log("enabling bugsnag on main window");
-    exceptionManagerEnabled = true;
     exceptionManagerInstance = initExceptionManager();
-  } else {
-    console.log("bugsnag disabled on main window");
-    exceptionManagerEnabled = false;
   }
 });
 
@@ -33,7 +27,7 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
   } catch (error) {
     // ignore repository not found errors
     if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
-       if (exceptionManagerEnabled && exceptionManagerInstance) {
+       if (exceptionManagerInstance && exceptionManagerInstance) {
          exceptionManagerInstance.notify(error, {
            metaData : { root, args, context, info }
          });

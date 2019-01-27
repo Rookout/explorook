@@ -6,14 +6,10 @@ const walk = require("walk");
 
 import * as BugsnagCore from "@bugsnag/core";
 let exceptionManagerInstance: BugsnagCore.Client;
-let exceptionManagerEnabled: boolean;
 
 ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
-        exceptionManagerEnabled = true;
         exceptionManagerInstance = initExceptionManager();
-    } else {
-        exceptionManagerEnabled = false;
     }
 });
 
@@ -87,7 +83,7 @@ export class IndexWorker {
             str += `${ext}: ${count}\n`;
         });
 
-        if (exceptionManagerEnabled && exceptionManagerInstance) {
+        if (exceptionManagerInstance && exceptionManagerInstance) {
             exceptionManagerInstance.notify(`index limit reached. stats:\n${str}`, {
                 metaData : { level: "warning" }
             });

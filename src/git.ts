@@ -12,14 +12,10 @@ const uuidv4 = require("uuid/v4");
 
 import * as BugsnagCore from "@bugsnag/core";
 let exceptionManagerInstance: BugsnagCore.Client;
-let exceptionManagerEnabled: boolean;
 
 ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
-        exceptionManagerEnabled = true;
         exceptionManagerInstance = initExceptionManager();
-    } else {
-        exceptionManagerEnabled = false;
     }
 });
 
@@ -55,7 +51,7 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
         if (!gitRoot) { return null; }
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
-        if (exceptionManagerEnabled && exceptionManagerInstance) {
+        if (exceptionManagerInstance && exceptionManagerInstance) {
             exceptionManagerInstance.notify(error, {
                 metaData : { repo, error }
             });
