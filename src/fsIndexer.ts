@@ -1,6 +1,7 @@
 import { IpcMessageEvent, ipcRenderer } from "electron";
 import path = require("path");
 import slash = require("slash");
+import { initExceptionManager } from "./exceptionManager";
 const walk = require("walk");
 
 import * as BugsnagCore from "@bugsnag/core";
@@ -10,7 +11,7 @@ let exceptionManagerEnabled: boolean;
 ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
         exceptionManagerEnabled = true;
-        exceptionManagerInstance = require("./exceptionManager");
+        exceptionManagerInstance = initExceptionManager();
     } else {
         exceptionManagerEnabled = false;
     }

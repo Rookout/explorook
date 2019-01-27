@@ -6,6 +6,7 @@ import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
+import { initExceptionManager } from "./exceptionManager";
 import { repStore } from "./repoStore";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
@@ -18,7 +19,7 @@ ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, e
   if (enabled) {
     console.log("enabling bugsnag on main window");
     exceptionManagerEnabled = true;
-    exceptionManagerInstance = require("./exceptionManager");
+    exceptionManagerInstance = initExceptionManager();
   } else {
     console.log("bugsnag disabled on main window");
     exceptionManagerEnabled = false;

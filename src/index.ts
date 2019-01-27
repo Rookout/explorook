@@ -19,6 +19,7 @@ const uuidv4 = require("uuid/v4");
 import * as BugsnagCore from "@bugsnag/core";
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
+import { initExceptionManager } from "./exceptionManager";
 
 autoUpdater.logger = log;
 log.transports.console.level = "warn";
@@ -152,7 +153,7 @@ function main() {
     store = new Store({ name: "explorook" });
     exceptionManagerEnabled = store.get("exception-manager-enabled", true);
     if (exceptionManagerEnabled && !process.env.development) {
-        exceptionManagerInstance = require("./exceptionManager");
+        exceptionManagerInstance = initExceptionManager();
     }
     // access token used to access this app's GraphQL api
     token = store.get("token", null);

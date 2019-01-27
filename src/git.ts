@@ -7,6 +7,7 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash from "slash";
 import { Repository } from "./common/repository";
+import { initExceptionManager } from "./exceptionManager";
 const uuidv4 = require("uuid/v4");
 
 import * as BugsnagCore from "@bugsnag/core";
@@ -16,7 +17,7 @@ let exceptionManagerEnabled: boolean;
 ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
         exceptionManagerEnabled = true;
-        exceptionManagerInstance = require("./exceptionManager");
+        exceptionManagerInstance = initExceptionManager();
     } else {
         exceptionManagerEnabled = false;
     }
