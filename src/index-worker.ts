@@ -1,4 +1,4 @@
-import { IpcMessageEvent, ipcRenderer } from "electron";
+import {app, IpcMessageEvent, ipcRenderer} from "electron";
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { repStore } from "./repoStore";
@@ -6,12 +6,22 @@ import * as graphQlServer from "./server";
 
 // configure Bugsnag
 import * as BugsnagCore from "@bugsnag/core";
-// tslint:disable-next-line:no-unused-variable
-const exceptionManagerInstance: BugsnagCore.Client | null = require("./exceptionManager");
+let exceptionManagerInstance: BugsnagCore.Client;
+
 let mainWindowId = -1;
 
 const getRepos = () => repStore.getRepositories().map((r) => r.toModel());
 
+ipcRenderer.once("exception-manager-enabled-changed", (e: IpcMessageEvent, enabled: boolean) => {
+    if (enabled) {
+        // tslint:disable-next-line:no-console
+        console.log("enabling bugsnag on index worker");
+        exceptionManagerInstance = require("./exceptionManager.ts");
+    } else {
+        // tslint:disable-next-line:no-console
+        console.log("bugsnag disabled on index worker");
+    }
+});
 
 ipcRenderer.on("main-window-id", (e: IpcMessageEvent, token: string, id: number) => {
     mainWindowId = id;
