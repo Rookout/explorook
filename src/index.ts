@@ -19,7 +19,7 @@ const uuidv4 = require("uuid/v4");
 import * as BugsnagCore from "@bugsnag/core";
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
-import { initExceptionManager } from "./exceptionManager";
+import { initExceptionManager, notify } from "./exceptionManager";
 
 autoUpdater.logger = log;
 log.transports.console.level = "warn";
@@ -45,7 +45,6 @@ let token: string;
 let store: Store<{}>;
 let willUpdateOnClose: boolean = false;
 let exceptionManagerEnabled: boolean;
-let exceptionManagerInstance: BugsnagCore.Client;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -87,9 +86,7 @@ async function enableAutoLaunch() {
             await al.enable();
         }
     } catch (error) {
-        if (exceptionManagerEnabled && exceptionManagerInstance) {
-            exceptionManagerInstance.notify(error);
-        }
+        notify(error);
     }
 }
 
@@ -151,7 +148,7 @@ function main() {
     store = new Store({ name: "explorook" });
     exceptionManagerEnabled = store.get("sentry-enabled", true);
     if (exceptionManagerEnabled && !process.env.development) {
-        exceptionManagerInstance = initExceptionManager();
+        initExceptionManager();
     }
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
@@ -295,9 +292,7 @@ function openTray() {
 
 // trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
 process.on("uncaughtException", (err: Error) => {
-    if (exceptionManagerEnabled && exceptionManagerInstance) {
-        exceptionManagerInstance.notify(err);
-    }
+    notify(err);
 });
 
 // This method will be called when Electron has finished
@@ -327,9 +322,7 @@ app.on("quit", async () => {
             await al.disable();
         } catch (error) {
             // bummer
-            if (exceptionManagerEnabled && exceptionManagerInstance) {
-                exceptionManagerInstance.notify(error);
-            }
+            notify(error);
         }
     }
 });

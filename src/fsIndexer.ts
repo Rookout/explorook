@@ -1,4 +1,3 @@
-import { IpcMessageEvent, ipcRenderer } from "electron";
 import path = require("path");
 import slash = require("slash");
 import { notify } from "./exceptionManager";

@@ -42,7 +42,8 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
         notify(error, {
-            metaData : { repo, error }
+            metaData : { message: "failed to read repository info", repo, error },
+            severity: "error"
         });
         return null;
     }
