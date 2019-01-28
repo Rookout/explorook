@@ -20,14 +20,14 @@ jobs:
             brew cleanup
             # wine is required to sign windows executables
             (brew install wine || brew install wine)
-            # install electron main window dependencies 
-            npm install
-            # build code (mostly compile typescript)
-            npm run build
-            # go to react windows folder
-            cd src/webapp
             # install yarn
             npm install -g yarn
+            # install electron main window dependencies 
+            yarn
+            # build code (mostly compile typescript)
+            yarn run build
+            # go to react windows folder
+            cd src/webapp
             # install dependencies
             yarn
             # CircleCI sets CI=true which makes react return an error when there are warnings in the code
@@ -41,7 +41,7 @@ jobs:
             echo $WIN_CERT_BASE64 | base64 --decode > rookout.p12
             export WIN_CSC_LINK=rookout.p12
             # package code for every distribution (mac,win,linux) and publish as github release
-            npm run mac-publish
+            yarn run mac-publish
       - save_cache:
           key: homebrew-cache-{{ checksum ".circleci/config.yml" }}
           paths:
