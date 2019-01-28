@@ -6,20 +6,10 @@ import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
-import { initExceptionManager } from "./exceptionManager";
+import { notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
-
-import * as BugsnagCore from "@bugsnag/core";
-let exceptionManagerInstance: BugsnagCore.Client;
-
-ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
-  if (enabled) {
-    exceptionManagerInstance = initExceptionManager();
-  }
-});
-
 
 export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, context, info) => {
   try {
@@ -27,11 +17,9 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
   } catch (error) {
     // ignore repository not found errors
     if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
-       if (exceptionManagerInstance && exceptionManagerInstance) {
-         exceptionManagerInstance.notify(error, {
-           metaData : { root, args, context, info }
-         });
-       }
+        notify(error, {
+          metaData : { root, args, context, info }
+        });
     }
     throw error;
   }
