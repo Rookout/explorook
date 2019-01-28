@@ -1,5 +1,5 @@
 import chromeOpn = require("chrome-opn");
-import { IpcMessageEvent, ipcRenderer, shell } from "electron";
+import { shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
