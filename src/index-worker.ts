@@ -1,4 +1,4 @@
-import {app, IpcMessageEvent, ipcRenderer} from "electron";
+import { IpcMessageEvent, ipcRenderer, remote} from "electron";
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager } from "./exceptionManager";
@@ -11,7 +11,7 @@ const getRepos = () => repStore.getRepositories().map((r) => r.toModel());
 
 ipcRenderer.once("exception-manager-enabled-changed", (e: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
-        initExceptionManager();
+        initExceptionManager(remote.process.env.development ? "development" : "production", remote.app.getVersion());
     }
 });
 

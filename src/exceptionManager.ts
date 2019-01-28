@@ -1,16 +1,15 @@
 import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
-import { app } from "electron";
 const bugsnag = require("@bugsnag/js");
 
 let exceptionManagerInstance: Client;
 
-export const initExceptionManager = () => {
+export const initExceptionManager = (releaseStage: string, appVersion: string) => {
     if (!exceptionManagerInstance) {
         exceptionManagerInstance = bugsnag({
             apiKey: "6e673fda179162f48a2c6b5d159552d2",
-            appVersion: app.getVersion(),
             appType: "explorook-electron",
-            releaseStage: process.env.development ? "development" : "production"
+            appVersion,
+            releaseStage
         }, null);
     }
     return exceptionManagerInstance;

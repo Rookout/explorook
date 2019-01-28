@@ -148,7 +148,7 @@ function main() {
     store = new Store({ name: "explorook" });
     exceptionManagerEnabled = store.get("sentry-enabled", true);
     if (exceptionManagerEnabled && !process.env.development) {
-        initExceptionManager();
+        initExceptionManager("production", app.getVersion());
     }
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
