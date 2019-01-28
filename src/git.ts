@@ -1,4 +1,3 @@
-import { IpcMessageEvent, ipcRenderer } from "electron";
 import fs = require("fs");
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
@@ -7,17 +6,8 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash from "slash";
 import { Repository } from "./common/repository";
-import { initExceptionManager } from "./exceptionManager";
+import { notify } from "./exceptionManager";
 const uuidv4 = require("uuid/v4");
-
-import * as BugsnagCore from "@bugsnag/core";
-let exceptionManagerInstance: BugsnagCore.Client;
-
-ipcRenderer.once("exception-manager-enabled-changed", (event: IpcMessageEvent, enabled: boolean) => {
-    if (enabled) {
-        exceptionManagerInstance = initExceptionManager();
-    }
-});
 
 export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
     // trying to create a unique id with the git remote path and relative filesystem path
@@ -51,11 +41,9 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
         if (!gitRoot) { return null; }
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
-        if (exceptionManagerInstance && exceptionManagerInstance) {
-            exceptionManagerInstance.notify(error, {
-                metaData : { repo, error }
-            });
-        }
+        notify(error, {
+            metaData : { repo, error }
+        });
         return null;
     }
 }

@@ -107,8 +107,6 @@ function registerIpc() {
     firstTimeAutoLaunch();
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
-    ipcMain.on("is-dev", (e: IpcMessageEvent) => e.returnValue = Boolean(process.env.development));
-    ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
@@ -120,7 +118,7 @@ function registerIpc() {
         e.sender.send("exception-manager-enabled-changed", exceptionManagerEnabled);
     });
     ipcMain.on("exception-manager-enabled-set", (e: IpcMessageEvent, enable: boolean) => {
-        store.set("exception-manager-enabled", enable);
+        store.set("sentry-enabled", enable);
         e.sender.send("exception-manager-enabled-changed", enable);
     });
     ipcMain.on("has-signed-eula", (e: IpcMessageEvent) => {
@@ -151,7 +149,7 @@ function main() {
 
     // store helps us store data on local disk
     store = new Store({ name: "explorook" });
-    exceptionManagerEnabled = store.get("exception-manager-enabled", true);
+    exceptionManagerEnabled = store.get("sentry-enabled", true);
     if (exceptionManagerEnabled && !process.env.development) {
         exceptionManagerInstance = initExceptionManager();
     }
