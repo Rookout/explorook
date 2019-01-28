@@ -1,6 +1,6 @@
 import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
-import bugsnag = require("@bugsnag/js");
 import { app } from "electron";
+const bugsnag = require("@bugsnag/js");
 
 let exceptionManagerInstance: Client;
 
