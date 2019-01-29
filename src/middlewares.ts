@@ -1,4 +1,3 @@
-// configure Sentry
 import chromeOpn = require("chrome-opn");
 import { shell } from "electron";
 import { RequestHandler } from "express";
@@ -6,12 +5,11 @@ import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
-import * as Raven from "raven-js";
 import { Repository } from "./common/repository";
+import { notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
-
 
 export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, context, info) => {
   try {
@@ -19,8 +17,8 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
   } catch (error) {
     // ignore repository not found errors
     if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
-      Raven.captureException(error, {
-        extra: { root, args, context, info }
+      notify(error, {
+        metaData : { root, args, context, info }
       });
     }
     throw error;
@@ -73,7 +71,7 @@ export const authenticateController: AuthenticateController = (token) => {
     const domain: string = envDict.get(env);
     const targetUrl = `${domain}/authorize/explorook#token=${token}`;
     try {
-      await chromeOpn(targetUrl)
+      await chromeOpn(targetUrl);
     } catch (err) {
       shell.openExternal(targetUrl);
     }

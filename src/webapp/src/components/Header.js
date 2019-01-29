@@ -6,7 +6,7 @@ export class Header extends Component {
     constructor(props) {
         super(props);
         this.closeWindow = this.closeWindow.bind(this);
-        this.state = { version: ipcRenderer.sendSync("version-request") }
+        this.state = { version: remote.app.getVersion() }
     }
 
     closeWindow() {

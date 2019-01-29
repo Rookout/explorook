@@ -21,24 +21,24 @@ class Footer extends Component {
         super(props);
         this.state = {
             autoLaunchEnabled: false,
-            sentryEnabled: false, 
+            exceptionManagerEnabled: false,
         };
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             this.setState({ autoLaunchEnabled: isEnabled })
         });
-        ipcRenderer.on("sentry-enabled-changed", (event, isEnabled) => {
-            this.setState({ sentryEnabled: isEnabled })
+        ipcRenderer.on("exception-manager-enabled-changed", (event, isEnabled) => {
+            this.setState({ exceptionManagerEnabled: isEnabled })
         });
         ipcRenderer.send("auto-launch-is-enabled-req");
-        ipcRenderer.send("sentry-is-enabled-req");
+        ipcRenderer.send("exception-manager-is-enabled-req");
     }
 
     onAutoLaunchChecked(event) {
         ipcRenderer.send("auto-launch-set", event.target.checked);
     }
 
-    onSentryEnableChecked(event) {
-        ipcRenderer.send("sentry-enabled-set", event.target.checked);
+    onExceptionManagerEnableChecked(event) {
+        ipcRenderer.send("exception-manager-enabled-set", event.target.checked);
         alert("Changes will take effect after you restart Explorook");
     }
 
@@ -68,8 +68,8 @@ class Footer extends Component {
                     />
                     <p title={AUTO_LAUNCH_EXPLAINATION} className="gray-shaded">{this.getPlatformCheckboxText()}</p>
                     <Checkbox
-                        checked={this.state.sentryEnabled}
-                        onChange={this.onSentryEnableChecked}
+                        checked={this.state.exceptionManagerEnabled}
+                        onChange={this.onExceptionManagerEnableChecked}
                         classes={{
                             root: classes.root,
                             checked: classes.checked,

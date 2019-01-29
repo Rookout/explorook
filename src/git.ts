@@ -3,10 +3,10 @@ import * as igit from "isomorphic-git";
 import _ = require("lodash");
 import parseRepo = require("parse-repo");
 import path = require("path");
-import { captureMessage } from "raven-js";
 // for normalization of windows paths to linux style paths
 import slash from "slash";
 import { Repository } from "./common/repository";
+import { notify } from "./exceptionManager";
 const uuidv4 = require("uuid/v4");
 
 export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
@@ -41,8 +41,9 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
         if (!gitRoot) { return null; }
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
-        captureMessage(`Failed to read repository info ${JSON.stringify(repo)}`, {
-            extra: { repo, error }
+        notify(error, {
+            metaData : { message: "failed to read repository info", repo, error },
+            severity: "error"
         });
         return null;
     }

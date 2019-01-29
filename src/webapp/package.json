@@ -4,11 +4,11 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
+    "@bugsnag/js": "^5.2.0",
     "@craco/craco": "^3.2.3",
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
     "isomorphic-git": "^0.51.4",
-    "raven-js": "^3.26.4",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-scripts": "^2.1.1",

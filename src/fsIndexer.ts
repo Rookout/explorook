@@ -1,8 +1,8 @@
-import _ = require("lodash");
 import path = require("path");
-import { captureMessage } from "raven-js";
 import slash = require("slash");
+import { notify } from "./exceptionManager";
 const walk = require("walk");
+
 
 const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
     /site\-packages/, /node_modules/, /bower_components/, /\.venv/, /\.idea/,
@@ -74,8 +74,8 @@ export class IndexWorker {
             str += `${ext}: ${count}\n`;
         });
 
-        captureMessage(`index limit reached. stats:\n${str}`, {
-            level: "warning"
+        notify(`index limit reached. stats:\n${str}`, {
+            severity: "warning",
         });
     }
 

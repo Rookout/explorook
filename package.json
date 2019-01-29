@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "0.3.30",
+  "version": "0.3.31",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -12,8 +12,8 @@
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "npm run build && cross-env development=1 electron ./dist/index.js",
-    "debug": "npm run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
+    "start": "yarn run build && cross-env development=1 electron ./dist/index.js",
+    "debug": "yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
   },
   "build": {
     "productName": "Explorook",
@@ -64,6 +64,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@bugsnag/core": "^5.2.0",
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
     "@playlyfe/gql": "^2.6.0",
@@ -81,7 +82,7 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "@sentry/electron": "^0.8.1",
+    "@bugsnag/js": "^5.2.0",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
     "chrome-opn": "^1.0.1",
@@ -93,7 +94,6 @@
     "isomorphic-git": "^0.37.3",
     "lodash": "^4.17.10",
     "parse-repo": "^1.0.4",
-    "raven-js": "^3.26.4",
     "slash": "^2.0.0",
     "uuid": "^3.2.1",
     "walk": "^2.3.13"

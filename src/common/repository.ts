@@ -1,4 +1,4 @@
-import * as git from 'isomorphic-git';
+import * as git from "isomorphic-git";
 
 export interface Repository {
     repoName: string;

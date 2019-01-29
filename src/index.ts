@@ -1,12 +1,25 @@
-import { captureException, init as sentryInit } from "@sentry/electron";
-import { app, BrowserWindow, clipboard, ipcMain, IpcMessageEvent, Menu, nativeImage, Notification, systemPreferences, Tray } from "electron";
+import {
+    app,
+    BrowserWindow,
+    clipboard,
+    ipcMain,
+    IpcMessageEvent,
+    ipcRenderer,
+    Menu,
+    nativeImage,
+    Notification,
+    systemPreferences,
+    Tray
+} from "electron";
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
+import * as BugsnagCore from "@bugsnag/core";
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
+import { initExceptionManager, notify } from "./exceptionManager";
 
 autoUpdater.logger = log;
 log.transports.console.level = "warn";
@@ -31,7 +44,7 @@ let al: AutoLaunch;
 let token: string;
 let store: Store<{}>;
 let willUpdateOnClose: boolean = false;
-let sentryEnabled: boolean;
+let exceptionManagerEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 
 // getAppIcon resolves the right icon for the running platform
@@ -73,7 +86,7 @@ async function enableAutoLaunch() {
             await al.enable();
         }
     } catch (error) {
-        captureException(error);
+        notify(error);
     }
 }
 
@@ -91,7 +104,6 @@ function registerIpc() {
     firstTimeAutoLaunch();
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
-    ipcMain.on("version-request", (e: IpcMessageEvent) => e.returnValue = app.getVersion());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
@@ -99,12 +111,12 @@ function registerIpc() {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
         });
     });
-    ipcMain.on("sentry-is-enabled-req", (e: IpcMessageEvent) => {
-        e.sender.send("sentry-enabled-changed", sentryEnabled);
+    ipcMain.on("exception-manager-is-enabled-req", (e: IpcMessageEvent) => {
+        e.sender.send("exception-manager-enabled-changed", exceptionManagerEnabled);
     });
-    ipcMain.on("sentry-enabled-set", (e: IpcMessageEvent, enable: boolean) => {
+    ipcMain.on("exception-manager-enabled-set", (e: IpcMessageEvent, enable: boolean) => {
         store.set("sentry-enabled", enable);
-        e.sender.send("sentry-enabled-changed", enable);
+        e.sender.send("exception-manager-enabled-changed", enable);
     });
     ipcMain.on("has-signed-eula", (e: IpcMessageEvent) => {
         e.returnValue = store.get("has-signed-eula", false);
@@ -134,11 +146,9 @@ function main() {
 
     // store helps us store data on local disk
     store = new Store({ name: "explorook" });
-    sentryEnabled = store.get("sentry-enabled", true);
-    if (sentryEnabled && !process.env.development) {
-        sentryInit({
-            dsn: "https://e860d220250640e581535a5cec2118d0@sentry.io/1260942"
-        });
+    exceptionManagerEnabled = store.get("sentry-enabled", true);
+    if (exceptionManagerEnabled && !process.env.development) {
+        initExceptionManager("production", app.getVersion());
     }
     // access token used to access this app's GraphQL api
     token = store.get("token", null);
@@ -282,7 +292,7 @@ function openTray() {
 
 // trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
 process.on("uncaughtException", (err: Error) => {
-    captureException(err);
+    notify(err);
 });
 
 // This method will be called when Electron has finished
@@ -312,7 +322,7 @@ app.on("quit", async () => {
             await al.disable();
         } catch (error) {
             // bummer
-            captureException(error);
+            notify(error);
         }
     }
 });

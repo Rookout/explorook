@@ -1,26 +1,17 @@
-import { IpcMessageEvent, ipcRenderer } from "electron";
+import { IpcMessageEvent, ipcRenderer, remote} from "electron";
 import { basename } from "path";
 import { Repository } from "./common/repository";
+import { initExceptionManager } from "./exceptionManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
-
-// configure Sentry
-import * as Raven from "raven-js";
 
 let mainWindowId = -1;
 
 const getRepos = () => repStore.getRepositories().map((r) => r.toModel());
 
-ipcRenderer.once("sentry-enabled-changed", (e: IpcMessageEvent, enabled: boolean) => {
+ipcRenderer.once("exception-manager-enabled-changed", (e: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
-        // tslint:disable-next-line:no-console
-        console.log("enabling sentry on index worker");
-        Raven
-            .config("https://e860d220250640e581535a5cec2118d0@sentry.io/1260942")
-            .install();
-    } else {
-        // tslint:disable-next-line:no-console
-        console.log("sentry disabled on index worker");
+        initExceptionManager(remote.process.env.development ? "development" : "production", remote.app.getVersion());
     }
 });
 
@@ -58,4 +49,4 @@ ipcRenderer.on("edit-repo", (e: IpcMessageEvent, args: { id: string, repoName: s
 ipcRenderer.on("repos-request", (e: IpcMessageEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));
 
 ipcRenderer.send("index-worker-up");
-ipcRenderer.send("sentry-is-enabled-req");
+ipcRenderer.send("exception-manager-is-enabled-req");
