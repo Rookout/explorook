@@ -4,7 +4,6 @@ import {
     clipboard,
     ipcMain,
     IpcMessageEvent,
-    ipcRenderer,
     Menu,
     nativeImage,
     Notification,
@@ -16,7 +15,7 @@ import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
-import * as BugsnagCore from "@bugsnag/core";
+const unhandled = require("electron-unhandled");
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
 import { initExceptionManager, notify } from "./exceptionManager";
@@ -326,3 +325,20 @@ app.on("quit", async () => {
         }
     }
 });
+
+unhandled({
+  logger: (err: any) => {
+      notify(`caught unhandled exception in main process. error: ${err}`, {
+          metaData: {
+              err
+          }
+      });
+  }
+});
+
+setInterval(() => {
+    const asyncFunc = async () => {
+        throw new Error("Catch me");
+    };
+    asyncFunc();
+}, 10000);

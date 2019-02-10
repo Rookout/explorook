@@ -766,6 +766,10 @@ clean-git-ref@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/clean-git-ref/-/clean-git-ref-1.0.3.tgz#5325dc839eab01c974ae0e97f5734782750f88ec"
 
+clean-stack@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.0.0.tgz#301bfa9e8dd2d3d984c0e542f7aa67b996f63e0a"
+
 cli-boxes@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/cli-boxes/-/cli-boxes-1.0.0.tgz#4fa917c3e59c94a004cd61f8ee509da651687143"
@@ -1198,6 +1202,10 @@ electron-is-dev@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-0.3.0.tgz#14e6fda5c68e9e4ecbeff9ccf037cbd7c05c5afe"
 
+electron-is-dev@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/electron-is-dev/-/electron-is-dev-1.0.1.tgz#6e0a184736fe7aea77d18210b0b0f6a02402c4bc"
+
 electron-log@^2.2.15:
   version "2.2.15"
   resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-2.2.15.tgz#28c2dd65c9437fcf31f09f5f856c338a83daab76"
@@ -1230,6 +1238,15 @@ electron-store@^2.0.0:
   resolved "https://registry.yarnpkg.com/electron-store/-/electron-store-2.0.0.tgz#1035cca2a95409d1f54c7466606345852450d64a"
   dependencies:
     conf "^2.0.0"
+
+electron-unhandled@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/electron-unhandled/-/electron-unhandled-2.1.0.tgz#c72e59bbb481aecb53ab3f472a334ad1b48c90d2"
+  dependencies:
+    clean-stack "^2.0.0"
+    electron-is-dev "^1.0.1"
+    ensure-error "^1.0.0"
+    lodash.debounce "^4.0.8"
 
 electron-updater@^2.21.10:
   version "2.21.10"
@@ -1268,6 +1285,10 @@ end-of-stream@^1.1.0:
   resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.1.tgz#ed29634d19baba463b6ce6b80a37213eab71ec43"
   dependencies:
     once "^1.4.0"
+
+ensure-error@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ensure-error/-/ensure-error-1.0.0.tgz#c54c13329132cad06f847423b52c22fd88099d0d"
 
 env-paths@^1.0.0:
   version "1.0.0"
@@ -2330,6 +2351,10 @@ locate-path@^3.0.0:
   dependencies:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
+
+lodash.debounce@^4.0.8:
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
 
 lodash.isequal@^4.5.0:
   version "4.5.0"
