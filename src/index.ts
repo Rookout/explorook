@@ -4,7 +4,6 @@ import {
     clipboard,
     ipcMain,
     IpcMessageEvent,
-    ipcRenderer,
     Menu,
     nativeImage,
     Notification,
@@ -16,7 +15,6 @@ import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
-import * as BugsnagCore from "@bugsnag/core";
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
 import { initExceptionManager, notify } from "./exceptionManager";
