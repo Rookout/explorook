@@ -335,10 +335,3 @@ unhandled({
       });
   }
 });
-
-setInterval(() => {
-    const asyncFunc = async () => {
-        throw new Error("Catch me");
-    };
-    asyncFunc();
-}, 10000);
