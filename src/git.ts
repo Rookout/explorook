@@ -4,7 +4,7 @@ import _ = require("lodash");
 import parseRepo = require("parse-repo");
 import path = require("path");
 // for normalization of windows paths to linux style paths
-import slash from "slash";
+import slash = require("slash");
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 const uuidv4 = require("uuid/v4");
@@ -25,6 +25,11 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
         }
         return repoId;
     } catch (error) {
+        if (error && !error.toString().includes("Unable to find git root for")) {
+            notify("Failed to generate repo id from git", {
+                metaData: { error, repo }
+            })
+        }
         // no git found
         return uuidv4();
     }
