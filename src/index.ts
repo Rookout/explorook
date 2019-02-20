@@ -162,17 +162,27 @@ function main() {
     createWindows();
     // pop tray icon
     openTray();
+    // update app
+    update();
+}
 
+function update() {
     let updateInterval: NodeJS.Timer = null;
     autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
         willUpdateOnClose = true;
-        if (updateInterval !== null) {
+        if (updateInterval) {
             clearInterval(updateInterval);
         }
         displayNotification(`Update available (${info.version})`, "a new version of Explorook is available and will be installed on next exit");
     });
-    autoUpdater.checkForUpdates();
-    updateInterval = setInterval(autoUpdater.checkForUpdates, TEN_MINUTES);
+    const tryUpdate = () => {
+        try {
+            autoUpdater.checkForUpdates();
+        } catch (error) {
+            notify("Explorook failed to check for updates", { metaData: { error } });
+        }
+    };
+    updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
 }
 
 function displayWindowHiddenNotification() {
