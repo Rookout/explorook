@@ -183,6 +183,7 @@ function update() {
         }
     };
     updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
+    tryUpdate();
 }
 
 function displayWindowHiddenNotification() {
