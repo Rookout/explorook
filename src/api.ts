@@ -8,6 +8,8 @@ import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
+const GRAPHQL_INT_MAX = 2147483647;
+
 interface FileInfo {
   path: string;
   name: string;
@@ -58,7 +60,7 @@ export const resolvers = {
               isFolder: !fstats.isFile(),
               name: f,
               path: fPath,
-              size: fstats.size,
+              size: fstats.size > GRAPHQL_INT_MAX ? -1 : fstats.size,
             });
           });
           resolve(res);
