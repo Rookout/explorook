@@ -8,6 +8,8 @@ import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
+// Our schema for file size is `Int` which is limited to int32 (https://www.apollographql.com/docs/apollo-server/schemas/types.html)
+// if a file we stat is bigger than 2.14GB then graphql will return some errors
 const GRAPHQL_INT_MAX = 2147483647;
 
 interface FileInfo {
