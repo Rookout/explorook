@@ -1,8 +1,10 @@
 import * as cors from "cors";
 import { GraphQLServer } from "graphql-yoga";
+import { defaultErrorFormatter } from "graphql-yoga/dist/defaultErrorFormatter";
 import * as _ from "lodash";
 import { join } from "path";
 import { resolvers } from "./api";
+import { notify } from "./exceptionManager";
 import { authenticateController, authorizationMiddleware, filterDirTraversal, logMiddleware, resolveRepoFromId } from "./middlewares";
 
 export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
@@ -35,7 +37,10 @@ export const start = (options: StartOptions) => {
   server.express.use(authorizationMiddleware(settings.accessToken));
   try {
     // tslint:disable-next-line:no-console
-    server.start({ port: settings.port }, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
+    server.start({ port: settings.port, formatError: (errors: any) => {
+      notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+      return defaultErrorFormatter(errors);
+    }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
   } catch (error) {
     console.log("couldn't start server", error);
   }
