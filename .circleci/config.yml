@@ -58,9 +58,10 @@ jobs:
     docker:
       - image: node:8-alpine
     steps:
+      - checkout
       - run:
           name: Get version from package.json
-          command: echo EXPLOROOK_VERSION=$(npm version | grep -E "explorook: '\d+.\d+.\d+'" | grep -Eo "\d+.\d+.\d+") >> $BASH_ENV
+          command: echo "export EXPLOROOK_VERSION=$(node -e 'console.log(require(\"./package\").version)')" >> $BASH_ENV
       - run:
           name: Generate release notes
           command: curl -X POST https://github-enforcer.rookout.com/release -H 'Content-Type: application/json' -H 'X-Enforcer-Signature: $ENFORCER_SECRET' -d '{"repository":{"full_name":"Rookout/explorook"},"data":{"inner_version":"v$EXPLOROOK_VERSION","version_to_publish":"$EXPLOROOK_VERSION","component":"explorook","released_by":"CircleCI"}}'
