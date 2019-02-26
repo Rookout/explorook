@@ -62,8 +62,7 @@ jobs:
       - run:
           name: Generate release notes
           command: |
-            export EXPLOROOK_VERSION=$(node -e 'console.log(require("./package").version)') && curl -X POST https://github-enforcer.rookout.com/release -H 'Content-Type: application/json' -H 'X-Enforcer-Signature: $ENFORCER_SECRET' -d '{"repository":{"full_name":"Rookout/explorook"},"data":{"inner_version":"v$EXPLOROOK_VERSION","version_to_publish":"$EXPLOROOK_VERSION","component":"explorook","released_by":"CircleCI"}}'
-
+            export EXPLOROOK_VERSION=$(node -e 'console.log(require("./package").version)') && curl -X POST https://github-enforcer.rookout.com/release -H "Content-Type: application/json" -H "X-Enforcer-Signature: $ENFORCER_SECRET" -d '{"repository":{"full_name":"Rookout/explorook"},"data":{"inner_version":"v'$EXPLOROOK_VERSION'","version_to_publish":"'$EXPLOROOK_VERSION'","component":"explorook","released_by":"CircleCI"}}'
 workflows:
   version: 2
   publish-pipeline:
