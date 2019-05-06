@@ -28,7 +28,7 @@ export class Token extends Component {
     }
     render() {
         return (
-            <div>
+            <div style={{ marginLeft: '25px' }}>
                 <div id="token-title" className="flex">
                     <p className="gray-shaded">Access Token &nbsp;</p>
                 </div>

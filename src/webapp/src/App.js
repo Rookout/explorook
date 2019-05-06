@@ -8,6 +8,7 @@ import { Token } from './components/Token'
 import { ReposList } from './components/ReposList'
 import EulaModal from './components/EulaModal'
 import { ipcRenderer } from 'electron';
+import './App.scss';
 
 class App extends Component {
   constructor(props) {
@@ -25,25 +26,21 @@ class App extends Component {
   render() {
     if (this.state.loading) return (<div />);
     return (
-      <table className="App">
-        <tbody>
-          <tr>
-            <td valign="top">
-              <Header />
-              <div id="content-container">
-                <Token />
-                <ReposList />
-                <EulaModal />
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td valign="bottom">
-              <Footer />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+        <div>
+          <Header />
+          <Token />
+        </div>
+        <div style={{ overflow: 'auto'}}>
+          <div id="content-container">
+            <ReposList />
+            <EulaModal />
+          </div>
+        </div>
+        <div style={{ justifyContent: 'flex-end', marginTop: 'auto' }}>
+          <Footer />
+        </div>
+      </div>
     );
   }
 }

@@ -167,8 +167,9 @@ div, span {
 }
 
 #repo-buttons {
-  position: absolute !important;
-  right: 25px !important;
+  justify-content: flex-end;
+  margin-left: auto;
+  margin-right: 25px;
 }
 
 #version-title {
@@ -195,6 +196,7 @@ div, span {
 
 #checkboxes-group {
   margin-left: 20px;
+  margin-bottom: 8px;
 }
 
 .eula-modal {
