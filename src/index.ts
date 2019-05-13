@@ -104,6 +104,10 @@ function registerIpc() {
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
+    ipcMain.on("inspect-all", () => {
+        mainWindow.webContents.openDevTools();
+        indexWorker.webContents.openDevTools();
+    });
     ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
         al.isEnabled().then((enabled) => {
             e.sender.send("auto-launch-is-enabled-changed", enabled);
@@ -221,7 +225,7 @@ function createWindows() {
         createMainWindow(indexWorker, hidden);
     });
     indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
-    if (process.env.development) {
+    if (process.env.development || process.env.ELECTRON_ENV === "debug") {
         indexWorker.webContents.openDevTools();
     }
 }
@@ -252,7 +256,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     }
 
     // Open the DevTools.
-    if (process.env.development) {
+    if (process.env.development || process.env.ELECTRON_ENV === "debug") {
         mainWindow.webContents.openDevTools();
     }
 
