@@ -217,9 +217,11 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
 }
 
 function createWindows() {
+    // legacy code to choose whether to open Explorok window or start hidden
     // we don't want to open a window on machine startup (only tray pops)
-    const startOptions = app.getLoginItemSettings();
-    const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
+    // const startOptions = app.getLoginItemSettings();
+    // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
+    const hidden = !_.includes(process.argv, "--window");
     indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
         createMainWindow(indexWorker, hidden);
