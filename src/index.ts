@@ -142,7 +142,7 @@ function main() {
     const shouldQuit = app.makeSingleInstance(() => {
         // this action is triggered in first instance when another instance is trying to load
         // e.g: Explorook runs on user's machine and the user opens Explorook again
-        maximize();
+        // maximize();
     });
     if (shouldQuit) { app.quit(); }
 
