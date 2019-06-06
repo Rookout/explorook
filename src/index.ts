@@ -1,3 +1,4 @@
+import Analytics = require("analytics-node");
 import {
     app,
     BrowserWindow,
@@ -13,6 +14,7 @@ import {
 import * as log from "electron-log";
 import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
+import { userInfo } from "os";
 import * as path from "path";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
@@ -44,6 +46,8 @@ let store: Store<{}>;
 let willUpdateOnClose: boolean = false;
 let exceptionManagerEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
+let analytics: Analytics;
+let userId: string;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -101,6 +105,27 @@ function registerIpc() {
     linuxAutoLaunchPatch();
     firstTimeAutoLaunch();
     ipcMain.on("hidden", displayWindowHiddenNotification);
+    ipcMain.on("start-server-error", (e: IpcMessageEvent, err: any) => {
+        displayNotification("Explorook", `Explorook failed to start local server: ${err}`);
+        if (!analytics) {
+            return;
+        }
+        analytics.track({
+          userId,
+          event: "start-server-error",
+          properties: { err }
+        });
+    });
+    ipcMain.on("track", (e: IpcMessageEvent, trackEvent: string, props: any) => {
+        if (!analytics) {
+            return;
+        }
+        analytics.track({
+          userId,
+          event: trackEvent,
+          properties: props
+        });
+    });
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
@@ -137,6 +162,21 @@ function registerIpc() {
     });
 }
 
+function initAnalytics() {
+    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+    userId = store.get("user-id");
+    if (!userId) {
+        userId = uuidv4();
+        store.set("user-id", userId);
+    }
+    const { username } = userInfo();
+    analytics.identify({ userId, traits: { username } });
+    analytics.track({
+        userId,
+        event: "startup",
+    });
+}
+
 function main() {
     // check if another instance of this app is already open
     const shouldQuit = app.makeSingleInstance(() => {
@@ -151,6 +191,7 @@ function main() {
     exceptionManagerEnabled = store.get("sentry-enabled", true);
     if (exceptionManagerEnabled && !process.env.development) {
         initExceptionManager("production", app.getVersion());
+        initAnalytics();
     }
     // access token used to access this app's GraphQL api
     token = store.get("token", null);

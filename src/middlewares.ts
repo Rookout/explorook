@@ -1,5 +1,5 @@
 import chromeOpn = require("chrome-opn");
-import { shell } from "electron";
+import { ipcRenderer, shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
@@ -73,6 +73,7 @@ export const authenticateController: AuthenticateController = (token) => {
     try {
       await chromeOpn(targetUrl);
     } catch (err) {
+      ipcRenderer.send("track", "error-open-chrome" , { error: err ? err.toString() : err });
       shell.openExternal(targetUrl);
     }
     res.status(200).send("OK");
