@@ -12,10 +12,10 @@ import {
     Tray
 } from "electron";
 import * as log from "electron-log";
-import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
 import { userInfo } from "os";
 import * as path from "path";
+import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
@@ -42,7 +42,7 @@ let tray: Tray;
 let firstTimeLaunch = false;
 let al: AutoLaunch;
 let token: string;
-let store: Store<{}>;
+let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
 let exceptionManagerEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
@@ -107,25 +107,12 @@ function registerIpc() {
     ipcMain.on("hidden", displayWindowHiddenNotification);
     ipcMain.on("start-server-error", (e: IpcMessageEvent, err: any) => {
         displayNotification("Explorook", `Explorook failed to start local server: ${err}`);
-        if (!analytics) {
-            return;
-        }
-        analytics.track({
-          userId,
-          event: "start-server-error",
-          properties: { err }
-        });
+        track("start-server-error", { err });
     });
     ipcMain.on("track", (e: IpcMessageEvent, trackEvent: string, props: any) => {
-        if (!analytics) {
-            return;
-        }
-        analytics.track({
-          userId,
-          event: trackEvent,
-          properties: props
-        });
+        track(trackEvent, props);
     });
+    ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
@@ -149,6 +136,11 @@ function registerIpc() {
         e.returnValue = store.get("has-signed-eula", false);
     });
     ipcMain.on("signed-eula", (e: IpcMessageEvent) => {
+        if (exceptionManagerEnabled && !process.env.development) {
+            initExceptionManager("production", app.getVersion());
+            initAnalytics();
+            track("signed-eula");
+        }
         store.set("has-signed-eula", true);
     });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
@@ -162,19 +154,22 @@ function registerIpc() {
     });
 }
 
-function initAnalytics() {
-    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
-    userId = store.get("user-id");
-    if (!userId) {
-        userId = uuidv4();
-        store.set("user-id", userId);
+function track(eventName: string, props: any = null) {
+    if (!analytics) {
+        return;
     }
-    const { username } = userInfo();
-    analytics.identify({ userId, traits: { username } });
     analytics.track({
         userId,
-        event: "startup",
+        event: eventName,
+        properties: props
     });
+}
+
+function initAnalytics() {
+    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+    const { username } = userInfo();
+    analytics.identify({ userId, traits: { username } });
+    track("startup");
 }
 
 function main() {
@@ -187,19 +182,17 @@ function main() {
     if (shouldQuit) { app.quit(); }
 
     // store helps us store data on local disk
-    store = new Store({ name: "explorook" });
+    store = new ExplorookStore();
+    // access token used to access this app's GraphQL api
+    token = store.getOrCreate("token", uuidv4(), () => {
+        firstTimeLaunch = true;
+    });
+    userId = store.getOrCreate("user-id", uuidv4());
     exceptionManagerEnabled = store.get("sentry-enabled", true);
-    if (exceptionManagerEnabled && !process.env.development) {
+    const signedEula = store.get("has-signed-eula", false);
+    if (signedEula && exceptionManagerEnabled && !process.env.development) {
         initExceptionManager("production", app.getVersion());
         initAnalytics();
-    }
-    // access token used to access this app's GraphQL api
-    token = store.get("token", null);
-    // if first run - there's no token in store - and we create one
-    if (!token) {
-        firstTimeLaunch = true;
-        token = uuidv4();
-        store.set("token", token);
     }
     // listen to RPC's coming from windows
     registerIpc();

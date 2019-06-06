@@ -1,3 +1,4 @@
+import { ipcRenderer } from "electron";
 import Store = require("electron-store");
 import fs = require("fs");
 import git = require("isomorphic-git");
@@ -121,7 +122,10 @@ class RepoStore {
 
     public remove(id: string): boolean {
         const removed = _.remove(this.repos, (r) => r.id === id);
-        removed.forEach((r) => r.indexer.deleteIndex());
+        removed.forEach((r) => {
+            r.indexer.deleteIndex();
+            ipcRenderer.send("track", "repo-remove", { repoName: r.repoName, repoId: r.id });
+        });
         if (removed) {
             this.save();
         }

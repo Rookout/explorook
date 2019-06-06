@@ -53,8 +53,8 @@ export const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: {
   return resolve(parent, args, context, info);
 };
 
-type AuthenticateController = (token: string) => RequestHandler;
-export const authenticateController: AuthenticateController = (token) => {
+type AuthenticateController = (token: string, userId: string) => RequestHandler;
+export const authenticateController: AuthenticateController = (token, userId) => {
   // rookout env to url map
   const envDict = new Map<string, string>();
   envDict.set("development", "https://localhost:8080");
@@ -69,11 +69,13 @@ export const authenticateController: AuthenticateController = (token) => {
       return;
     }
     const domain: string = envDict.get(env);
-    const targetUrl = `${domain}/authorize/explorook#token=${token}`;
+    const targetUrl = `${domain}/authorize/explorook?user-id=${userId}#token=${token}`;
+    ipcRenderer.send("track", "authorize-open-chrome");
     try {
       await chromeOpn(targetUrl);
     } catch (err) {
       ipcRenderer.send("track", "error-open-chrome" , { error: err ? err.toString() : err });
+      notify(err);
       shell.openExternal(targetUrl);
     }
     res.status(200).send("OK");

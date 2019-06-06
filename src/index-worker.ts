@@ -1,8 +1,8 @@
-import { IpcMessageEvent, ipcRenderer, remote} from "electron";
+import { IpcMessageEvent, ipcRenderer, remote } from "electron";
 import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
-import { initExceptionManager } from "./exceptionManager";
+import { initExceptionManager, notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
@@ -34,10 +34,12 @@ const onAddRepoRequest = async (fullpath: string) => {
         ipcRenderer.sendTo(mainWindowId, "pop-choose-repository");
         return true;
     }
+    const repoName = basename(fullpath);
     // add repository
-    await repStore.add({ fullpath, repoName: basename(fullpath), id: undefined });
+    const repoId = await repStore.add({ fullpath, repoName, id: undefined });
     // tell webview to refresh repos view
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+    ipcRenderer.send("track", "repo-add", { repoName, repoId });
     return true;
 };
 
@@ -49,15 +51,18 @@ ipcRenderer.on("main-window-id", async (e: IpcMessageEvent, token: string, id: n
         if (portInUse) {
             throw new Error(`port ${port} in use`);
         }
-        await graphQlServer.start({ accessToken: token, port, onAddRepoRequest });
+        const userId: string = ipcRenderer.sendSync("get-user-id");
+        await graphQlServer.start({ userId, accessToken: token, port, onAddRepoRequest });
     } catch (err) {
+        notify("Failed to start local server", { metaData: { err }});
         ipcRenderer.send("start-server-error", err ? err.toString() : "");
     }
 });
 
 ipcRenderer.on("add-repo", (e: IpcMessageEvent, repo: Repository) => {
-    repStore.add(repo).then(() => {
+    repStore.add(repo).then(repoId => {
         ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+        ipcRenderer.send("track", "repo-add", { repoName: repo.repoName, repoId });
     });
 });
 ipcRenderer.on("delete-repo", (e: IpcMessageEvent, repId: string) => {
