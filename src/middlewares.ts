@@ -74,7 +74,7 @@ export const authenticateController: AuthenticateController = (token, userId) =>
     try {
       await chromeOpn(targetUrl);
     } catch (err) {
-      ipcRenderer.send("track", "error-open-chrome" , { error: err ? err.toString() : err });
+      ipcRenderer.send("track", "error-open-chrome" , { error: _.toString(err) });
       notify(err);
       shell.openExternal(targetUrl);
     }

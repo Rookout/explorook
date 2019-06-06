@@ -1,4 +1,5 @@
 import { IpcMessageEvent, ipcRenderer, remote } from "electron";
+import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
@@ -55,7 +56,7 @@ ipcRenderer.on("main-window-id", async (e: IpcMessageEvent, token: string, id: n
         await graphQlServer.start({ userId, accessToken: token, port, onAddRepoRequest });
     } catch (err) {
         notify("Failed to start local server", { metaData: { err }});
-        ipcRenderer.send("start-server-error", err ? err.toString() : "");
+        ipcRenderer.send("start-server-error", _.toString(err));
     }
 });
 

@@ -194,6 +194,7 @@ function main() {
         initExceptionManager("production", app.getVersion());
         initAnalytics();
     }
+
     // listen to RPC's coming from windows
     registerIpc();
     // open windows (index worker and main config window)
