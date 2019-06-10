@@ -1,6 +1,7 @@
 # Introduction
 Explorook is an open-source, [Electron](https://electronjs.org/) based desktop app used by Rookout's [web app](https://app.rookout.com) to extend its usability to the user's local filesystem.  
-Explorook uses a local http server to expose its API to Rookout's web debugger. The API is protected by a self generated token.
+Explorook uses a local http server to expose its API to Rookout's web debugger.  
+The API is protected by a self generated token.
 
 # Security
 Explorook uses a self-generated, crypto-safe, 128-bit token which guarantess that any third party trying to access Explorook's API is blocked  
