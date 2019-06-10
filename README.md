@@ -1,6 +1,12 @@
 # Introduction
-This electron app is used to expose local client's folders to our webapp (app.rookout.com)  
-via a local GraphQL server
+Explorook is an open-source, [Electron](https://electronjs.org/) based desktop app used by Rookout's [web app](https://app.rookout.com) to extend its usability to the user's local filesystem.  
+Explorook uses a local http server to expose its API to Rookout's web debugger. The API is protected by a self generated token.
+
+# Security
+Explorook uses a self-generated, crypto-safe, 128-bit token which guarantess that any third party trying to access Explorook's API is blocked  
+Explorook only allows read-only access and only to folders the user specifies (and their subfolders)  
+Folders traversal are not allowed  
+Explorook does not send any information about the user's source code to any server
 
 There are 3 components to this electron app:  
 1. [The main process](#The-main-process)
