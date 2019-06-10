@@ -1,5 +1,4 @@
 import * as cors from "cors";
-import { ipcRenderer } from "electron";
 import { GraphQLServer } from "graphql-yoga";
 import { defaultErrorFormatter } from "graphql-yoga/dist/defaultErrorFormatter";
 import * as _ from "lodash";
@@ -36,7 +35,7 @@ export const start = (options: StartOptions): Promise<any> => {
   server.express.use(cors());
   // indicates that the authorization feature is available
   server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
-  server.express.post("/authorize/:env", authenticateController(settings.accessToken, ipcRenderer.sendSync("get-user-id")));
+  server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
   server.express.use(authorizationMiddleware(settings.accessToken));
   // tslint:disable-next-line:no-console
   return server.start({ port: settings.port, formatError: (errors: any) => {
