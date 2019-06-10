@@ -13,7 +13,9 @@
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "yarn run build && cross-env development=1 electron ./dist/index.js",
-    "debug": "yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
+    "debug": "yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "build": {
     "productName": "Explorook",
@@ -101,6 +103,8 @@
     "parse-repo": "^1.0.4",
     "slash": "^2.0.0",
     "uuid": "^3.2.1",
-    "walk": "^2.3.13"
-  }
+    "walk": "^2.3.13",
+    "snyk": "^1.174.1"
+  },
+  "snyk": true
 }
