@@ -44,7 +44,7 @@ let al: AutoLaunch;
 let token: string;
 let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
-let exceptionManagerEnabled: boolean;
+let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 let analytics: Analytics;
 let userId: string;
@@ -126,7 +126,7 @@ function registerIpc() {
         });
     });
     ipcMain.on("exception-manager-is-enabled-req", (e: IpcMessageEvent) => {
-        e.sender.send("exception-manager-enabled-changed", exceptionManagerEnabled);
+        e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
     });
     ipcMain.on("exception-manager-enabled-set", (e: IpcMessageEvent, enable: boolean) => {
         store.set("sentry-enabled", enable);
@@ -136,7 +136,7 @@ function registerIpc() {
         e.returnValue = store.get("has-signed-eula", false);
     });
     ipcMain.on("signed-eula", (e: IpcMessageEvent) => {
-        if (exceptionManagerEnabled && !process.env.development) {
+        if (dataCollectionEnabled && !process.env.development) {
             initExceptionManager("production", app.getVersion());
             initAnalytics();
             track("signed-eula");
@@ -188,9 +188,9 @@ function main() {
         firstTimeLaunch = true;
     });
     userId = store.getOrCreate("user-id", uuidv4());
-    exceptionManagerEnabled = store.get("sentry-enabled", true);
+    dataCollectionEnabled = store.get("sentry-enabled", true);
     const signedEula = store.get("has-signed-eula", false);
-    if (signedEula && exceptionManagerEnabled && !process.env.development) {
+    if (signedEula && dataCollectionEnabled && !process.env.development) {
         initExceptionManager("production", app.getVersion());
         initAnalytics();
     }
