@@ -1,3 +1,4 @@
+import Analytics = require("analytics-node");
 import {
     app,
     BrowserWindow,
@@ -11,9 +12,10 @@ import {
     Tray
 } from "electron";
 import * as log from "electron-log";
-import Store = require("electron-store");
 import { autoUpdater, UpdateInfo } from "electron-updater";
+import { userInfo } from "os";
 import * as path from "path";
+import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
 import _ = require("lodash");
@@ -40,10 +42,12 @@ let tray: Tray;
 let firstTimeLaunch = false;
 let al: AutoLaunch;
 let token: string;
-let store: Store<{}>;
+let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
-let exceptionManagerEnabled: boolean;
+let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
+let analytics: Analytics;
+let userId: string;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -101,6 +105,14 @@ function registerIpc() {
     linuxAutoLaunchPatch();
     firstTimeAutoLaunch();
     ipcMain.on("hidden", displayWindowHiddenNotification);
+    ipcMain.on("start-server-error", (e: IpcMessageEvent, err: any) => {
+        displayNotification("Explorook", `Explorook failed to start local server: ${err}`);
+        track("start-server-error", { err });
+    });
+    ipcMain.on("track", (e: IpcMessageEvent, trackEvent: string, props: any) => {
+        track(trackEvent, props);
+    });
+    ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
@@ -114,7 +126,7 @@ function registerIpc() {
         });
     });
     ipcMain.on("exception-manager-is-enabled-req", (e: IpcMessageEvent) => {
-        e.sender.send("exception-manager-enabled-changed", exceptionManagerEnabled);
+        e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
     });
     ipcMain.on("exception-manager-enabled-set", (e: IpcMessageEvent, enable: boolean) => {
         store.set("sentry-enabled", enable);
@@ -124,6 +136,11 @@ function registerIpc() {
         e.returnValue = store.get("has-signed-eula", false);
     });
     ipcMain.on("signed-eula", (e: IpcMessageEvent) => {
+        if (dataCollectionEnabled && !process.env.development) {
+            initExceptionManager("production", app.getVersion());
+            initAnalytics();
+            track("signed-eula");
+        }
         store.set("has-signed-eula", true);
     });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
@@ -137,6 +154,24 @@ function registerIpc() {
     });
 }
 
+function track(eventName: string, props: any = null) {
+    if (!analytics) {
+        return;
+    }
+    analytics.track({
+        userId,
+        event: eventName,
+        properties: props
+    });
+}
+
+function initAnalytics() {
+    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+    const { username } = userInfo();
+    analytics.identify({ userId, traits: { username } });
+    track("startup");
+}
+
 function main() {
     // check if another instance of this app is already open
     const shouldQuit = app.makeSingleInstance(() => {
@@ -147,19 +182,19 @@ function main() {
     if (shouldQuit) { app.quit(); }
 
     // store helps us store data on local disk
-    store = new Store({ name: "explorook" });
-    exceptionManagerEnabled = store.get("sentry-enabled", true);
-    if (exceptionManagerEnabled && !process.env.development) {
-        initExceptionManager("production", app.getVersion());
-    }
+    store = new ExplorookStore();
     // access token used to access this app's GraphQL api
-    token = store.get("token", null);
-    // if first run - there's no token in store - and we create one
-    if (!token) {
+    token = store.getOrCreate("token", uuidv4(), () => {
         firstTimeLaunch = true;
-        token = uuidv4();
-        store.set("token", token);
+    });
+    userId = store.getOrCreate("user-id", uuidv4());
+    dataCollectionEnabled = store.get("sentry-enabled", true);
+    const signedEula = store.get("has-signed-eula", false);
+    if (signedEula && dataCollectionEnabled && !process.env.development) {
+        initExceptionManager("production", app.getVersion());
+        initAnalytics();
     }
+
     // listen to RPC's coming from windows
     registerIpc();
     // open windows (index worker and main config window)

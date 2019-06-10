@@ -11,15 +11,17 @@ export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
 
 interface StartOptions {
   accessToken?: string;
+  userId?: string;
   port?: number;
   onAddRepoRequest?: onAddRepoRequestHandler;
 }
 
 const defaultOptions: StartOptions = {
-  port: 44512
+  port: 44512,
+  userId: "anonymous"
 };
 
-export const start = (options: StartOptions) => {
+export const start = (options: StartOptions): Promise<any> => {
   const settings = { ...options, ...defaultOptions };
   const typeDefs = join(__dirname, `../graphql/schema.graphql`);
 
@@ -33,16 +35,12 @@ export const start = (options: StartOptions) => {
   server.express.use(cors());
   // indicates that the authorization feature is available
   server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
-  server.express.post("/authorize/:env", authenticateController(settings.accessToken));
+  server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
   server.express.use(authorizationMiddleware(settings.accessToken));
-  try {
-    // tslint:disable-next-line:no-console
-    server.start({ port: settings.port, formatError: (errors: any) => {
-      notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
-      return defaultErrorFormatter(errors);
-    }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
-  } catch (error) {
-    console.log("couldn't start server", error);
-  }
+  // tslint:disable-next-line:no-console
+  return server.start({ port: settings.port, formatError: (errors: any) => {
+    notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+    return defaultErrorFormatter(errors);
+  }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
 };
 
