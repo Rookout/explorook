@@ -4,6 +4,7 @@ Explorook uses a local http server to expose its API to Rookout's web debugger.
 The API is protected by a self generated token.
 
 # Security
+Explorook is only accessible from localhost
 Explorook uses a self-generated, crypto-safe, 128-bit token which guarantess that any third party trying to access Explorook's API is blocked  
 Explorook only allows read-only access and only to folders the user specifies (and their subfolders)  
 Folders traversal are not allowed  
