@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "0.3.49",
+  "version": "0.3.50",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -42,6 +42,9 @@
     "linux": {
       "target": "appImage",
       "category": "Utility"
+    },
+    "dmg": {
+      "background": "assets/dmg-background.png"
     },
     "mac": {
       "icon": "assets/icons/mac/icons.icns"
