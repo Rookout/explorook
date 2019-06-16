@@ -36,6 +36,10 @@ export const start = (options: StartOptions): Promise<any> => {
   // indicates that the authorization feature is available
   server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
   server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
+  // indicates that the authorization v2 feature is available (automatic)
+  server.express.get("/authorize/v2", (req, res) => res.status(200).send("AVAILABLE"));
+  server.express.post("/authorize/v2/:env", authenticateController(settings.accessToken, settings.userId));
+
   server.express.use(authorizationMiddleware(settings.accessToken));
   // tslint:disable-next-line:no-console
   return server.start({ port: settings.port, formatError: (errors: any) => {
