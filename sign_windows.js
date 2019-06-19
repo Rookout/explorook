@@ -15,7 +15,7 @@ exports.default = async function(configuration) {
     "--name", configuration.name,
     "--url", configuration.site,
     "--replace",
-    configuration.path,
+    `"${configuration.path}"`,
   ];
 
   require("child_process").execSync(
