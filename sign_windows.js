@@ -5,7 +5,6 @@ exports.default = async function(configuration) {
   // rather create environment variables with sensitive data
   const CERTIFICATE_PATH = process.env.WINDOWS_EV_CERTIFICATE_PATH;
   const GOOGLE_HSM_KEY_ID = process.env.GOOGLE_HSM_KEY_ID;
-  const EXECUTABLE_PATH = `installers/explorook-setup-${package.version}.exe`;
 
   const command = [
     "java", "-jar", "jsign.jar",
@@ -13,10 +12,10 @@ exports.default = async function(configuration) {
     "--gcloudhsmkeyid", GOOGLE_HSM_KEY_ID,
     "--tsaurl", "http://timestamp.digicert.com",
     "--certfile", CERTIFICATE_PATH,
-    "--name", "Explorook",
-    "--url", "https://www.rookout.com",
+    "--name", configuration.name,
+    "--url", configuration.site,
     "--replace",
-    EXECUTABLE_PATH,
+    configuration.path,
   ];
 
   require("child_process").execSync(
