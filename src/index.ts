@@ -122,10 +122,9 @@ function registerIpc() {
         mainWindow.webContents.openDevTools();
         indexWorker.webContents.openDevTools();
     });
-    ipcMain.on("auto-launch-is-enabled-req", (e: IpcMessageEvent) => {
-        al.isEnabled().then((enabled) => {
-            e.sender.send("auto-launch-is-enabled-changed", enabled);
-        });
+    ipcMain.on("auto-launch-is-enabled-req", async (e: IpcMessageEvent) => {
+        const enabled = !(await isReadonlyVolume()) && await al.isEnabled();
+        e.sender.send("auto-launch-is-enabled-changed", enabled);
     });
     ipcMain.on("exception-manager-is-enabled-req", (e: IpcMessageEvent) => {
         e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
