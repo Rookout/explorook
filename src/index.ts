@@ -13,6 +13,7 @@ import {
 } from "electron";
 import * as log from "electron-log";
 import { autoUpdater, UpdateInfo } from "electron-updater";
+import fs = require("fs");
 import { userInfo } from "os";
 import * as path from "path";
 import { ExplorookStore } from "./explorook-store";
@@ -77,7 +78,8 @@ async function linuxAutoLaunchPatch() {
 }
 
 async function firstTimeAutoLaunch() {
-    if (!firstTimeLaunch) { return; }
+    if (!firstTimeLaunch) return;
+    if (await isReadonlyVolume()) return;
     await enableAutoLaunch();
 }
 
@@ -205,24 +207,42 @@ function main() {
     update();
 }
 
-function update() {
-    let updateInterval: NodeJS.Timer = null;
-    autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
-        willUpdateOnClose = true;
-        if (updateInterval) {
-            clearInterval(updateInterval);
-        }
-        displayNotification(`Update available (${info.version})`, "a new version of Explorook is available and will be installed on next exit");
+function isReadonlyVolume() {
+  return new Promise((resolve, reject) => {
+  // don't try to update if app runs from readonly volume
+  // https://github.com/electron/electron/issues/7357#issuecomment-249792476
+  fs.access(app.getPath("exe"), fs.constants.W_OK, err => {
+      if (err && err.code === "EROFS") {
+        return resolve(true);
+      }
+      resolve(false);
     });
-    const tryUpdate = () => {
-        try {
-            autoUpdater.checkForUpdates();
-        } catch (error) {
-            notify("Explorook failed to check for updates", { metaData: { error } });
-        }
-    };
-    updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
-    tryUpdate();
+  });
+}
+
+async function update() {
+  if (await isReadonlyVolume()) {
+    console.log("detected read-only volume - auto update disabled");
+    return;
+  }
+  console.log("will try to update");
+  let updateInterval: NodeJS.Timer = null;
+  autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
+      willUpdateOnClose = true;
+      if (updateInterval) {
+          clearInterval(updateInterval);
+      }
+      displayNotification(`Update available (${info.version})`, "a new version of Explorook is available and will be installed on next exit");
+  });
+  const tryUpdate = async () => {
+    try {
+      await autoUpdater.checkForUpdates();
+    } catch (error) {
+      notify("Explorook failed to check for updates", { metaData: { error } });
+    }
+  };
+  updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
+  tryUpdate();
 }
 
 function displayWindowHiddenNotification() {
@@ -282,6 +302,9 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
         ev.sender.send("indexer-worker-id", indexWorker.id);
         if (hidden && process.platform === "darwin") {
             app.dock.hide();
+        }
+        if (firstTimeLaunch) {
+          displayNotification("Explorook is running in the background", "You can access Explorook via the tray icon");
         }
     });
 
