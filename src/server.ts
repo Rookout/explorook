@@ -1,7 +1,6 @@
 import * as cors from "cors";
 import { GraphQLServer } from "graphql-yoga";
 import { defaultErrorFormatter } from "graphql-yoga/dist/defaultErrorFormatter";
-import * as _ from "lodash";
 import { join } from "path";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
