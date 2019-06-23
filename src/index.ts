@@ -123,8 +123,10 @@ function registerIpc() {
         indexWorker.webContents.openDevTools();
     });
     ipcMain.on("auto-launch-is-enabled-req", async (e: IpcMessageEvent) => {
-        const enabled = !(await isReadonlyVolume()) && await al.isEnabled();
-        e.sender.send("auto-launch-is-enabled-changed", enabled);
+      // inspecting al.isEnabled prompts permissions dialog on macOS
+      // so we prevent it from happening on readonly volume
+      const enabled = !(await isReadonlyVolume()) && await al.isEnabled();
+      e.sender.send("auto-launch-is-enabled-changed", enabled);
     });
     ipcMain.on("exception-manager-is-enabled-req", (e: IpcMessageEvent) => {
         e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
@@ -206,10 +208,8 @@ function main() {
     update();
 }
 
-function isReadonlyVolume() {
+function isReadonlyVolume(): Promise<boolean> {
   return new Promise((resolve, reject) => {
-  // don't try to update if app runs from readonly volume
-  // https://github.com/electron/electron/issues/7357#issuecomment-249792476
   fs.access(app.getPath("exe"), fs.constants.W_OK, err => {
       if (err && err.code === "EROFS") {
         return resolve(true);
@@ -220,6 +220,8 @@ function isReadonlyVolume() {
 }
 
 async function update() {
+  // don't try to update if app runs from readonly volume
+  // https://github.com/electron/electron/issues/7357#issuecomment-249792476
   if (await isReadonlyVolume()) {
     console.log("detected read-only volume - auto update disabled");
     return;
