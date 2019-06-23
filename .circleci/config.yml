@@ -20,6 +20,8 @@ jobs:
             brew cleanup
             # wine is required to sign windows executables
             (brew install wine || brew install wine)
+            # download custom jsign to sign PE
+            curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install yarn
             npm install -g yarn
             # install electron main window dependencies
@@ -38,8 +40,11 @@ jobs:
             mv build/* ../../dist/
             cd ../..
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
-            echo $WINDOWS_CERT_BASE64 | base64 --decode > rookout.p12
-            export WIN_CSC_LINK=rookout.p12
+            echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
+            export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
+            # Save gcloud credentials service account
+            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
             # package code for every distribution (mac,win,linux) and publish as github release
             yarn run mac-publish
       - save_cache:
