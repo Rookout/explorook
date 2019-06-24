@@ -1,3 +1,4 @@
+import bodyParser from "body-parser";
 import * as cors from "cors";
 import { GraphQLServer } from "graphql-yoga";
 import { defaultErrorFormatter } from "graphql-yoga/dist/defaultErrorFormatter";
@@ -8,9 +9,10 @@ import {
   authenticateController,
   authenticateControllerV2,
   authorizationMiddleware,
+  configureFirstTimeSettings,
   filterDirTraversal,
   logMiddleware,
-  resolveRepoFromId, setUserId
+  resolveRepoFromId
 } from "./middlewares";
 
 export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
@@ -18,7 +20,7 @@ export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
 interface StartOptions {
   accessToken?: string;
   userId?: string;
-  site?: string;
+  userSite?: string;
   port?: number;
   firstTimeLaunch?: boolean;
   onAddRepoRequest?: onAddRepoRequestHandler;
@@ -42,13 +44,14 @@ export const start = (options: StartOptions): Promise<any> => {
   });
 
   server.express.use(cors());
+  server.express.use(bodyParser.json());
   // indicates that the authorization feature is available
   server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
   server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
   // indicates that the authorization v2 feature is available (automatic)
   server.express.get("/authorize/v2", (req, res) => res.status(200).send("AVAILABLE"));
   server.express.post("/authorize/v2/:env", authenticateControllerV2(settings.accessToken, settings.userId, settings.site));
-  server.express.post("/configure/set/id", setUserId(settings.firstTimeLaunch, startedAt));
+  server.express.post("/configure", configureFirstTimeSettings(settings.firstTimeLaunch, startedAt));
 
   server.express.use(authorizationMiddleware(settings.accessToken));
   // tslint:disable-next-line:no-console

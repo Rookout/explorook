@@ -49,6 +49,7 @@ let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 let analytics: Analytics;
 let userId: string;
+let userSite: string;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -114,13 +115,16 @@ function registerIpc() {
     ipcMain.on("track", (e: IpcMessageEvent, trackEvent: string, props: any) => {
         track(trackEvent, props);
     });
-    ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
-    ipcMain.on("set-user-id", (e: IpcMessageEvent, id: string) => {
+    ipcMain.on("configure-first-launch", (e: IpcMessageEvent, id: string, site: string) => {
         userId = id;
+        userSite = site;
         store.set("user-id", userId);
+        store.set("user-site", userSite);
         identifyAnalytics();
-        track("set-user-id");
+        track("configure-first-launch");
     });
+    ipcMain.on("get-user-site", (e: IpcMessageEvent) => e.returnValue = store.get("user-site"));
+    ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
@@ -201,6 +205,7 @@ function main() {
         firstTimeLaunch = true;
     });
     userId = store.getOrCreate("user-id", uuidv4());
+    userSite = store.getOrCreate("user-site", "default");
     dataCollectionEnabled = store.get("sentry-enabled", true);
     const signedEula = store.get("has-signed-eula", false);
     if (signedEula && dataCollectionEnabled && !process.env.development) {

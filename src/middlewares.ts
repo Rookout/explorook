@@ -87,17 +87,19 @@ type AuthenticateControllerV2 = (token: string, userId: string, site: string) =>
 export const authenticateControllerV2: AuthenticateControllerV2 = (token, userId, site) => {
   return async (req, res) => {
     ipcRenderer.send("track", "authorize-encrypted-token");
-    if (!token || !userId || !site) {
+    if (!token || !userId || !site ||
+        site === "default" ||
+        userId.split("-").length === 4) {
       res.status(400).send("missing/incorrect data");
       return;
     }
     const encryptedData = encryptWithPublicKey(token, userId, site);
-    res.status(200).send(encryptedData);
+    res.status(200).send(encryptedData.toString("base64"));
   };
 };
 
-type SetUserId = (firstTimeLaunch: boolean, serverStartedAt: Date) => RequestHandler;
-export const setUserId: SetUserId = (firstTimeLaunch, serverStartedAt) => {
+type ConfigureFirstTimeSettings = (firstTimeLaunch: boolean, serverStartedAt: Date) => RequestHandler;
+export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTimeLaunch, serverStartedAt) => {
   return async (req, res) => {
     // TS doesn't like arithmetic operations on dates
     // @ts-ignore
@@ -107,11 +109,12 @@ export const setUserId: SetUserId = (firstTimeLaunch, serverStartedAt) => {
       return;
     }
     const id = req.body.id;
-    if (!id) {
-      res.status(400).send("missing id in body");
+    const site = req.body.site;
+    if (!id || !site) {
+      res.status(400).send("missing id/site");
       return;
     }
-    ipcRenderer.send("set-user-id", id);
+    ipcRenderer.send("configure-first-launch", id, site);
     res.status(200).send("OK");
   };
 };
@@ -123,7 +126,7 @@ export const authorizationMiddleware: AuthorizationMiddleware = (token) =>
       next();
       return;
     }
-    const reqToken = req.param("token") || req.header("token") || "";
+    const reqToken = req.params.token || req.header("token") || "";
     if (reqToken === token) {
       next();
     } else {

@@ -25,7 +25,7 @@ const encryptedPublicKey = new NodeRSA(autoAuthPublicKey, {
 
 
 export const encryptWithPublicKey = (token: string, userId: string, site: string) => {
-    // Format of encryption: site|userId|token
-    const formattedData = `${site}|${userId}|${token}`;
+    // Format of encryption: site;userId;token
+    const formattedData = `${site};${userId};${token}`;
     return encryptedPublicKey.encrypt(Buffer.from(formattedData));
 };

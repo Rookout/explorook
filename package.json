@@ -94,6 +94,7 @@
     "analytics-node": "^3.3.0",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
+    "body-parser": "^1.19.0",
     "chrome-opn": "^1.0.1",
     "cors": "^2.8.5",
     "electron-log": "^2.2.15",
