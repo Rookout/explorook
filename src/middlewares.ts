@@ -83,23 +83,29 @@ export const authenticateController: AuthenticateController = (token, userId) =>
   };
 };
 
-type AuthenticateControllerV2 = (token: string, userId: string, site: string) => RequestHandler;
-export const authenticateControllerV2: AuthenticateControllerV2 = (token, userId, site) => {
+type AuthenticateControllerV2 = (settings: any) => RequestHandler;
+export const authenticateControllerV2: AuthenticateControllerV2 = (settings: any) => {
   return async (req, res) => {
+    interface UserSettings {
+      accessToken: string;
+      userId: string;
+      userSite: string;
+    }
+    const {accessToken, userId, userSite}: UserSettings = { ...settings };
     ipcRenderer.send("track", "authorize-encrypted-token");
-    if (!token || !userId || !site ||
-        site === "default" ||
+    if (!accessToken || !userId || !userSite ||
+        userSite === "default" ||
         userId.split("-").length === 4) {
       res.status(400).send("missing/incorrect data");
       return;
     }
-    const encryptedData = encryptWithPublicKey(token, userId, site);
+    const encryptedData = encryptWithPublicKey(accessToken, userId, userSite);
     res.status(200).send(encryptedData.toString("base64"));
   };
 };
 
-type ConfigureFirstTimeSettings = (firstTimeLaunch: boolean, serverStartedAt: Date) => RequestHandler;
-export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTimeLaunch, serverStartedAt) => {
+type ConfigureFirstTimeSettings = (firstTimeLaunch: boolean, serverStartedAt: Date, reconfigure: (id: string, site: string) => void) => RequestHandler;
+export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTimeLaunch, serverStartedAt, reconfigure) => {
   return async (req, res) => {
     // TS doesn't like arithmetic operations on dates
     // @ts-ignore
@@ -115,6 +121,7 @@ export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTime
       return;
     }
     ipcRenderer.send("configure-first-launch", id, site);
+    reconfigure(id, site);
     res.status(200).send("OK");
   };
 };
