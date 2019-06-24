@@ -115,6 +115,12 @@ function registerIpc() {
         track(trackEvent, props);
     });
     ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
+    ipcMain.on("set-user-id", (e: IpcMessageEvent, id: string) => {
+        userId = id;
+        store.set("user-id", userId);
+        identifyAnalytics();
+        track("set-user-id");
+    });
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
     ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
@@ -168,10 +174,14 @@ function track(eventName: string, props: any = null) {
     });
 }
 
-function initAnalytics() {
-    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+function identifyAnalytics() {
     const { username } = userInfo();
     analytics.identify({ userId, traits: { username } });
+}
+
+function initAnalytics() {
+    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+    identifyAnalytics();
     track("startup");
 }
 
@@ -298,7 +308,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
         icon,
         show: !hidden,
     });
-    indexWorkerWindow.webContents.send("main-window-id", token, mainWindow.webContents.id);
+    indexWorkerWindow.webContents.send("main-window-id", token, firstTimeLaunch, mainWindow.webContents.id);
     ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
         ev.sender.send("indexer-worker-id", indexWorker.id);
         if (hidden && process.platform === "darwin") {

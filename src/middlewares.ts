@@ -8,6 +8,7 @@ import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
+import {encryptWithPublicKey} from "./authentication";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -78,6 +79,39 @@ export const authenticateController: AuthenticateController = (token, userId) =>
       notify(err);
       shell.openExternal(targetUrl);
     }
+    res.status(200).send("OK");
+  };
+};
+
+type AuthenticateControllerV2 = (token: string, userId: string, site: string) => RequestHandler;
+export const authenticateControllerV2: AuthenticateControllerV2 = (token, userId, site) => {
+  return async (req, res) => {
+    ipcRenderer.send("track", "authorize-encrypted-token");
+    if (!token || !userId || !site) {
+      res.status(400).send("missing/incorrect data");
+      return;
+    }
+    const encryptedData = encryptWithPublicKey(token, userId, site);
+    res.status(200).send(encryptedData);
+  };
+};
+
+type SetUserId = (firstTimeLaunch: boolean, serverStartedAt: Date) => RequestHandler;
+export const setUserId: SetUserId = (firstTimeLaunch, serverStartedAt) => {
+  return async (req, res) => {
+    // TS doesn't like arithmetic operations on dates
+    // @ts-ignore
+    const serverUptimeInMillis = new Date() - serverStartedAt;
+    if (!firstTimeLaunch || serverUptimeInMillis > 10000) {
+      res.status(403).send("cannot set user id after first launch");
+      return;
+    }
+    const id = req.body.id;
+    if (!id) {
+      res.status(400).send("missing id in body");
+      return;
+    }
+    ipcRenderer.send("set-user-id", id);
     res.status(200).send("OK");
   };
 };
