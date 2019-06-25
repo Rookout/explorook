@@ -133,7 +133,7 @@ export const authorizationMiddleware: AuthorizationMiddleware = (token) =>
       next();
       return;
     }
-    const reqToken = req.params.token || req.header("token") || "";
+    const reqToken = req.param("token") || req.header("token") || "";
     if (reqToken === token) {
       next();
     } else {
