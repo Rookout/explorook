@@ -17,7 +17,7 @@ import {
 
 export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
 
-interface StartOptions {
+export interface StartOptions {
   accessToken?: string;
   userId?: string;
   userSite?: string;

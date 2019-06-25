@@ -5,10 +5,11 @@ import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
+import {encryptWithPublicKey} from "./authentication";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
-import {encryptWithPublicKey} from "./authentication";
+import {StartOptions} from "./server";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -83,15 +84,11 @@ export const authenticateController: AuthenticateController = (token, userId) =>
   };
 };
 
-type AuthenticateControllerV2 = (settings: any) => RequestHandler;
-export const authenticateControllerV2: AuthenticateControllerV2 = (settings: any) => {
+type AuthenticateControllerV2 = (settings: StartOptions) => RequestHandler;
+export const authenticateControllerV2: AuthenticateControllerV2 = (settings: StartOptions) => {
   return async (req, res) => {
-    interface UserSettings {
-      accessToken: string;
-      userId: string;
-      userSite: string;
-    }
-    const {accessToken, userId, userSite}: UserSettings = { ...settings };
+    // Settings are changed during runtime (first launch configuration) and should not be reassigned before
+    const {accessToken, userId, userSite}: StartOptions = settings;
     ipcRenderer.send("track", "authorize-encrypted-token");
     if (!accessToken || !userId || !userSite ||
         userSite === "default" ||
