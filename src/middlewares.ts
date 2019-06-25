@@ -107,18 +107,14 @@ export const authenticateControllerV2: AuthenticateControllerV2 = (settings: any
 type ConfigureFirstTimeSettings = (firstTimeLaunch: boolean, serverStartedAt: Date, reconfigure: (id: string, site: string) => void) => RequestHandler;
 export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTimeLaunch, serverStartedAt, reconfigure) => {
   return async (req, res) => {
-    // TS doesn't like arithmetic operations on dates
-    // @ts-ignore
-    const serverUptimeInMillis = new Date() - serverStartedAt;
-    if (!firstTimeLaunch || serverUptimeInMillis > 10000) {
-      res.status(403).send("cannot set user id after first launch");
-      return;
+    const TEN_SECONDS_IN_MILLIS = 10 * 1000;
+    const serverUptimeInMillis = new Date().getTime() - serverStartedAt.getTime();
+    if (!firstTimeLaunch || serverUptimeInMillis > TEN_SECONDS_IN_MILLIS) {
+      return res.status(403).send("cannot set user id after first launch");
     }
-    const id = req.body.id;
-    const site = req.body.site;
+    const {id, site} = req.body;
     if (!id || !site) {
-      res.status(400).send("missing id/site");
-      return;
+      return res.status(400).send("missing id/site");
     }
     ipcRenderer.send("configure-first-launch", id, site);
     reconfigure(id, site);
