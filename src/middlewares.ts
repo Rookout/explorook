@@ -106,8 +106,10 @@ export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTime
   return async (req, res) => {
     const TEN_SECONDS_IN_MILLIS = 10 * 1000;
     const serverUptimeInMillis = new Date().getTime() - serverStartedAt.getTime();
-    if (!firstTimeLaunch || serverUptimeInMillis > TEN_SECONDS_IN_MILLIS) {
-      return res.status(403).send("cannot set user id after first launch");
+    if (!process.env.EXPLOROOK_CONF_MODE) {
+      if (!firstTimeLaunch || serverUptimeInMillis > TEN_SECONDS_IN_MILLIS) {
+        return res.status(403).send("cannot set user id after first launch");
+      }
     }
     const {id, site} = req.body;
     if (!id || !site) {
