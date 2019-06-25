@@ -19,7 +19,8 @@
     "productName": "Explorook",
     "extends": null,
     "appId": "com.rookout.explorook",
-    "publish":
+    "publish": [
+      {
         "provider": "github",
         "owner": "rookout",
         "repo": "explorook"
