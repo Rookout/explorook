@@ -89,7 +89,11 @@ export const authenticateControllerV2: AuthenticateControllerV2 = (settings: Sta
   return async (req, res) => {
     // Settings are changed during runtime (first launch configuration) and should not be reassigned before
     const {accessToken, userId, userSite}: StartOptions = settings;
-    ipcRenderer.send("track", "authorize-encrypted-token");
+    if (ipcRenderer) {
+      // Headless mode does not have ipcRenderer because it runs in Node.
+      // Tests use headless mode and will crash here
+      ipcRenderer.send("track", "authorize-encrypted-token");
+    }
     if (!accessToken || !userId || !userSite ||
         userSite === "default" ||
         userId.split("-").length === 4) {
