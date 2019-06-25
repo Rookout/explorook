@@ -49,6 +49,7 @@ let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 let analytics: Analytics;
 let userId: string;
+let userSite: string;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -114,6 +115,15 @@ function registerIpc() {
     ipcMain.on("track", (e: IpcMessageEvent, trackEvent: string, props: any) => {
         track(trackEvent, props);
     });
+    ipcMain.on("configure-first-launch", (e: IpcMessageEvent, id: string, site: string) => {
+        userId = id;
+        userSite = site;
+        store.set("user-id", userId);
+        store.set("user-site", userSite);
+        identifyAnalytics();
+        track("configure-first-launch");
+    });
+    ipcMain.on("get-user-site", (e: IpcMessageEvent) => e.returnValue = store.get("user-site"));
     ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
@@ -168,10 +178,14 @@ function track(eventName: string, props: any = null) {
     });
 }
 
-function initAnalytics() {
-    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+function identifyAnalytics() {
     const { username } = userInfo();
     analytics.identify({ userId, traits: { username } });
+}
+
+function initAnalytics() {
+    analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+    identifyAnalytics();
     track("startup");
 }
 
@@ -191,6 +205,7 @@ function main() {
         firstTimeLaunch = true;
     });
     userId = store.getOrCreate("user-id", uuidv4());
+    userSite = store.getOrCreate("user-site", "default");
     dataCollectionEnabled = store.get("sentry-enabled", true);
     const signedEula = store.get("has-signed-eula", false);
     if (signedEula && dataCollectionEnabled && !process.env.development) {
@@ -298,7 +313,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
         icon,
         show: !hidden,
     });
-    indexWorkerWindow.webContents.send("main-window-id", token, mainWindow.webContents.id);
+    indexWorkerWindow.webContents.send("main-window-id", token, firstTimeLaunch, mainWindow.webContents.id);
     ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
         ev.sender.send("indexer-worker-id", indexWorker.id);
         if (hidden && process.platform === "darwin") {

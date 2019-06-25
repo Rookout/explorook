@@ -5,9 +5,11 @@ import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
+import {encryptWithPublicKey} from "./authentication";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
+import {StartOptions} from "./server";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -78,6 +80,41 @@ export const authenticateController: AuthenticateController = (token, userId) =>
       notify(err);
       shell.openExternal(targetUrl);
     }
+    res.status(200).send("OK");
+  };
+};
+
+type AuthenticateControllerV2 = (settings: StartOptions) => RequestHandler;
+export const authenticateControllerV2: AuthenticateControllerV2 = (settings: StartOptions) => {
+  return async (req, res) => {
+    // Settings are changed during runtime (first launch configuration) and should not be reassigned before
+    const {accessToken, userId, userSite}: StartOptions = settings;
+    ipcRenderer.send("track", "authorize-encrypted-token");
+    if (!accessToken || !userId || !userSite ||
+        userSite === "default" ||
+        userId.split("-").length === 4) {
+      res.status(400).send("missing/incorrect data");
+      return;
+    }
+    const encryptedData = encryptWithPublicKey(accessToken, userId, userSite);
+    res.status(200).send(encryptedData.toString("base64"));
+  };
+};
+
+type ConfigureFirstTimeSettings = (firstTimeLaunch: boolean, serverStartedAt: Date, reconfigure: (id: string, site: string) => void) => RequestHandler;
+export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTimeLaunch, serverStartedAt, reconfigure) => {
+  return async (req, res) => {
+    const TEN_SECONDS_IN_MILLIS = 10 * 1000;
+    const serverUptimeInMillis = new Date().getTime() - serverStartedAt.getTime();
+    if (!firstTimeLaunch || serverUptimeInMillis > TEN_SECONDS_IN_MILLIS) {
+      return res.status(403).send("cannot set user id after first launch");
+    }
+    const {id, site} = req.body;
+    if (!id || !site) {
+      return res.status(400).send("missing id/site");
+    }
+    ipcRenderer.send("configure-first-launch", id, site);
+    reconfigure(id, site);
     res.status(200).send("OK");
   };
 };

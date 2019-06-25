@@ -44,7 +44,7 @@ const onAddRepoRequest = async (fullpath: string) => {
     return true;
 };
 
-ipcRenderer.on("main-window-id", async (e: IpcMessageEvent, token: string, id: number) => {
+ipcRenderer.on("main-window-id", async (e: IpcMessageEvent, token: string, firstTimeLaunch: boolean, id: number) => {
     mainWindowId = id;
     const port = 44512;
     try {
@@ -53,7 +53,8 @@ ipcRenderer.on("main-window-id", async (e: IpcMessageEvent, token: string, id: n
             throw new Error(`port ${port} in use`);
         }
         const userId: string = ipcRenderer.sendSync("get-user-id");
-        await graphQlServer.start({ userId, accessToken: token, port, onAddRepoRequest });
+        const userSite: string = ipcRenderer.sendSync("get-user-site");
+        await graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch, onAddRepoRequest });
     } catch (err) {
         notify("Failed to start local server", { metaData: { err }});
         ipcRenderer.send("start-server-error", _.toString(err));
