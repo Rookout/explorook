@@ -115,7 +115,11 @@ export const configureFirstTimeSettings: ConfigureFirstTimeSettings = (firstTime
     if (!id || !site) {
       return res.status(400).send("missing id/site");
     }
-    ipcRenderer.send("configure-first-launch", id, site);
+    if (ipcRenderer) {
+        // Headless mode does not have ipcRenderer because it runs in Node.
+        // Tests use headless mode and will crash here
+        ipcRenderer.send("configure-first-launch", id, site);
+    }
     reconfigure(id, site);
     res.status(200).send("OK");
   };
