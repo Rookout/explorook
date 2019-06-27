@@ -6,12 +6,12 @@
 
 ## About
 [![CircleCI](https://circleci.com/gh/Rookout/explorook.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/Rookout/explorook)
-[![GitHub release](https://img.shields.io/github/release/rookout/explorook.svg)](https://GitHub.com/Rookout/explorook/releases/)
-[![Github all releases](https://img.shields.io/github/downloads/rookout/explorook/total.svg)](https://GitHub.com/Rookout/explorook/releases/)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com//Rookout/explorook/graphs/commit-activity)
-[![GitHub contributors](https://img.shields.io/github/contributors/rookout/explorook.svg)](https://GitHub.com/Rookout/explorook/graphs/contributors/)
-[![GitHub license](https://img.shields.io/github/license/rookout/explorook.svg)](https://github.com/Rookout/explorook/blob/master/LICENSE)
-[![Known Vulnerabilities](https://snyk.io/test/github/rookout/explorook/badge.svg)](https://snyk.io/test/github/rookout/explorook)
+[![GitHub release](https://img.shields.io/github/release/rookout/explorook.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/rookout/explorook/total.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/releases/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)](https://GitHub.com//Rookout/explorook/graphs/commit-activity)
+[![GitHub contributors](https://img.shields.io/github/contributors/rookout/explorook.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/graphs/contributors/)
+[![GitHub license](https://img.shields.io/github/license/rookout/explorook.svg?style=flat-square)](https://github.com/Rookout/explorook/blob/master/LICENSE)
+[![Known Vulnerabilities](https://snyk.io/test/github/rookout/explorook/badge.svg?style=flat-square)](https://snyk.io/test/github/rookout/explorook)
 [![Twitter Follow](https://img.shields.io/twitter/follow/rookoutlabs.svg?style=social)](https://twitter.com/rookoutlabs)
 
 Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on the website or the docs).
