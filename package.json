@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "0.3.56",
+  "version": "1.0.0",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -92,7 +92,7 @@
   },
   "dependencies": {
     "@bugsnag/js": "^5.2.0",
-    "analytics-node": "^3.3.0",
+    "analytics-node": "^3.4.0-beta.1",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
     "body-parser": "^1.19.0",
