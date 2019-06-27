@@ -48,11 +48,11 @@ If you are interested in fixing issues and contributing directly to the code bas
 
 ## Feedback
 
-- Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/rookout).
+- Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/rookout)
 - [Request a new feature](https://github.com/Rookout/explorook/issues)
 - [File an issue](https://github.com/Rookout/explorook/issues)
 - Follow [@rookoutlabs](https://twitter.com/rookoutlabs) and let us know what you think!
-- Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/).
+- Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/)
 
 ## License
 
