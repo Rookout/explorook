@@ -1,5 +1,8 @@
-# Introduction
-The Rookout desktop app makes it easy to view local files in your browser.
+<h3 align="center">Rookout Desktop App</h3>
+
+<p align="center">
+  The Rookout desktop app makes it easy to view local files in your browser.
+</p>
 
 # About
 Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on the website or the docs).
