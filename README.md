@@ -1,3 +1,9 @@
+<p align="center">
+<a href="https://www.rookout.com/" target="_blank">
+<img src="https://github.com/Rookout/docs/blob/master/website/static/img/logos/rookout_logo_horizontal.svg" alt="Rookout logo" width="460" height="100">
+</a>
+</p>
+
 <h3 align="center">Rookout desktop app</h3>
 
 <p align="center">
