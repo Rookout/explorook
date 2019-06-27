@@ -1,45 +1,43 @@
 # Introduction
-Explorook is an open-source, [Electron](https://electronjs.org/) based desktop app used by Rookout's [web app](https://app.rookout.com) to extend its usability to the user's local filesystem.  
-Explorook uses a local http server to expose its API to Rookout's web debugger.  
-The API is protected by a self generated token.
+The Rookout desktop app makes it easy to view local files in your browser.
+
+# About
+Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on the website or the docs).
+
+The Rookout desktop app allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
+
+- Ease of use - set up once and easily access any directory or file you choose directly from the browser. No need to manually open or refresh files and folders; no additional privileges needed.
+- Git aware - seamlessly access your source code across all devices where the app is installed, regardless of the local paths to which you’ve cloned a git repositoryto. Easily collaborate with fellow developers working on the same code base. 
+- Security - maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
 
 # Security
-Explorook is only accessible from localhost
-Explorook uses a self-generated, crypto-safe, 128-bit token which guarantess that any third party trying to access Explorook's API is blocked  
-Explorook only allows read-only access and only to folders the user specifies (and their subfolders)  
-Folders traversal are not allowed  
-Explorook does not send any information about the user's source code to any server
 
-Explorook spawns three processes (one main and two renderers):  
-1. [The main process](#The-main-process)
-1. [The react web app](#The-react-web-app)
-1. [An invisible worker window](#The-invisible-worker-window)
+At Rookout we take your source code security very seriously. Rookout will never collect or modify your source code. 
 
-# The main process
-Written in ``Typescript``, the main process is used to initialize the windows and communicate with them via electron's built in RPC functionality.  
-It helps the windows achieve functionalities they cannot access directly (e.g: desktop notifications, tray icon)
+The Rookout Desktop App was designed with security as a foremost concern, its security features are as follows:
+- The App only listens for connections from localhost.
+- The App only allows access to folders you have chosen. Path traversal is disallowed.
+- The App requires authentication using a secure token for accessing the file system.
+- On the first installation, the App will be paired with your Rookout user to allow automatic authentication.
 
-# The react web app
-Written in ``ES6``, and uses ``create-react-app``, The react app is the configuration window where the user can add, delete and manage its configuraed folders and other global settings.
-[](/assets/explorook-main-window.gif)
+# Contributing
 
-# The invisible worker window
-The invisible worker window runs the GraphQL server and manages all operations on repositories (CRUD operations and indexing)  
-The reason we open an invisible window (and not use the main process for that) is because the indexing job is cpu intensive and we cannot block the main process, as it blocks renderer processes as well ([reference](https://medium.com/actualbudget/the-horror-of-blocking-electrons-main-process-351bf11a763c))
+There are many ways in which you can participate in the project, for example:
+- Submit bugs and feature requests, and help us verify as they are checked in.
+- Review the documentation and make pull requests for anything from typos to new content. 
 
-# The access Token
-Because we listen on http://localhost:44512 (which is the graphql endpoint we spin), every website running on the client's machine has access to our API.  
-In order to restrict access we use an access token without which every call to our API will return ``status 401``
+If you are interested in fixing issues and contributing directly to the code base, please reach out to support@rookout.com.
 
-# Project initialization
-1. run ``yarn`` in ``/src/webapp`` to install webapp dependencies
-1. run ``yarn`` in root directory to install electron's dependencies
+# Feedback
 
-# Run in development
-In development we run the webpack server to serve the react web app. We do this because we get hot reload when we modify the react code.  
-To run the webapp server:
-1. run ``yarn run start`` in ``/src/webapp`` to run development server
-1. run ``yarn start`` in the root directory to run the electron app
+- Ask a question on Stack Overflow
+- Request a new feature
+- File an issue
+- Follow @rookoutlabs and let us know what you think!
+- Read and subscribe to the official Rookout Blog.
 
-# Build for production
-TODO (see circleci yaml)
+# License
+
+Copyright (c) Rookout LTD. All rights reserved. 
+
+Licensed under the Apache 2.0 license.
