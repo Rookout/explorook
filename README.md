@@ -5,11 +5,11 @@
 </p>
 
 ## About
-[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Rookout/explorook/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://GitHub.com/Rookout/explorook/releases/)
-[![Github all releases](https://img.shields.io/github/downloads/Naereen/StrapDown.js/total.svg)](https://GitHub.com/Rookout/explorook/releases/)
+[![GitHub license](https://img.shields.io/github/license/rookout/explorook.svg)](https://github.com/Rookout/explorook/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/rookout/explorook.svg)](https://GitHub.com/Rookout/explorook/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/rookout/explorook/total.svg)](https://GitHub.com/Rookout/explorook/releases/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com//Rookout/explorook/graphs/commit-activity)
-[![GitHub contributors](https://img.shields.io/github/contributors/Naereen/StrapDown.js.svg)](https://GitHub.com/Rookout/explorook/graphs/contributors/)
+[![GitHub contributors](https://img.shields.io/github/contributors/rookout/explorook.svg)](https://GitHub.com/Rookout/explorook/graphs/contributors/)
 
 Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on the website or the docs).
 
