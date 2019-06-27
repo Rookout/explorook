@@ -10,6 +10,7 @@
 [![Github all releases](https://img.shields.io/github/downloads/rookout/explorook/total.svg)](https://GitHub.com/Rookout/explorook/releases/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com//Rookout/explorook/graphs/commit-activity)
 [![GitHub contributors](https://img.shields.io/github/contributors/rookout/explorook.svg)](https://GitHub.com/Rookout/explorook/graphs/contributors/)
+[![Known Vulnerabilities](https://snyk.io/test/github/rookout/explorook/badge.svg)](https://snyk.io/test/github/rookout/explorook)
 
 Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on the website or the docs).
 
