@@ -5,7 +5,7 @@
 </p>
 
 ## About
-[![CircleCI](https://circleci.com/gh/Rookout/explorook.svg?style=flat-square&circle-token=:circle-token)](https://circleci.com/gh/Rookout/explorook)
+[![CircleCI](https://circleci.com/gh/Rookout/explorook.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/Rookout/explorook)
 [![GitHub release](https://img.shields.io/github/release/rookout/explorook.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/rookout/explorook/total.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/releases/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)](https://GitHub.com//Rookout/explorook/graphs/commit-activity)
