@@ -1,4 +1,4 @@
-<h3 align="center">Rookout Desktop App</h3>
+<h3 align="center">Rookout desktop app</h3>
 
 <p align="center">
   The Rookout desktop app makes it easy to view local files in your browser.
