@@ -20,7 +20,7 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/rookout/explorook/badge.svg?style=flat-square)](https://snyk.io/test/github/rookout/explorook)
 [![Twitter Follow](https://img.shields.io/twitter/follow/rookoutlabs.svg?style=social)](https://twitter.com/rookoutlabs)
 
-Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on the website or the docs).
+Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on our [website](www.rookout.com) or our [docs pages](docs.rookout.com)).
 
 The Rookout desktop app allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
 
@@ -41,18 +41,18 @@ The Rookout Desktop App was designed with security as a foremost concern, its se
 ## Contributing
 
 There are many ways in which you can participate in the project, for example:
-- Submit bugs and feature requests, and help us verify as they are checked in.
-- Review the documentation and make pull requests for anything from typos to new content. 
+- [Submit bugs and feature requests](https://github.com/Rookout/explorook/issues), and help us verify as they are checked in.
+- Review the [documentation](docs.rookout.com) and make pull requests for anything from typos to new content. 
 
 If you are interested in fixing issues and contributing directly to the code base, please reach out to support@rookout.com.
 
 ## Feedback
 
-- Ask a question on Stack Overflow
-- Request a new feature
-- File an issue
-- Follow @rookoutlabs and let us know what you think!
-- Read and subscribe to the official Rookout Blog.
+- Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/rookout).
+- [Request a new feature](https://github.com/Rookout/explorook/issues)
+- [File an issue](https://github.com/Rookout/explorook/issues)
+- Follow [@rookoutlabs](https://twitter.com/rookoutlabs) and let us know what you think!
+- Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/).
 
 ## License
 
