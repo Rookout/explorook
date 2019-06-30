@@ -62,7 +62,7 @@
   "publish-gcs": {
     "bucket": "get.rookout.com",
     "path": "/${name}/${os}/${arch}/${filename}",
-    "serviceAccount": "./gcloud_service_account.json",
+    "serviceAccount": "/Users/distiller/project/gcloud_service_account.json",
     "public": true,
     "resumable": true
   },
