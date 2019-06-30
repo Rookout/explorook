@@ -64,7 +64,7 @@
     "path": "/${name}/${os}/${arch}/${filename}",
     "serviceAccount": "/Users/distiller/project/gcloud_service_account.json",
     "public": true,
-    "resumable": true
+    "resumable": false
   },
   "repository": "https://github.com/rookout/explorook",
   "keywords": [
