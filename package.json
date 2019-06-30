@@ -25,6 +25,10 @@
         "owner": "rookout",
         "repo": "explorook"
       },
+      {
+        "provider": "generic",
+        "url": "https://get.rookout.com/${name}/${os}/${arch}/"
+      },
       "gcs"
     ],
     "directories": {
