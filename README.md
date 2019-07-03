@@ -29,8 +29,8 @@ The Rookout desktop app allows you to navigate through your local projects in a 
 </p>
 
 - Ease of use - set up once and easily access any directory or file you choose directly from the browser. No need to manually open or refresh files and folders; no additional privileges needed.
-- Git aware - seamlessly access your source code across all devices where the app is installed, regardless of the local paths to which you’ve cloned a git repositoryto. Easily collaborate with fellow developers working on the same code base. 
-- Security - maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
+- Git aware - seamlessly access your source code across all devices where the app is installed, regardless of the local paths to which you’ve cloned a git repository to. Easily collaborate with fellow developers working on the same code base. 
+- [Security](https://www.rookout.com/solution/source-code-security/) - maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
 
 ## Security
 
@@ -41,6 +41,8 @@ The Rookout Desktop App was designed with security as a foremost concern, its se
 - The App only allows access to folders you have chosen. Path traversal is disallowed.
 - The App requires authentication using a secure token for accessing the file system.
 - On the first installation, the App will be paired with your Rookout user to allow automatic authentication.
+
+[Learn more about our security standards](https://www.rookout.com/solution/source-code-security/)
 
 ## Contributing
 
