@@ -27,7 +27,7 @@ export const resolvers = {
   },
   Mutation: {
     addRepository: async (parent: any, args: any, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
-      return context.onAddRepoRequest();
+      return context.onAddRepoRequest(null);
     }
   },
   Query: {
