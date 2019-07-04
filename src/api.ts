@@ -1,5 +1,4 @@
 import fs = require("fs");
-import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
@@ -27,8 +26,8 @@ export const resolvers = {
     },
   },
   Mutation: {
-    addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
-      return context.onAddRepoRequest(args.fullpath);
+    addRepository: async (parent: any, args: any, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
+      return context.onAddRepoRequest();
     }
   },
   Query: {
