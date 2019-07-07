@@ -30,9 +30,11 @@ ipcRenderer.once("exception-manager-enabled-changed", (e: IpcMessageEvent, enabl
 });
 
 const onAddRepoRequest = async (fullpath: string) => {
+    ipcRenderer.send("track", "repo-add-request", { fullpath });
     if (!fullpath) {
         // will pop the menu for the user to choose repository
         ipcRenderer.sendTo(mainWindowId, "pop-choose-repository");
+        ipcRenderer.send("track", "repo-add-pop-choose-repo");
         return true;
     }
     const repoName = basename(fullpath);

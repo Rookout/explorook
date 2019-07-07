@@ -1,5 +1,4 @@
 import fs = require("fs");
-import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
