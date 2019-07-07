@@ -35,5 +35,5 @@ type Query {
 }
 
 type Mutation {
-  addRepository: Boolean
+  addRepository(fullpath: String): Boolean
 }
