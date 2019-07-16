@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -28,8 +28,7 @@
       {
         "provider": "generic",
         "url": "https://get.rookout.com/${name}/${os}/${arch}/"
-      },
-      "gcs"
+      }
     ],
     "directories": {
       "output": "installers"
