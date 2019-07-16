@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "yarn run build && cross-env development=1 electron ./dist/index.js",
+    "start": "yarn run build && cross-enZv development=1 electron ./dist/index.js",
     "debug": "yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
   },
   "build": {
@@ -28,7 +28,8 @@
       {
         "provider": "generic",
         "url": "https://get.rookout.com/${name}/${os}/${arch}/"
-      }
+      },
+      "gcs"
     ],
     "directories": {
       "output": "installers"
