@@ -95,7 +95,7 @@
     "@types/ws": "^5.1.2",
     "cross-env": "^5.2.0",
     "electron": "^2.0.8",
-    "electron-builder": "^21.1.0",
+    "electron-builder": "^20.19.2",
     "electron-builder-lib": "^20.15.3",
     "electron-publisher-gcs": "^0.1.5",
     "graphql-middleware": "^2.0.2",
