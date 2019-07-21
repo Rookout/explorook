@@ -1,12 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION=$(cat /Users/distiller/project/package.json \
-  | grep version \
-  | head -1 \
-  | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g' \
-  | tr -d '[[:space:]]')
+VERSION="$(node -e 'console.log(require("./package").version)')"
 
 BUCKET="get.rookout.com"
 INSTALLERS_DIR="/Users/distiller/project/installers/"
