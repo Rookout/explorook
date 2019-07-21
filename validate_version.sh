@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Get current version from package.json file
 CURRENT_VERSION="$(node -e 'console.log(require("./package").version)')"

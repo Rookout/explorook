@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -24,10 +24,6 @@
         "provider": "github",
         "owner": "rookout",
         "repo": "explorook"
-      },
-      {
-        "provider": "generic",
-        "url": "https://get.rookout.com/${name}/${os}/${arch}/${version}"
       }
     ],
     "directories": {
@@ -62,13 +58,6 @@
       "icon": "assets/icons/logo@512x512.png"
     }
   },
-  "publish-gcs": {
-    "bucket": "get.rookout.com",
-    "path": "/${name}/${os}/${arch}/${filename}/${version}",
-    "serviceAccount": "/Users/distiller/project/gcloud_service_account.json",
-    "public": true,
-    "resumable": false
-  },
   "repository": "https://github.com/rookout/explorook",
   "keywords": [
     "Rookout",
@@ -97,7 +86,6 @@
     "electron": "^2.0.8",
     "electron-builder": "^20.19.2",
     "electron-builder-lib": "^20.15.3",
-    "electron-publisher-gcs": "^0.1.5",
     "graphql-middleware": "^2.0.2",
     "tslint": "^5.10.0",
     "typescript": "^2.8.3"
