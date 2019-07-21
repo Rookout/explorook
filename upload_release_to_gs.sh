@@ -9,7 +9,7 @@ INSTALLERS_DIR="/Users/distiller/project/installers/"
 WINDOWS_FILE_NAME="Explorook Setup ${VERSION}.exe"
 WINDOWS_NO_SPACE_FILE_NAME="explorook-setup-${VERSION}.exe"
 MAC_DMG_FILE_NAME="Explorook-${VERSION}.dmg"
-MAC_ZIP_FILE_NAME="Explorook-${VERSION}.zip"
+MAC_ZIP_FILE_NAME="Explorook-${VERSION}-mac.zip"
 LINUX_FILE_NAME="explorook-${VERSION}-x86_64.AppImage"
 
 
