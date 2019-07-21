@@ -21,8 +21,14 @@ jobs:
             # wine is required to sign windows executables
             (brew install wine || brew install wine)
             # install gcloud sdk
-            CLOUDSDK_CORE_DISABLE_PROMPTS=1 curl https://sdk.cloud.google.com | bash
+            curl -fsSL https://sdk.cloud.google.com --output gcloud_installer.sh
+            bash ./gcloud_installer.sh --usage-reporting=false --path-update=true --bash-completion=true --rc-path=/.bash_profile
             source ~/.bash_profile
+            gcloud config set --installation component_manager/disable_update_check true
+            # Save gcloud credentials service account and authenticate
+            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             # download custom jsign to sign PE
             curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install yarn
@@ -45,10 +51,6 @@ jobs:
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
-            # Save gcloud credentials service account
-            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
-            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             # package code for every distribution (mac,win,linux) and publish as github release
             yarn run mac-publish
             # publish in google storage bucket (additionally to electronbuild-publisher)
