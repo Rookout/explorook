@@ -21,7 +21,7 @@ jobs:
             # wine is required to sign windows executables
             (brew install wine || brew install wine)
             # install gcloud sdk
-            curl https://sdk.cloud.google.com | bash
+            CLOUDSDK_CORE_DISABLE_PROMPTS=1 curl https://sdk.cloud.google.com | bash
             source ~/.bash_profile
             # download custom jsign to sign PE
             curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
