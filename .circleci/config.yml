@@ -21,10 +21,10 @@ jobs:
             # wine is required to sign windows executables
             (brew install wine || brew install wine)
             # install gcloud sdk
-            curl -fsSL https://sdk.cloud.google.com --output gcloud_installer.sh
-            bash ./gcloud_installer.sh --usage-reporting=false --path-update=true --bash-completion=true --rc-path=/.bash_profile
-            source ~/.bash_profile
-            gcloud config set --installation component_manager/disable_update_check true
+            curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
+            unzip /Users/distiller/google-cloud-sdk.zip
+            bash google-cloud-sdk/install.sh --usage-reporting=false --path-update=true --bash-completion=true --rc-path=/Users/distiller/.bashrc
+            source ~/.bashrc
             # Save gcloud credentials service account and authenticate
             echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
             export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
