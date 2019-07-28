@@ -225,6 +225,10 @@ function main() {
 
 function isReadonlyVolume(): Promise<boolean> {
   return new Promise((resolve, reject) => {
+  // this check is only relevant for macOS ATM
+  if (!process.platform.match("darwin")) {
+    return resolve(false);
+  }
   fs.access(app.getPath("exe"), fs.constants.W_OK, err => {
       if (err && err.code === "EROFS") {
         return resolve(true);
