@@ -103,7 +103,7 @@
     "electron-updater": "2.21.10",
     "graphql-yoga": "^1.16.9",
     "isomorphic-git": "^0.37.3",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.13",
     "node-rsa": "^1.0.5",
     "parse-repo": "^1.0.4",
     "slash": "^2.0.0",
