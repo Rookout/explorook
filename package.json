@@ -109,5 +109,8 @@
     "slash": "^2.0.0",
     "uuid": "^3.2.1",
     "walk": "^2.3.13"
+  },
+  "resolutions": {
+    "@playlyfe/gql/lodash": "^4.17.15"
   }
 }
