@@ -40,10 +40,6 @@ const onAddRepoRequest = async (fullpath: string) => {
     const repoName = basename(fullpath);
     // add repository
     const repoId = await repStore.add({ fullpath, repoName, id: undefined });
-    if (!repoId) {
-        // failed to add repository
-        throw new Error("Failed to add repository. Path does not exists.");
-    }
     // tell webview to refresh repos view
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
     ipcRenderer.send("track", "repo-add", { repoName, repoId });
