@@ -105,7 +105,7 @@ class RepoStore {
     public async add(repo: Repository): Promise<string> {
         const exists = fs.existsSync(repo.fullpath);
         if (!exists) {
-            return null;
+            throw new Error('Failed to add repository. Path does not exists.')
         }
         if (!repo.id) {
             repo.id = await getRepoId(repo, this.getRepositories().map((r) => r.id));
