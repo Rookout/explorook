@@ -1,55 +1,40 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { Close } from '@material-ui/icons';
 import { remote, ipcRenderer } from 'electron';
-import { Menu, MenuItem, ClickAwayListener } from '@material-ui/core';
+import { Menu, MenuItem } from '@material-ui/core';
+import { closeWindow } from '../utils';
 
-export class Header extends Component {
-    constructor(props) {
-        super(props);
-        this.closeWindow = this.closeWindow.bind(this);
-        this.state = { 
-            version: remote.app.getVersion(),
-            anchorEl: null,
-            open: false
-        }
-    }
+export const Header = () => {
+    const [version, setVersion] = useState(remote.app.getVersion());
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [open, setOpen] = useState(false);
 
-    closeWindow() {
-        const w = remote.getCurrentWindow();
-        if (window.process.platform.match("darwin")) {
-            remote.app.dock.hide();
-        }
-        w.hide();
-        ipcRenderer.send('hidden');
-    }
-
-    onCloseRightClick = e => {
+    const onCloseRightClick = e => {
         e.preventDefault();
-        this.setState({ open: true, anchorEl: e.currentTarget})
-    }
+        setOpen(true);
+        setAnchorEl(e.currentTarget);
+    };
 
-    startDebug = e => {
-        ipcRenderer.send('inspect-all')
-        this.setState({ open: false })
-    }
+    const startDebug = e => {
+        ipcRenderer.send("inspect-all");
+        setOpen(false);
+    };
 
-    render() {
-        return (
-            <div>
-                <div id="close-window-wrapper" onContextMenu={this.onCloseRightClick}>
-                    <Close id="close-window-btn" onClick={this.closeWindow}/>
-                    <Menu anchorEl={this.state.anchorEl} open={this.state.open}>
-                        <MenuItem key="debug" onClick={this.startDebug}>Debug</MenuItem>
-                        <MenuItem key="close" onClick={() => this.setState({ open: false })}>Close</MenuItem>
-                    </Menu>
-                </div>
-                <div className="Header flex">
-                    <img src="logo.png" className="Header-logo"/>
-                    <p className="Header-title" title={this.state.version}>Explorook</p>
-                    <p className="gray-shaded" id="version-title">{this.state.version}</p>
-                </div>
-                <hr className="Header-line"></hr>
+    return (
+        <div>
+            <div id="close-window-wrapper" onContextMenu={onCloseRightClick}>
+                <Close id="close-window-btn" onClick={closeWindow}/>
+                <Menu anchorEl={anchorEl} open={open}>
+                    <MenuItem key="debug" onClick={startDebug}>Debug</MenuItem>
+                    <MenuItem key="close" onClick={() => setOpen(false)}>Close</MenuItem>
+                </Menu>
             </div>
-        );
-    }
-}
+            <div className="Header flex">
+                <img src="logo.png" className="Header-logo" />
+                <p className="Header-title" title={version}>Explorook</p>
+                <p className="gray-shaded" id="version-title">{version}</p>
+            </div>
+            <hr className="Header-line"></hr>
+        </div>
+    );
+};

@@ -5,6 +5,7 @@ import { withStyles } from "@material-ui/core/styles";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { ipcRenderer } from "electron";
+import { closeWindow } from "../utils";
 
 const styles = {
     disagreeButton: {
@@ -43,6 +44,7 @@ const EulaModalComponent = ({ setSignedEula, ...props }) => {
     const handleUserConfirmation = () => {
         ipcRenderer.send("signed-eula");
         setSignedEula(true);
+        closeWindow();
     };
 
     return (
