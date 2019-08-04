@@ -296,7 +296,6 @@ function createWindows() {
     // we don't want to open a window on machine startup (only tray pops)
     // const startOptions = app.getLoginItemSettings();
     // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
-    const hidden = !_.includes(process.argv, "--window");
     indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
         createMainWindow(indexWorker, !firstTimeLaunch);
