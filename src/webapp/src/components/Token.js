@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Button } from '@material-ui/core';
-import { VisibilityOff, Visibility, ContentCopy } from '@material-ui/icons'
-import { copyText } from '../utils'
+import React, { useState } from "react";
+import { Button } from "@material-ui/core";
+import { VisibilityOff, Visibility, ContentCopy } from "@material-ui/icons";
+import { copyText } from "../utils";
 import { ipcRenderer } from "electron";
 
-const hiddenToken = "⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎"
+const hiddenToken = "⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎";
+
+const token = ipcRenderer.sendSync("token-request");
 
 export const Token = ({ ...props }) => {
-    const [token, _] = useState(ipcRenderer.sendSync("token-request"));
     const [renderToken, setRenderToken] = useState(hiddenToken);
 
     const onCopyClick = e => {
@@ -23,7 +24,7 @@ export const Token = ({ ...props }) => {
     };
 
     return (
-        <div style={{ marginLeft: '25px' }}>
+        <div style={{ marginLeft: "25px" }}>
             <div id="token-title" className="flex">
                 <p className="gray-shaded">Access Token &nbsp;</p>
             </div>

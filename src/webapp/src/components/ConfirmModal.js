@@ -17,13 +17,10 @@ const style = {
     },
 };
 
+const store = new Store({ name: "explorook"});
+
 export const ConfirmModal = ({ body, title, open, onClose, classes, onCancel, onAgree, ...props }) => {
     const [askAgainChecked, setAskAgainChecked] = useState(false);
-    const [store, _] = useState(new Store({ name: "explorook"}));
-
-    useEffect(() => {
-      store.set("non-git-dialog-never-ask-again", askAgainChecked);
-    }, [setAskAgainChecked]);
 
     return (
        <Dialog
@@ -48,6 +45,7 @@ export const ConfirmModal = ({ body, title, open, onClose, classes, onCancel, on
                 style={{ marginRight: "auto", marginLeft: 10 }}
                 control={<Checkbox checked={askAgainChecked} onChange={(e, checked) => {
                       setAskAgainChecked(checked);
+                      store.set("non-git-dialog-never-ask-again", checked);
                 }} />}
                 label="Never ask again" />
                 <Button onClick={onCancel} style={{ color: "#B6C8D4" }}>

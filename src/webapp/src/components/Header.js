@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Close } from '@material-ui/icons';
-import { remote, ipcRenderer } from 'electron';
-import { Menu, MenuItem } from '@material-ui/core';
-import { closeWindow } from '../utils';
+import React, { useState } from "react";
+import { Close } from "@material-ui/icons";
+import { remote, ipcRenderer } from "electron";
+import { Menu, MenuItem } from "@material-ui/core";
+import { closeWindow } from "../utils";
+
+const EXPLOROOK_VERSION = remote.app.getVersion();
 
 export const Header = () => {
-    const [version, setVersion] = useState(remote.app.getVersion());
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
 
@@ -31,8 +32,8 @@ export const Header = () => {
             </div>
             <div className="Header flex">
                 <img src="logo.png" className="Header-logo" />
-                <p className="Header-title" title={version}>Explorook</p>
-                <p className="gray-shaded" id="version-title">{version}</p>
+                <p className="Header-title" title={EXPLOROOK_VERSION}>Explorook</p>
+                <p className="gray-shaded" id="version-title">{EXPLOROOK_VERSION}</p>
             </div>
             <hr className="Header-line"></hr>
         </div>

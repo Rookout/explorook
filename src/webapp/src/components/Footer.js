@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Checkbox, FormGroup } from "@material-ui/core";
 import { ipcRenderer } from 'electron';
 
-const AUTO_LAUNCH_EXPLAINATION = "Run Explorook on machine startup";
+const AUTO_LAUNCH_EXPLANATION = "Run Explorook on machine startup";
 
 const styles = {
     root: {
@@ -62,7 +62,7 @@ export const Footer = ({ classes, ...props }) => {
                         checked: classes.checked,
                     }}
                 />
-                <p title={AUTO_LAUNCH_EXPLAINATION} className="gray-shaded">{getPlatformCheckboxText()}</p>
+                <p title={AUTO_LAUNCH_EXPLANATION} className="gray-shaded">{getPlatformCheckboxText()}</p>
                 <Checkbox
                     checked={exceptionManagerEnabled}
                     onChange={onExceptionManagerEnableChecked}
