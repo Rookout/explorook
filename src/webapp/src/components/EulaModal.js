@@ -1,111 +1,100 @@
-import React from 'react';
-import Modal from '@material-ui/core/Modal';
-import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core/styles';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { ipcRenderer } from 'electron';
+import React, { useState } from "react";
+import Modal from "@material-ui/core/Modal";
+import Button from "@material-ui/core/Button";
+import { withStyles } from "@material-ui/core/styles";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import { ipcRenderer } from "electron";
+import { closeWindow } from "../utils";
 
 const styles = {
     disagreeButton: {
-        border: '1px solid #9962FF',
-        borderRadius: '17.5px',
-        color: '#9962FF'
+        border: "1px solid #9962FF",
+        borderRadius: "17.5px",
+        color: "#9962FF",
     },
     agreeButton: {
-        backgroundColor: '#9962FF',
-        borderRadius: '17.5px',
-        color: '#fff',
-        '&:hover': {
-            backgroundColor: '#AE83FF'
-        }
+        backgroundColor: "#9962FF",
+        borderRadius: "17.5px",
+        color: "#fff",
+        "&:hover": {
+            backgroundColor: "#AE83FF",
+        },
     },
     agreeButtonDisabled: {
-        backgroundColor: '#CAB4F3'
+        backgroundColor: "#CAB4F3",
     },
     checkboxDefault: {},
     checkboxChecked: {},
     root: {
-        color: '#9962FF !important',
-        '&$checked': {
-            color: '#9962FF !important',
+        color: "#9962FF !important",
+        "&$checked": {
+            color: "#9962FF !important",
         },
-    }
+    },
 };
 
-class EulaModal extends React.Component {
-    constructor(props) {
-        super(props);
+const EulaModalComponent = ({ setSignedEula, ...props }) => {
+    const [isConfirmChecked, setIsConfirmChecked] = useState(false);
 
-        this.state = {
-            isConfirmChecked: false,
-            show: !ipcRenderer.sendSync("has-signed-eula")
-        };
-    }
-
-    toggleConfirm = () => {
-        this.setState({ isConfirmChecked: !this.state.isConfirmChecked });
+    const toggleConfirm = () => {
+        setIsConfirmChecked(!isConfirmChecked);
     };
 
-    handleUserConfirmation = () => {
+    const handleUserConfirmation = () => {
         ipcRenderer.send("signed-eula");
-        this.setState({ show: false })
+        setSignedEula(true);
+        closeWindow();
     };
 
-    exit() {
-        ipcRenderer.send("force-exit");
-    }
+    return (
+        <Modal
+            aria-labelledby="simple-modal-title"
+            aria-describedby="simple-modal-description"
+            open
+            onClose={ () => {} }>
+            <div className="eula-modal">
+                <h1 className="headline">Software-as-a-Service Agreement</h1>
 
-    render() {
-        return (
-            <Modal
-                aria-labelledby="simple-modal-title"
-                aria-describedby="simple-modal-description"
-                open={this.state.show}
-                onClose={() => { }}>
-                <div className="eula-modal">
-                    <h1 className="headline">Software-as-a-Service Agreement</h1>
+                <iframe className="eula-box" src="eula.v2.html"/>
 
-                    <iframe className="eula-box" src="eula.v2.html"/>
-
-                    <FormControlLabel
-                        className="confirmation-checkbox"
-                        control={
-                            <Checkbox
-                                classes={{
-                                    root: this.props.classes.root,
-                                    checked: this.props.classes.checkboxChecked,
-                                }}
-                                checked={this.state.isConfirmChecked}
-                                onChange={this.toggleConfirm}
-                                value="confirm"
-                            />
-                        }
-                        label="I confirm that I have read and agree to the User Agreement and Privacy policy."
-                    />
-                    <div className="actions">
-                        <Button
+                <FormControlLabel
+                    className="confirmation-checkbox"
+                    control={
+                        <Checkbox
                             classes={{
-                                root: this.props.classes.disagreeButton
+                                root: props.classes.root,
+                                checked: props.classes.checkboxChecked,
                             }}
-                            variant="flat"
-                            className="button disagree"
-                            onClick={()=>this.exit()}>I Do not agree</Button>
+                            checked={isConfirmChecked}
+                            onChange={toggleConfirm}
+                            value="confirm"
+                        />
+                    }
+                    label="I confirm that I have read and agree to the User Agreement and Privacy policy."
+                />
+                <div className="actions">
+                    <Button
+                        classes={{
+                            root: props.classes.disagreeButton,
+                        }}
+                        variant="flat"
+                        className="button disagree"
+                        onClick={() => this.exit()}>I Do not agree</Button>
 
-                        <Button
-                            classes={{
-                                root: this.props.classes.agreeButton,
-                                disabled: this.props.classes.agreeButtonDisabled
-                            }}
-                            variant="flat"
-                            className="button agree"
-                            onClick={this.handleUserConfirmation}
-                            disabled={!this.state.isConfirmChecked}>Agree</Button>
-                    </div>
+                    <Button
+                        classes={{
+                            root: props.classes.agreeButton,
+                            disabled: props.classes.agreeButtonDisabled,
+                        }}
+                        variant="flat"
+                        className="button agree"
+                        onClick={handleUserConfirmation}
+                        disabled={!isConfirmChecked}>Agree</Button>
                 </div>
-            </Modal>
-        );
-    }
-}
+            </div>
+        </Modal>
+    );
+};
 
-export default withStyles(styles)(EulaModal);
+export const EulaModal = withStyles(styles)(EulaModalComponent);

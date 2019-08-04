@@ -299,7 +299,7 @@ function createWindows() {
     const hidden = !_.includes(process.argv, "--window");
     indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development });
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
-        createMainWindow(indexWorker, hidden);
+        createMainWindow(indexWorker, !firstTimeLaunch);
     });
     indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
     if (process.env.development || process.env.ELECTRON_ENV === "debug") {

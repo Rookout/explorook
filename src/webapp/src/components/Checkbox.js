@@ -1,19 +1,18 @@
-import React from 'react';
+import React from "react";
 import { Checkbox, withStyles } from "@material-ui/core";
-import blueGrey from '@material-ui/core/colors/blueGrey';
+import blueGrey from "@material-ui/core/colors/blueGrey";
 
 const styles = {
     root: {
         color: blueGrey[500],
-        '&$checked': {
+        "&$checked": {
             color: blueGrey[500],
         },
     },
     checked: {},
-}
+};
 
-const checkbox = props => {
-    const { classes, checked, onChange, ...others } = props;
+const checkbox = ({ classes, checked, onChange, children, ...props}) => {
     return <Checkbox
                 checked={checked}
                 onChange={onChange}
@@ -21,8 +20,8 @@ const checkbox = props => {
                     root: classes.root,
                     checked: classes.checked,
                 }}
-                {...others}
-            >{props.children}</Checkbox>
-}
+                {...props}
+            >{children}</Checkbox>;
+};
 
 export default withStyles(styles)(checkbox);

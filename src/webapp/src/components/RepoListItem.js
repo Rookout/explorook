@@ -1,44 +1,19 @@
-import React, { Component } from 'react';
-import { Folder, Delete, Edit } from "@material-ui/icons"
-import { IconButton } from "@material-ui/core"
+import React from "react";
+import { Folder, Delete } from "@material-ui/icons"
 
-export class ReposListItem extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            editMode: false,
-            repoNameEdit: props.repo.repoName,
-        }
-        this.toggleEdit = this.toggleEdit.bind(this);
-        this.repoNameEdit = this.repoNameEdit.bind(this);
-    }
+const divStyle = {
+    display: 'flex',
+    height: "40px",
+};
 
-    toggleEdit() {
-        // this.setState({ ...this.state, editMode: !this.state.editMode })
-    }
-
-    repoNameEdit(e) {
-        this.setState({ ...this.state, repoNameEdit: e.target.value });
-    }
-
-    render() {
-        const divStyle = {
-            display: 'flex',
-            height: "40px",
-        };
-        const repo = this.props.repo;
-        return (
-            <div style={divStyle}>
-                <Folder className="small-icon" />
-                {this.state.editMode ? (
-                    <input className="repo-name-edit primary" type="text" value={this.state.repoNameEdit} onKeyUp={this.saveRepoName} onChange={this.repoNameEdit} />
-                ) : (
-                        <p className="gray-shaded repo-name" onDoubleClick={this.toggleEdit} title={repo.fullpath} aria-label={repo.fullpath}>{repo.repoName}</p>
-                    )}
-                <div id="repo-buttons">
-                    <Delete aria-label="Delete" style={{cursor: "pointer"}} className="small-icon" onClick={() => this.props.removeClicked(repo.id)} />
-                </div>
+export const ReposListItem = ({ removeClicked, repo, ...props }) => {
+    return (
+        <div style={divStyle}>
+            <Folder className="small-icon" />
+            <p className="gray-shaded repo-name" title={repo.fullpath} aria-label={repo.fullpath}>{repo.repoName}</p>
+            <div id="repo-buttons">
+                <Delete aria-label="Delete" style={{cursor: "pointer"}} className="small-icon" onClick={() => removeClicked(repo.id)} />
             </div>
-        )
-    }
+        </div>
+    )
 }
