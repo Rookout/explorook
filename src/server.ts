@@ -44,7 +44,7 @@ export const start = (options: StartOptions): Promise<any> => {
     resolvers,
     typeDefs,
     context: () => ({ onAddRepoRequest: settings.onAddRepoRequest }),
-    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal],
+    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal]
   });
 
   server.express.use(cors());
@@ -59,7 +59,11 @@ export const start = (options: StartOptions): Promise<any> => {
 
   server.express.use(authorizationMiddleware(settings.accessToken));
   // tslint:disable-next-line:no-console
-  return server.start({ port: settings.port, formatError: (errors: any) => {
+  return server.start({
+      // fix webpack doesn't bundle subscriptions
+      subscriptions: false,
+      port: settings.port,
+      formatError: (errors: any) => {
     notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
     return defaultErrorFormatter(errors);
   }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));

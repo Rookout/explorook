@@ -300,7 +300,7 @@ function createWindows() {
     ipcMain.on("index-worker-up", (e: IpcMessageEvent) => {
         createMainWindow(indexWorker, !firstTimeLaunch);
     });
-    indexWorker.loadFile(path.join(__dirname, "../index-worker.html"));
+    indexWorker.loadFile(path.join(__dirname, "index-worker.html"));
     if (process.env.development || process.env.ELECTRON_ENV === "debug") {
         indexWorker.webContents.openDevTools();
     }
@@ -331,7 +331,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     if (process.env.development) {
         mainWindow.loadURL("http://localhost:3000");
     } else {
-        mainWindow.loadFile(path.join(__dirname, "index.html"));
+        mainWindow.loadFile(path.join(__dirname, "./webapp/index.html"));
     }
 
     // Open the DevTools.
