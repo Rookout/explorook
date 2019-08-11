@@ -8,6 +8,7 @@
     "postbuild": "cp index-worker.html dist/index-worker.html",
     "package-linux": "build --linux APPIMAGE",
     "package-windows": "build --win",
+    "build-headless": "tsc",
     "dist": "build",
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
     "lint": "tslint -c tslint.json -p tsconfig.json",
