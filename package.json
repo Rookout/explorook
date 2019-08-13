@@ -90,7 +90,7 @@
     "graphql-middleware": "^2.0.2",
     "ts-loader": "^6.0.4",
     "tslint": "^5.10.0",
-    "typescript": "^2.8.3",
+    "typescript": "^3.5.3",
     "webpack": "4.29.6",
     "webpack-cli": "^3.3.6",
     "webpack-node-externals": "^1.7.2"
