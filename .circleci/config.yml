@@ -35,11 +35,12 @@ jobs:
             npm install -g yarn@1.17.3
             # install electron main window dependencies
             yarn
-            # build code (mostly compile typescript)
+            # build typescript code
             yarn run build
-            # install dependencies
             # CircleCI sets CI=true which makes react return an error when there are warnings in the code
-            CI=false yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
+            export CI=false
+            # install dependencies
+            yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
