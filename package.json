@@ -1,19 +1,19 @@
 {
   "name": "explorook",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
-    "publish": "build.sh && build --win -p always",
-    "build": "tsc",
-    "build-linux": "build --linux APPIMAGE",
-    "build-windows": "build --win",
+    "build": "webpack --config webpack.main.config.js && webpack --config webpack.index-worker.config.js",
+    "postbuild": "cp index-worker.html dist/index-worker.html",
+    "package-linux": "build --linux APPIMAGE",
+    "package-windows": "build --win",
+    "build-headless": "tsc",
     "dist": "build",
     "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
-    "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "yarn run build && cross-env development=1 electron ./dist/index.js",
-    "debug": "yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
+    "start": "cross-env development=1 yarn run build && electron ./dist/index.js",
+    "debug": "cross-env development=1 yarn run build && electron --inspect-brk ./dist/index.js"
   },
   "build": {
     "productName": "Explorook",
@@ -34,7 +34,8 @@
       "assets",
       "graphql",
       "index-worker.html",
-      "assets/icons/**/*"
+      "assets/icons/**/*",
+      "!**/node_modules/**/*"
     ],
     "appImage": {
       "systemIntegration": "doNotAsk"
@@ -87,8 +88,12 @@
     "electron-builder": "^20.19.2",
     "electron-builder-lib": "^20.15.3",
     "graphql-middleware": "^2.0.2",
+    "ts-loader": "^6.0.4",
     "tslint": "^5.10.0",
-    "typescript": "^2.8.3"
+    "typescript": "^2.8.3",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.6",
+    "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "@bugsnag/js": "^5.2.0",
@@ -102,7 +107,7 @@
     "electron-store": "^2.0.0",
     "electron-updater": "2.21.10",
     "graphql-yoga": "^1.16.9",
-    "isomorphic-git": "^0.37.3",
+    "isomorphic-git": "^0.39.2",
     "lodash": "^4.17.10",
     "node-rsa": "^1.0.5",
     "parse-repo": "^1.0.4",

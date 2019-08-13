@@ -58,6 +58,7 @@ ipcRenderer.on("main-window-id", async (e: IpcMessageEvent, token: string, first
         const userSite: string = ipcRenderer.sendSync("get-user-site");
         await graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch, onAddRepoRequest });
     } catch (err) {
+        console.error(err);
         notify("Failed to start local server", { metaData: { err }});
         ipcRenderer.send("start-server-error", _.toString(err));
     }

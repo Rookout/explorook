@@ -32,26 +32,18 @@ jobs:
             # download custom jsign to sign PE
             curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install yarn
-            npm install -g yarn
+            npm install -g yarn@1.17.3
             # install electron main window dependencies
             yarn
             # build code (mostly compile typescript)
             yarn run build
-            # go to react windows folder
-            cd src/webapp
             # install dependencies
-            yarn
             # CircleCI sets CI=true which makes react return an error when there are warnings in the code
-            export CI=false
-            # build react app
-            yarn run build
-            # copy react bundle to dist directory
-            mv build/* ../../dist/
-            cd ../..
+            CI=false yarn run --prefix src/webapp build
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
-            # package code for every distribution (mac,win,linux) and publish as github release
+            # package code for every distribution (mac, win, linux) and publish as github release
             yarn run mac-publish
             # publish in google storage bucket (additionally to electronbuild-publisher)
             bash upload_release_to_gs.sh
