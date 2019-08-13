@@ -39,7 +39,7 @@ jobs:
             yarn run build
             # install dependencies
             # CircleCI sets CI=true which makes react return an error when there are warnings in the code
-            CI=false yarn run --prefix src/webapp build
+            CI=false npm run --prefix src/webapp build
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
