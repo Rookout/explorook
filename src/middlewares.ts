@@ -18,7 +18,7 @@ export const logMiddleware: IMiddlewareFunction = async (resolve, root, args, co
     return await resolve(root, args, context, info);
   } catch (error) {
     // ignore repository not found errors
-    if (error && !/repository \"(.*){0,100}?\" not found/.test(error.toString())) {
+    if (error && !/repository\s\"(.*)?\"\snot\sfound/.test(error.toString())) {
       notify(error, {
         metaData : { root, args, context, info }
       });
