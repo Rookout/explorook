@@ -189,10 +189,11 @@ function initAnalytics() {
     track("startup");
 }
 
-function quitApplication() {
-    track("quit-application", null, () => app.quit());
+async function quitApplication() {
+    track("quit-application");
+    analytics.flush(() => app.quit());
     // This timeout is here in case the callback is not called or takes too long
-    setTimeout(() => app.quit(), 2000);
+    setTimeout(() => app.quit(), 3000);
 }
 
 function main() {
