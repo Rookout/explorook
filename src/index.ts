@@ -167,7 +167,7 @@ function registerIpc() {
     });
 }
 
-function track(eventName: string, props: any = null) {
+function track(eventName: string, props: any = null, callback: () => void = null) {
     if (!analytics) {
         return;
     }
@@ -175,7 +175,7 @@ function track(eventName: string, props: any = null) {
         userId,
         event: eventName,
         properties: props
-    });
+    }, callback);
 }
 
 function identifyAnalytics() {
@@ -190,8 +190,8 @@ function initAnalytics() {
 }
 
 function quitApplication() {
-    track("quit-application");
-    app.quit();
+    track("quit-application", null, () => quitApplication());
+    setTimeout(() => quitApplication(), 2000);
 }
 
 function main() {
