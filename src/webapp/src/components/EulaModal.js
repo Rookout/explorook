@@ -5,7 +5,7 @@ import { withStyles } from "@material-ui/core/styles";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { ipcRenderer } from "electron";
-import { closeWindow } from "../utils";
+import { closeWindow, exitApplication } from "../utils";
 
 const styles = {
     disagreeButton: {
@@ -80,7 +80,7 @@ const EulaModalComponent = ({ setSignedEula, ...props }) => {
                         }}
                         variant="flat"
                         className="button disagree"
-                        onClick={() => this.exit()}>I Do not agree</Button>
+                        onClick={() => exitApplication()}>I Do not agree</Button>
 
                     <Button
                         classes={{

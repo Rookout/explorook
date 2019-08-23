@@ -18,3 +18,7 @@ export const closeWindow = () => {
     w.hide();
     ipcRenderer.send("hidden");
 };
+
+export const exitApplication = () => {
+    ipcRenderer.send("force-exit");
+};
