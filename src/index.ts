@@ -127,7 +127,7 @@ function registerIpc() {
     ipcMain.on("get-user-id", (e: IpcMessageEvent) => e.returnValue = userId);
     ipcMain.on("get-platform", (e: IpcMessageEvent) => e.returnValue = process.platform.toString());
     ipcMain.on("token-request", (e: IpcMessageEvent) => e.returnValue = token);
-    ipcMain.on("force-exit", (e: IpcMessageEvent) => app.quit());
+    ipcMain.on("force-exit", (e: IpcMessageEvent) => quitApplication());
     ipcMain.on("inspect-all", () => {
         mainWindow.webContents.openDevTools();
         indexWorker.webContents.openDevTools();
@@ -167,7 +167,7 @@ function registerIpc() {
     });
 }
 
-function track(eventName: string, props: any = null) {
+function track(eventName: string, props: any = null, callback: () => void = null) {
     if (!analytics) {
         return;
     }
@@ -175,7 +175,7 @@ function track(eventName: string, props: any = null) {
         userId,
         event: eventName,
         properties: props
-    });
+    }, callback);
 }
 
 function identifyAnalytics() {
@@ -189,6 +189,13 @@ function initAnalytics() {
     track("startup");
 }
 
+async function quitApplication() {
+    track("quit-application");
+    analytics.flush(() => app.quit());
+    // This timeout is here in case the callback is not called or takes too long
+    setTimeout(() => app.quit(), 3000);
+}
+
 function main() {
     // check if another instance of this app is already open
     const shouldQuit = app.makeSingleInstance(() => {
@@ -196,7 +203,7 @@ function main() {
         // e.g: Explorook runs on user's machine and the user opens Explorook again
         // maximize();
     });
-    if (shouldQuit) { app.quit(); }
+    if (shouldQuit) { quitApplication(); }
 
     // store helps us store data on local disk
     store = new ExplorookStore();
@@ -373,7 +380,7 @@ function openTray() {
     const contextMenu = Menu.buildFromTemplate([
         { label: "Copy Token", icon: darkMode ? COPY_ICON_WHITE : COPY_ICON_BLACK, click: () => clipboard.writeText(token) },
         { label: "Config...", icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK, click: maximize },
-        { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: app.quit },
+        { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: quitApplication },
     ]);
     tray.setToolTip("Rookout");
     tray.setContextMenu(contextMenu);
