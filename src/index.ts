@@ -178,6 +178,13 @@ function track(eventName: string, props: any = null, callback: () => void = null
     }, callback);
 }
 
+function flushAnalytics(callback: () => void) {
+    if (!analytics) {
+        return;
+    }
+    analytics.flush(callback);
+}
+
 function identifyAnalytics() {
     const { username } = userInfo();
     analytics.identify({ userId, traits: { username } });
@@ -191,7 +198,7 @@ function initAnalytics() {
 
 async function quitApplication() {
     track("quit-application");
-    analytics.flush(() => app.quit());
+    flushAnalytics(() => app.quit());
     // This timeout is here in case the callback is not called or takes too long
     setTimeout(() => app.quit(), 3000);
 }
