@@ -337,7 +337,6 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
         show: !hidden,
     });
     if (signedEula) {
-        // This starts the GraphQL server
         startGraphqlServer();
     }
     ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
