@@ -50,6 +50,7 @@ const icon = nativeImage.createFromPath(APP_ICON);
 let analytics: Analytics;
 let userId: string;
 let userSite: string;
+let signedEula: boolean = false;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -155,6 +156,7 @@ function registerIpc() {
             track("signed-eula");
         }
         store.set("has-signed-eula", true);
+        startGraphqlServer();
     });
     ipcMain.on("auto-launch-set", (e: IpcMessageEvent, enable: boolean) => {
         if (enable) {
@@ -221,7 +223,7 @@ function main() {
     userId = store.getOrCreate("user-id", uuidv4());
     userSite = store.getOrCreate("user-site", "default");
     dataCollectionEnabled = store.get("sentry-enabled", true);
-    const signedEula = store.get("has-signed-eula", false);
+    signedEula = store.get("has-signed-eula", false);
     if (signedEula && dataCollectionEnabled && !process.env.development) {
         initExceptionManager("production", app.getVersion());
         initAnalytics();
@@ -320,6 +322,10 @@ function createWindows() {
     }
 }
 
+function startGraphqlServer() {
+    indexWorker.webContents.send("main-window-id", token, firstTimeLaunch, mainWindow.webContents.id);
+}
+
 function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = false) {
     mainWindow = new BrowserWindow({
         height: 550,
@@ -330,7 +336,10 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
         icon,
         show: !hidden,
     });
-    indexWorkerWindow.webContents.send("main-window-id", token, firstTimeLaunch, mainWindow.webContents.id);
+    if (signedEula) {
+        // This starts the GraphQL server
+        startGraphqlServer();
+    }
     ipcMain.on("app-window-up", (ev: IpcMessageEvent) => {
         ev.sender.send("indexer-worker-id", indexWorker.id);
         if (hidden && process.platform === "darwin") {
