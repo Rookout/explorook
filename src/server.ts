@@ -64,7 +64,9 @@ export const start = (options: StartOptions): Promise<any> => {
       subscriptions: false,
       port: settings.port,
       formatError: (errors: any) => {
-    notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+    if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
+      notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+    }
     return defaultErrorFormatter(errors);
   }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
 };

@@ -41,7 +41,9 @@ export class IndexWorker {
         const walker = walk.walk(this.rootPath, { filters: this.ignores });
         walker.on("file", (root: string, fileStats: { name: string }, next: () => void) => {
             if (this.stopFlag || this.treeList.length >= listLimit) {
-                this.reportLimitReached();
+                if (this.treeList.length >= listLimit) {
+                  this.reportLimitReached();
+                }
                 walker.emit("stopped");
                 return;
             }
