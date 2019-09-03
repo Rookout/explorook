@@ -25,7 +25,10 @@ const isPortInUse = (port: number): Promise<boolean> => new Promise<boolean>((re
 
 ipcRenderer.once("exception-manager-enabled-changed", (e: IpcMessageEvent, enabled: boolean) => {
     if (enabled) {
-        initExceptionManager(remote.process.env.development ? "development" : "production", remote.app.getVersion());
+        initExceptionManager(
+          remote.process.env.development ? "development" : "production",
+          remote.app.getVersion(),
+          () => ipcRenderer.sendSync("get-user-id"));
     }
 });
 

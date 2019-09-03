@@ -3,7 +3,7 @@ const bugsnag = require("@bugsnag/js");
 
 let exceptionManagerInstance: Client;
 
-export const initExceptionManager = (releaseStage: string, appVersion: string) => {
+export const initExceptionManager = (releaseStage: string, appVersion: string, getUserID: () => string) => {
     if (!exceptionManagerInstance) {
         exceptionManagerInstance = bugsnag({
             onUncaughtException: (err: any) => {
@@ -13,7 +13,14 @@ export const initExceptionManager = (releaseStage: string, appVersion: string) =
             apiKey: "6e673fda179162f48a2c6b5d159552d2",
             appType: "explorook-electron",
             appVersion,
-            releaseStage
+            releaseStage,
+            beforeSend: (report: any) => {
+              if (getUserID) {
+                report.updateMetaData("user", {
+                  userID: getUserID()
+                });
+              }
+            }
         }, null);
     }
     return exceptionManagerInstance;
