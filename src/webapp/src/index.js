@@ -14,7 +14,12 @@ ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
             apiKey: '6e673fda179162f48a2c6b5d159552d2',
             appVersion: remote.app.getVersion(),
             appType: 'explorook-react',
-            releaseStage:  remote.process.env.development ? 'development' : 'production'
+            releaseStage:  remote.process.env.development ? 'development' : 'production',
+            beforeSend: report => {
+              report.updateMetaData("user", {
+                userID: ipcRenderer.sendSync("get-user-id")
+              });
+            }
         });
     } else {
         console.log('bugsnag disabled on main window');

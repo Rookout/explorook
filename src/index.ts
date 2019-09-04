@@ -151,7 +151,7 @@ function registerIpc() {
     });
     ipcMain.on("signed-eula", (e: IpcMessageEvent) => {
         if (dataCollectionEnabled && !process.env.development) {
-            initExceptionManager("production", app.getVersion());
+            initExceptionManager("production", app.getVersion(), () => userId);
             initAnalytics();
             track("signed-eula");
         }
@@ -225,7 +225,7 @@ function main() {
     dataCollectionEnabled = store.get("sentry-enabled", true);
     signedEula = store.get("has-signed-eula", false);
     if (signedEula && dataCollectionEnabled && !process.env.development) {
-        initExceptionManager("production", app.getVersion());
+        initExceptionManager("production", app.getVersion(), () => userId);
         initAnalytics();
     }
 
