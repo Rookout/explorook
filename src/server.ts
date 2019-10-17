@@ -30,6 +30,22 @@ const defaultOptions: StartOptions = {
   port: 44512
 };
 
+const corsDomainWhitelist = [
+    "https://app.rookout.com",
+    "https://staging.rookout.com",
+    "https://localhost:8080"
+];
+
+const corsOptions = {
+  origin: (origin: string, callback: (...args: any[]) => void) => {
+    if (corsDomainWhitelist.indexOf(origin) !== -1) {
+      callback(null, true); // Origin is allowed
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+
 export const start = (options: StartOptions): Promise<any> => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
@@ -47,7 +63,7 @@ export const start = (options: StartOptions): Promise<any> => {
     middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal]
   });
 
-  server.express.use(cors());
+  server.express.use(cors(corsOptions));
   server.express.use(bodyParser.json());
   server.express.post("/configure", configureFirstTimeSettings(settings.firstTimeLaunch, startedAt, reconfigure));
   // indicates that the authorization v2 feature is available (automatic)

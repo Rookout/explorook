@@ -97,6 +97,7 @@
   },
   "dependencies": {
     "@bugsnag/js": "^5.2.0",
+    "@types/valid-url": "^1.0.2",
     "analytics-node": "^3.4.0-beta.1",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
@@ -113,6 +114,7 @@
     "parse-repo": "^1.0.4",
     "slash": "^2.0.0",
     "uuid": "^3.2.1",
+    "valid-url": "^1.0.9",
     "walk": "^2.3.13"
   },
   "resolutions": {
