@@ -1,4 +1,5 @@
 import chromeOpn = require("chrome-opn");
+import validateUrl = require("valid-url");
 import { ipcRenderer, shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
@@ -72,6 +73,10 @@ export const authenticateController: AuthenticateController = (token, userId) =>
     }
     const domain: string = envDict.get(env);
     const targetUrl = `${domain}/authorize/explorook?user-id=${userId}#token=${token}`;
+    if (!validateUrl.isHttpsUri(targetUrl)) {
+      res.status(400).send("tried to open an invalid uri - aborted");
+      return;
+    }
     ipcRenderer.send("track", "authorize-open-chrome");
     try {
       await chromeOpn(targetUrl);
