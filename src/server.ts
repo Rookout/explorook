@@ -31,19 +31,12 @@ const defaultOptions: StartOptions = {
 };
 
 const corsDomainWhitelist = [
-    "https://app.rookout.com",
-    "https://staging.rookout.com",
+    /^https:\/\/.*\.rookout.com$/,
     "https://localhost:8080"
 ];
 
 const corsOptions = {
-  origin: (origin: string, callback: (...args: any[]) => void) => {
-    if (corsDomainWhitelist.indexOf(origin) !== -1) {
-      callback(null, true); // Origin is allowed
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: corsDomainWhitelist
 };
 
 export const start = (options: StartOptions): Promise<any> => {
