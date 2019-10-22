@@ -104,6 +104,10 @@ class RepoStore {
 
     public async add(repo: Repository): Promise<string> {
         try {
+            const existingRepo = _.find(this.repos, r => r.fullpath === repo.fullpath);
+            if (existingRepo) {
+                return existingRepo.id;
+            }
             fs.statSync(repo.fullpath);
         } catch (e) {
             throw new Error("Failed to stats repository (${repo.fullpath}) error: " + e.stack);
