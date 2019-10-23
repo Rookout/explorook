@@ -32,6 +32,7 @@ const defaultOptions: StartOptions = {
 
 const corsDomainWhitelist = [
     /^https:\/\/.*\.rookout.com$/,
+    /^https:\/\/.*\.rookout-dev.com$/,
     "https://localhost:8080"
 ];
 
