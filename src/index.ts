@@ -274,7 +274,6 @@ async function update() {
     try {
       await autoUpdater.checkForUpdates();
     } catch (error) {
-      notify("Explorook failed to check for updates", { metaData: { error } });
     }
   };
   updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
