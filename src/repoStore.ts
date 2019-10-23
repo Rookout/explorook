@@ -110,7 +110,7 @@ class RepoStore {
             }
             fs.statSync(repo.fullpath);
         } catch (e) {
-            throw new Error("Failed to stats repository (${repo.fullpath}) error: " + e.stack);
+            throw new Error(`Failed to stats repository (${repo.fullpath}) error: ` + e.stack);
         }
         if (!repo.id) {
             repo.id = await getRepoId(repo, this.getRepositories().map((r) => r.id));
