@@ -19,7 +19,7 @@ jobs:
             # homebrew started throwing error when installing wine and cleanup helped
             brew cleanup
             # wine is required to sign windows executables
-            (brew install wine-stable || brew install wine-stable)
+            brew cask install wine-stable
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
             unzip /Users/distiller/google-cloud-sdk.zip
