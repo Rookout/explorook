@@ -54,7 +54,7 @@ jobs:
             - /usr/local/Homebrew
   version_validation:
     macos:
-      xcode: "9.2.0"
+      xcode: "10.1.0"
     steps:
       - checkout
       - run:
