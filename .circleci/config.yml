@@ -16,8 +16,6 @@ jobs:
       - run:
           name: Build and Publish
           command: |
-            # homebrew started throwing error when installing wine and cleanup helped
-            brew cleanup
             # wine is required to sign windows executables
             brew cask install xquartz
             brew cask install wine-stable
