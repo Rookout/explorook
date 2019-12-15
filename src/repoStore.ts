@@ -116,6 +116,10 @@ class RepoStore {
             repo.id = await getRepoId(repo, this.getRepositories().map((r) => r.id));
         }
         const repoObj = new Repo(repo);
+        // dedup
+        if (this.repos.find(r => r.fullpath === repo.fullpath)) {
+          return;
+        }
         if (this.allowIndex) {
             // start indexing on next eventloop (so we don't stuck the gui)
             setTimeout(() => repoObj.indexer.index(), 0);
