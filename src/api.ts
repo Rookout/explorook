@@ -1,6 +1,7 @@
 import fs = require("fs");
 import { posix } from "path";
 import { Repository } from "./common/repository";
+import { notify } from "./exceptionManager";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
@@ -51,7 +52,16 @@ export const resolvers = {
           }
           const res: FileInfo[] = [];
           files.forEach((f) => {
-            const fstats = fs.statSync(join(repo.fullpath, path, f));
+            let fstats;
+            try {
+              fstats = fs.statSync(join(repo.fullpath, path, f));
+            } catch (err) {
+              console.error(`Error while listing file: ${path}`, err);
+              notify(`Error while listing file: ${path}`, { metaData: err });
+            }
+            if (fstats === undefined) {
+              return; // File does not exist, move on
+            }
             let fPath = join(path, f);
             if (fPath.startsWith("/")) {
               // if path starts with "/" the path looks absolute but it's relative so we remove it
