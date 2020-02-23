@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "productName": "Explorook",
     "extends": null,
     "appId": "com.rookout.explorook",
+    "afterSign": "./afterSignHook.js",
     "publish": [
       {
         "provider": "github",
@@ -37,9 +38,6 @@
       "assets/icons/**/*",
       "!**/node_modules/**/*"
     ],
-    "appImage": {
-      "systemIntegration": "doNotAsk"
-    },
     "linux": {
       "target": "appImage",
       "category": "Utility"
@@ -83,10 +81,12 @@
     "@types/electron-store": "^1.3.0",
     "@types/lodash": "^4.14.109",
     "@types/ws": "^5.1.2",
+    "aws-lambda": "^1.0.5",
     "cross-env": "^5.2.0",
     "electron": "^2.0.8",
-    "electron-builder": "^20.19.2",
+    "electron-builder": "^22.3.2",
     "electron-builder-lib": "^20.15.3",
+    "electron-notarize": "^0.2.1",
     "graphql-middleware": "^2.0.2",
     "ts-loader": "^6.0.4",
     "tslint": "^5.10.0",
@@ -106,7 +106,7 @@
     "cors": "^2.8.5",
     "electron-log": "^2.2.15",
     "electron-store": "^2.0.0",
-    "electron-updater": "2.21.10",
+    "electron-updater": "^4.2.0",
     "graphql-yoga": "^1.16.9",
     "isomorphic-git": "^0.39.2",
     "lodash": "^4.17.10",
