@@ -6,11 +6,11 @@
   "scripts": {
     "build": "webpack --config webpack.main.config.js && webpack --config webpack.index-worker.config.js",
     "postbuild": "cp index-worker.html dist/index-worker.html",
-    "package-linux": "build --linux APPIMAGE",
-    "package-windows": "build --win",
+    "package-linux": "electron-build --linux APPIMAGE",
+    "package-windows": "electron-build --win",
     "build-headless": "tsc",
-    "dist": "build",
-    "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && build --mac --win --linux -p always",
+    "dist": "electron-build",
+    "mac-publish": "export ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES=true && electron-build --mac --win --linux -p always",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "cross-env development=1 yarn run build && cross-env development=1 electron ./dist/index.js",
     "debug": "cross-env development=1 $NODE_DEBUG_OPTION yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"

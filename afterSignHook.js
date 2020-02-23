@@ -7,9 +7,14 @@ var electron_notarize = require('electron-notarize');
 module.exports = async function (params) {
     // Only notarize the app on Mac OS only.
     if (process.platform !== 'darwin') {
+        console.log("only running on MAC")
         return;
     }
-    console.log('afterSign hook triggered', params);
+    if (params.packager.constructor.name !== "MacPackager") {
+        console.log("only running after mac packaging")
+        return;
+    }
+    console.log('afterSign hook triggered');
 
     // Same appId in electron-builder.
     let appId = 'com.rookout.explorook'
