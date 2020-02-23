@@ -14,9 +14,9 @@ type FileInfo {
 }
 
 type Author {
-  name: String!
-  email: String!
-  timestamp: Int!
+  name: String
+  email: String
+  timestamp: Int
 }
 
 type CommitDescription {
