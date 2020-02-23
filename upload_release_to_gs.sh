@@ -10,7 +10,7 @@ WINDOWS_FILE_NAME="Explorook Setup ${VERSION}.exe"
 WINDOWS_NO_SPACE_FILE_NAME="explorook-setup-${VERSION}.exe"
 MAC_DMG_FILE_NAME="Explorook-${VERSION}.dmg"
 MAC_ZIP_FILE_NAME="Explorook-${VERSION}-mac.zip"
-LINUX_FILE_NAME="Explorook-${VERSION}-x86_64.AppImage"
+LINUX_FILE_NAME="Explorook-${VERSION}.AppImage"
 
 
 echo "Starting upload to Google Storage Bucket: ${BUCKET}"
