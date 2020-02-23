@@ -9,34 +9,36 @@ const hiddenToken = "⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎�
 const token = ipcRenderer.sendSync("token-request");
 
 export const Token = ({ ...props }) => {
-    const [renderToken, setRenderToken] = useState(hiddenToken);
+  const [renderToken, setRenderToken] = useState(hiddenToken);
 
-    const onCopyClick = e => {
-        copyText(token);
-    };
+  const onCopyClick = e => {
+    copyText(token);
+  };
 
-    const onEyeClicked = e => {
-        if (renderToken === hiddenToken) {
-            setRenderToken(token);
-        } else {
-            setRenderToken(hiddenToken);
-        }
-    };
+  const onEyeClicked = e => {
+    if (renderToken === hiddenToken) {
+      setRenderToken(token);
+    } else {
+      setRenderToken(hiddenToken);
+    }
+  };
 
-    return (
-        <div style={{ marginLeft: "25px" }}>
-            <div id="token-title" className="flex">
-                <p className="gray-shaded">Access Token &nbsp;</p>
-            </div>
-            <div id="token-wrapper">
-                <p id="token-box">{renderToken}
-                { renderToken === hiddenToken ?
-                <Visibility onClick={onEyeClicked} id="token-show-eye" className="small-icon" />
-                :
-                <VisibilityOff onClick={onEyeClicked} id="token-show-eye" className="small-icon" />
-                }</p>
-                <Button onClick={onCopyClick} id="copy-token-btn" variant="contained"><ContentCopy style={{ fontSize: 20 }} />&nbsp;Copy</Button>
-            </div>
+  return (
+    <div style={{ marginLeft: "25px" }}>
+      <div id="token-title" className="flex">
+        <p className="gray-shaded">Access Token &nbsp;</p>
+      </div>
+      <div id="token-wrapper">
+        <div id="token-box">
+          <p style={{ marginTop: '-6px' }}>{renderToken}</p>
+          {renderToken === hiddenToken ?
+            <Visibility onClick={onEyeClicked} id="token-show-eye" className="small-icon" />
+            :
+            <VisibilityOff onClick={onEyeClicked} id="token-show-eye" className="small-icon" />
+          }
         </div>
-    );
+        <Button onClick={onCopyClick} id="copy-token-btn" variant="contained"><ContentCopy style={{ fontSize: 20 }} />&nbsp;Copy</Button>
+      </div>
+    </div>
+  );
 };

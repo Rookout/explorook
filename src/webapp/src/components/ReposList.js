@@ -63,12 +63,14 @@ export const ReposList = ({ ...props }) => {
 
     const onAddClicked = async () => {
         const win = remote.getCurrentWindow();
-        const folders = dialog.showOpenDialog(win, { properties: ["openDirectory", "multiSelections"] });
-        if (!folders) { // user closed dialog without choosing
+        const { filePaths } = await dialog.showOpenDialog(win, { properties: ["openDirectory", "multiSelections"] });
+        if (!filePaths) { // user closed dialog without choosing
+          console.log("hedwig");
             return;
         }
-        for (let i = 0; i < folders.length; i++) {
-            const folder = folders[i];
+        console.log("hedwig", filePaths);
+        for (let i = 0; i < filePaths.length; i++) {
+            const folder = filePaths[i];
             const repoName = path.basename(folder);
             const newRepo = { repoName, fullpath: folder };
             const shouldWarn = !store.get("non-git-dialog-never-ask-again", false) && await shouldWarnNonGit(folder);

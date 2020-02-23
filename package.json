@@ -83,7 +83,7 @@
     "@types/ws": "^5.1.2",
     "aws-lambda": "^1.0.5",
     "cross-env": "^5.2.0",
-    "electron": "^2.0.8",
+    "electron": "^8.0.1",
     "electron-builder": "^22.3.2",
     "electron-builder-lib": "^20.15.3",
     "electron-notarize": "^0.2.1",
