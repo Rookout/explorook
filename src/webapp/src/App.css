@@ -95,9 +95,11 @@ div, span {
 }
 
 #token-box {
+  display: flex;
+  height: 25px;
   padding: 10px;
   background-color: #2F3545;
-  width: 75%;
+  width: 100%;
   max-width: 500px;
   color: #B6C8D4;
   font-family: Roboto;
@@ -109,7 +111,8 @@ div, span {
 }
 
 #token-show-eye {
-  float: right;
+  margin-left: auto;
+  justify-self: flex-end;
   cursor: pointer;
 }
 
@@ -121,7 +124,6 @@ div, span {
 #copy-token-btn {
   height: 43px;
   font-weight: 400;
-  margin-top: 18px;
   font-size: 14px;
   font-family: Roboto;
   color: white;
