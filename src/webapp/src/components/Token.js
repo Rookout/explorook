@@ -4,7 +4,7 @@ import { VisibilityOff, Visibility, ContentCopy } from "@material-ui/icons";
 import { copyText } from "../utils";
 import { ipcRenderer } from "electron";
 
-const hiddenToken = "⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎⁎";
+const hiddenToken = "****************************************";
 
 const token = ipcRenderer.sendSync("token-request");
 
@@ -30,7 +30,7 @@ export const Token = ({ ...props }) => {
       </div>
       <div id="token-wrapper">
         <div id="token-box">
-          <p style={{ marginTop: '-6px' }}>{renderToken}</p>
+          <p style={{ marginTop: 0, paddingTop: 0, height: 'auto' }}>{renderToken}</p>
           {renderToken === hiddenToken ?
             <Visibility onClick={onEyeClicked} id="token-show-eye" className="small-icon" />
             :
