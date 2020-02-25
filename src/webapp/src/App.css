@@ -122,7 +122,7 @@ div, span {
 }
 
 #copy-token-btn {
-  height: 43px;
+  height: 44px;
   font-weight: 400;
   font-size: 14px;
   font-family: Roboto;
@@ -175,7 +175,7 @@ div, span {
 }
 
 #version-title {
-  padding-top: 10px;
+  padding-top: 15px;
   margin-left: 5px;
   font-size: 12px;
 }

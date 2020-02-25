@@ -9,7 +9,8 @@ import {
   nativeImage,
   Notification,
   systemPreferences,
-  Tray
+  Tray,
+  nativeTheme
 } from "electron";
 import * as log from "electron-log";
 import { autoUpdater, UpdateInfo } from "electron-updater";
@@ -65,7 +66,7 @@ function getAppIcon() {
 
 function getTrayIcon() {
   if (process.platform.match("darwin")) {
-    return systemPreferences.isDarkMode() ? "mac/explorook_white_tray@21x21.png" : "mac/explorook_tray@21x21.png";
+    return nativeTheme.shouldUseDarkColors ? "mac/explorook_white_tray@21x21.png" : "mac/explorook_tray@21x21.png";
   }
   return getAppIcon();
 }
@@ -387,7 +388,7 @@ function maximize() {
 function openTray() {
   let darkMode = false;
   if (process.platform === "darwin") {
-    darkMode = systemPreferences.isDarkMode();
+    darkMode = nativeTheme.shouldUseDarkColors;
   }
   tray = new Tray(TRAY_ICON);
   const contextMenu = Menu.buildFromTemplate([
