@@ -32,6 +32,7 @@ export const App = ({ ...props }) => {
     <div style={{ display: "flex", height: "100%", flexDirection: "column" }}>
       <div>
         <Header />
+        <Token />
       </div>
       <div style={{ overflow: "auto"}}>
         <div id="content-container">
