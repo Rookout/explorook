@@ -392,7 +392,6 @@ function openTray() {
   }
   tray = new Tray(TRAY_ICON);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Copy Token", icon: darkMode ? COPY_ICON_WHITE : COPY_ICON_BLACK, click: () => clipboard.writeText(token) },
     { label: "Config...", icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK, click: maximize },
     { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: quitApplication },
   ]);
