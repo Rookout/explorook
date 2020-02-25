@@ -67,6 +67,7 @@ export const start = (options: StartOptions): Promise<any> => {
   server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
   server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
 
+  server.express.use(authorizationMiddleware(settings.accessToken));
   // tslint:disable-next-line:no-console
   return server.start({
       // fix webpack doesn't bundle subscriptions
