@@ -10,7 +10,7 @@ import { getRepoId } from "./git";
 import MemStore from "./mem-store";
 
 interface IStore {
-    get(key: string, defaultValue?: string): string;
+    get(key: any, defaultValue?: string): string;
     set(key: string, value: string): void;
 }
 
