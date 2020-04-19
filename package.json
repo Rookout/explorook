@@ -22,9 +22,9 @@
     "afterSign": "./afterSignHook.js",
     "publish": [
       {
-        "provider": "github",
-        "owner": "rookout",
-        "repo": "explorook"
+        "provider": "s3",
+        "endpoint": "http://localhost:9000",
+        "bucket": "crap"
       }
     ],
     "directories": {
