@@ -32,7 +32,7 @@ export const Header = () => {
             </div>
             <div className="Header flex">
                 <img src="logo.png" className="Header-logo" />
-                <p className="Header-title" title={EXPLOROOK_VERSION}>Explorook</p>
+                <p className="Header-title" title={EXPLOROOK_VERSION}>Rookout Desktop App</p>
                 <p className="gray-shaded" id="version-title">{EXPLOROOK_VERSION}</p>
             </div>
             <hr className="Header-line"></hr>

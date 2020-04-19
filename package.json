@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.2.19",
+  "version": "1.2.20",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "debug": "cross-env development=1 $NODE_DEBUG_OPTION yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
   },
   "build": {
-    "productName": "Explorook",
+    "productName": "Rookout Desktop App",
     "extends": null,
     "appId": "com.rookout.explorook",
     "afterSign": "./afterSignHook.js",
