@@ -3,6 +3,7 @@ import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
+import { getPerforceManagerSingleton, IPerforceView } from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
@@ -29,6 +30,14 @@ export const resolvers = {
   Mutation: {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       return context.onAddRepoRequest(args.fullpath);
+    },
+    changePerforceViews: async (parent: any, args: {views: string[]}): Promise<boolean> => {
+      const perforceManager = getPerforceManagerSingleton();
+      return perforceManager ? (await perforceManager.changeViews(args.views)) : false;
+    },
+    switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<boolean> => {
+      const perforceManager = getPerforceManagerSingleton();
+      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : false;
     }
   },
   Query: {
@@ -99,6 +108,10 @@ export const resolvers = {
     refreshIndex(parent: any, args: { repo: Repository }): boolean {
       args.repo.reIndex();
       return true;
+    },
+    getAllPerforceViews: async (parent: any): Promise<IPerforceView[]> => {
+      const perforceManager = getPerforceManagerSingleton();
+      return perforceManager ? perforceManager.getAllViews() : [];
     }
-  },
+  }
 };

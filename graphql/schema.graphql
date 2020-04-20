@@ -32,8 +32,16 @@ type Query {
   listRepos: [Repository!]!
   refreshIndex(repoId: String!): Boolean
   repository(repoId: String!): Repository!
+  getAllPerforceViews: [PerforceView]
 }
 
 type Mutation {
   addRepository(fullpath: String): Boolean
+  changePerforceViews(views: [String]!): Boolean
+  switchPerforceChangelist(changelistId: String!): Boolean
+}
+
+type PerforceView {
+  name: String!
+  map: String!
 }

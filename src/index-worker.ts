@@ -1,9 +1,10 @@
-import { IpcMessageEvent, ipcRenderer, remote, IpcRendererEvent } from "electron";
+import { IpcMessageEvent, ipcRenderer, IpcRendererEvent, remote } from "electron";
 import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
+import {changePerforceManagerSingleton} from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
@@ -81,6 +82,16 @@ ipcRenderer.on("edit-repo", (e: IpcRendererEvent, args: { id: string, repoName: 
     const { id, repoName } = args;
     repStore.update(id, repoName);
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+});
+ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionString: string) => {
+    let isSuccess = false;
+    try {
+        isSuccess = !!changePerforceManagerSingleton(connectionString);
+    } catch (e) {
+        console.error(`Failed to init perforce manager with port :${connectionString}`);
+    }
+
+    ipcRenderer.sendTo(mainWindowId, "test-perforce-connection-result", isSuccess);
 });
 
 ipcRenderer.on("repos-request", (e: IpcRendererEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));
