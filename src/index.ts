@@ -111,7 +111,7 @@ function registerIpc() {
   firstTimeAutoLaunch();
   ipcMain.on("hidden", displayWindowHiddenNotification);
   ipcMain.on("start-server-error", (e: IpcMainEvent, err: any) => {
-    displayNotification("Explorook", `Explorook failed to start local server: ${err}`);
+    displayNotification("Rookout Desktop App", `App failed to start local server: ${err}`);
     track("start-server-error", { err });
   });
   ipcMain.on("track", (e: IpcMainEvent, trackEvent: string, props: any) => {
@@ -267,7 +267,7 @@ async function update() {
     if (updateInterval) {
       clearInterval(updateInterval);
     }
-    displayNotification(`Update available (${info.version})`, "a new version of Explorook is available and will be installed on next exit");
+    displayNotification(`Update available (${info.version})`, "a new version of the app is available and will be installed on next exit");
   });
   const tryUpdate = async () => {
     try {
@@ -344,7 +344,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
       app.dock.hide();
     }
     if (firstTimeLaunch) {
-      displayNotification("Explorook is running in the background", "You can access Explorook via the tray icon");
+      displayNotification("Rookout's Desktop App is running in the background", "You can access the app via the tray icon");
     }
   });
 

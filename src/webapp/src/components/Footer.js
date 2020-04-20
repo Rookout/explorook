@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Checkbox, FormGroup } from "@material-ui/core";
 import { ipcRenderer } from 'electron';
 
-const AUTO_LAUNCH_EXPLANATION = "Run Explorook on machine startup";
+const AUTO_LAUNCH_EXPLANATION = "Run Rookout's Desktop App on machine startup";
 
 const styles = {
     root: {
@@ -37,7 +37,7 @@ export const Footer = ({ classes, ...props }) => {
 
     const onExceptionManagerEnableChecked = event => {
         ipcRenderer.send("exception-manager-enabled-set", event.target.checked);
-        alert("Changes will take effect after you restart Explorook");
+        alert("Changes will take effect after you restart the app");
     };
 
     const getPlatformCheckboxText = () => {
