@@ -17,7 +17,7 @@ exports.default = async function(configuration) {
     "--gcloudhsmkeyid", GOOGLE_HSM_KEY_ID,
     "--tsaurl", "http://timestamp.digicert.com",
     "--certfile", CERTIFICATE_PATH,
-    "--name", configuration.name,
+    "--name", `"${configuration.name}"`,
     "--url", configuration.site,
     "--replace",
     `"${PE_PATH}"`,
