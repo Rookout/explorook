@@ -20,7 +20,7 @@ const store = new Store({ name: "explorook" });
 const PERFORCE_ROOKOUT_CLIENT_PREFIX = "ROOKOUT_DESKTOP_";
 // Currently supporting only Windows and OSX
 const DARWIN_ROOT = `${process.env["HOME"]}/Library/Application\ Support/Rookout/Perforce_Root`;
-const WINDOWS_ROOT = "%appdata%\\Rookout\\Perforce_Root";
+const WINDOWS_ROOT = `${process.env["APPDATA"]}\\Rookout\\Perforce_Root`;
 
 class PerforceManager {
     private p4: any;
@@ -60,7 +60,7 @@ class PerforceManager {
         const client = this.getCurrentClient();
 
         const allViews = await this.getAllViews();
-        const targetViews = _.filter(allViews, view => _.some(views, v => v === view.name));
+        const targetViews = _.filter(allViews, (view: IPerforceView) => _.some(views, (v: string) => v === view.name));
 
         // Removing all existing views
         for (let i = 0;; i++) {
@@ -101,7 +101,7 @@ class PerforceManager {
         }
 
 
-        return _.map(targetViews, view => `${client.Root}/${view.name}`);
+        return _.map(targetViews, view => `${client.Root}${isWin ? "\\" : "/"}${view.name}`);
     }
 
     public getCurrentViewRepos(): string[] {
