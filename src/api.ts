@@ -1,4 +1,5 @@
 import fs = require("fs");
+import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
@@ -31,9 +32,27 @@ export const resolvers = {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       return context.onAddRepoRequest(args.fullpath);
     },
-    changePerforceViews: async (parent: any, args: {views: string[]}): Promise<boolean> => {
+    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       const perforceManager = getPerforceManagerSingleton();
-      return perforceManager ? (await perforceManager.changeViews(args.views)) : false;
+
+      if (!perforceManager) {
+        return false;
+      }
+
+      const newRepos = await perforceManager.changeViews(args.views);
+      if (_.isEmpty(newRepos) && !_.isEmpty(args.views)) {
+        return false;
+      }
+
+      const addRepoPromises = [] as Array<Promise<boolean>>;
+
+      _.forEach(newRepos, (repo: string) => {
+        addRepoPromises.push(context.onAddRepoRequest(repo));
+      });
+
+      const success = await Promise.all(addRepoPromises);
+
+      return _.every(success, (s: boolean) => s);
     },
     switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<boolean> => {
       const perforceManager = getPerforceManagerSingleton();

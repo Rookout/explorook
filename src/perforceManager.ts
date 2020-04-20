@@ -1,9 +1,7 @@
-import {ipcRenderer} from "electron";
 import * as Store from "electron-store";
-import _ = require("lodash");
-import { P4 } from "p4api";
-import {Repository} from "./common/repository";
+import {P4} from "p4api";
 import {repStore} from "./repoStore";
+import _ = require("lodash");
 
 
 export interface IPerforceView {
@@ -13,7 +11,7 @@ export interface IPerforceView {
 
 export interface IPerforceManager {
     getAllViews(): Promise<IPerforceView[]>;
-    changeViews(views: string[]): Promise<boolean>;
+    changeViews(views: string[]): Promise<string[]>;
     getCurrentViewRepos(): string[];
     switchChangelist(changelistId: string): Promise<boolean>;
     getCurrentClient(): any;
@@ -58,7 +56,7 @@ class PerforceManager {
         return result.stat || [];
     }
 
-    public async changeViews(views: string[]): Promise<boolean> {
+    public async changeViews(views: string[]): Promise<string[]> {
         const client = this.getCurrentClient();
 
         const allViews = await this.getAllViews();
@@ -93,30 +91,17 @@ class PerforceManager {
         let result = await this.p4.cmd("client -i", client);
 
         if (result.error) {
-            return false;
+            return [];
         }
 
         result = await this.p4.cmd("sync -f");
 
         if (result.error) {
-            return false;
+            return [];
         }
 
-        const repoAddingPromises = [] as Array<Promise<string>>;
 
-        _.forEach(targetViews, view => {
-            repoAddingPromises.push(repStore.add({
-                id: view.name,
-                fullpath: `${client.Root}/${view.name}`,
-                repoName: view.name,
-            }));
-        });
-
-        await Promise.all(repoAddingPromises);
-
-        ipcRenderer.send( "refresh-repos", await repStore.getRepositories());
-
-        return true;
+        return _.map(targetViews, view => `${client.Root}/${view.name}`);
     }
 
     public getCurrentViewRepos(): string[] {
