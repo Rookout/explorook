@@ -13,7 +13,7 @@ MAC_DMG_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}.dmg"
 MAC_ZIP_FILE_NAME="Rookout Desktop App-${VERSION}-mac.zip"
 MAC_ZIP_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}-mac.zip"
 LINUX_FILE_NAME="Rookout Desktop App-${VERSION}.AppImage"
-LINUX_NO_SPACE_FILE_NAME="Rookout Desktop App-${VERSION}.AppImage"
+LINUX_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}.AppImage"
 
 
 echo "Starting upload to Google Storage Bucket: ${BUCKET}"
