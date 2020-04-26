@@ -35,10 +35,15 @@ type Query {
   getAllPerforceViews: [PerforceView]
 }
 
+type OperationStatus {
+  isSuccess: Boolean!
+  reason: String
+}
+
 type Mutation {
   addRepository(fullpath: String): Boolean
-  changePerforceViews(views: [String]!): Boolean
-  switchPerforceChangelist(changelistId: String!): Boolean
+  changePerforceViews(views: [String]!): OperationStatus!
+  switchPerforceChangelist(changelistId: String!): OperationStatus!
 }
 
 type PerforceView {

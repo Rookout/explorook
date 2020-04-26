@@ -32,16 +32,16 @@ export const resolvers = {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       return context.onAddRepoRequest(args.fullpath);
     },
-    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
+    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
 
       if (!perforceManager) {
-        return false;
+        return { isSuccess: false, reason: "TODO" };
       }
 
       const newRepos = await perforceManager.changeViews(args.views);
       if (_.isEmpty(newRepos) && !_.isEmpty(args.views)) {
-        return false;
+        return { isSuccess: false, reason: "TODO" };
       }
 
       const addRepoPromises = [] as Array<Promise<boolean>>;
@@ -52,11 +52,15 @@ export const resolvers = {
 
       const success = await Promise.all(addRepoPromises);
 
-      return _.every(success, (s: boolean) => s);
+      const allSuccess = _.every(success, (s: boolean) => s);
+      return {
+        isSuccess: allSuccess,
+        reason: "TODO"
+      }
     },
-    switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<boolean> => {
+    switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
-      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : false;
+      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "TODO"};
     }
   },
   Query: {

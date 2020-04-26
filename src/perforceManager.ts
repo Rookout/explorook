@@ -19,7 +19,7 @@ export interface IPerforceManager {
     getAllViews(): Promise<IPerforceView[]>;
     changeViews(views: string[]): Promise<IPerforceRepo[]>;
     getCurrentViewRepos(): string[];
-    switchChangelist(changelistId: string): Promise<boolean>;
+    switchChangelist(changelistId: string): Promise<OperationStatus>;
     getCurrentClient(): any;
 }
 
@@ -48,26 +48,25 @@ class PerforceManager {
         const currentRookoutClientName = `${PERFORCE_ROOKOUT_CLIENT_PREFIX}_${client?.Owner}_${client?.Host}`;
 
         // Checking if current client is not the wanted client. If so, changing it.
-        if (client && client.Client !== currentRookoutClientName) {
-            // Check if workspace exists. If not, create it.
-            const allWorkspaces = this.p4.cmdSync("workspaces").stat;
-            if (!_.find(allWorkspaces, workspace => workspace.Client === currentRookoutClientName)) {
-                // Creating a new client for Rookout desktop app with out own root so we can change depots when needed
-                const newClient = {...client, Client: currentRookoutClientName};
-                this.p4.cmdSync(`client -i`, newClient);
-            }
-
-            this.p4 = new P4({
-                P4PORT: perforceConnectionString,
-                P4CLIENT: currentRookoutClientName
-            });
+        if (!client || client.Client === currentRookoutClientName) {
+          return;
         }
+        // Check if workspace exists. If not, create it.
+        const allWorkspaces = this.p4.cmdSync("workspaces")?.stat;
+        if (!_.find(allWorkspaces, workspace => workspace.Client === currentRookoutClientName)) {
+            // Creating a new client for Rookout desktop app without own root so we can change depots when needed
+            const newClient = { ...client, Client: currentRookoutClientName };
+            this.p4.cmdSync(`client -i`, newClient);
+        }
+
+        this.p4 = new P4({
+            P4PORT: perforceConnectionString,
+            P4CLIENT: currentRookoutClientName
+        });
     }
 
     public async getAllViews(): Promise<IPerforceView[]> {
-        const result = await this.p4.cmd("depots");
-
-        return result.stat || [];
+        return await this.p4.cmd("depots")?.stat || [];
     }
 
     public async changeViews(views: string[]): Promise<IPerforceRepo[]> {
@@ -125,27 +124,30 @@ class PerforceManager {
     public getCurrentViewRepos(): string[] {
         const client = this.getCurrentClient();
 
-        const views = [] as string[];
+        const views: string[] = [];
 
         for (let i = 0;; i++) {
             const currentView = client["View" + i];
             if (!currentView) break;
 
-            views.push(client.Root + currentView.split(`//${client.Client}`)[1]);
+            views.push(client.Root + currentView.split(`//${client.Client}`)?.[1]);
         }
 
         return views;
     }
 
-    public async switchChangelist(changelistId: string): Promise<boolean> {
+    public async switchChangelist(changelistId: string): Promise<OperationStatus> {
         const result = await this.p4.cmd(`sync @${changelistId}`);
 
-        return !result.error;
+        return {
+          isSuccess: !result.error,
+          reason: result?.error?.toString()
+        }
     }
 
     public getCurrentClient(): any {
-        const stat = this.p4.cmdSync("client -o").stat;
-        return stat ? stat[0] : undefined;
+      const res = this.p4.cmdSync("client -o");
+      return _.first(res?.stat);
     }
 }
 
