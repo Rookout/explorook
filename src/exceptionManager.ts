@@ -7,8 +7,9 @@ export const initExceptionManager = (releaseStage: string, appVersion: string, g
     if (!exceptionManagerInstance) {
         exceptionManagerInstance = bugsnag({
             onUncaughtException: (err: any) => {
-                // override default behaviour to not crash
-                // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
+              // override default behaviour to not crash
+              // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
+              console.log(err)
             },
             apiKey: "6e673fda179162f48a2c6b5d159552d2",
             appType: "explorook-electron",
@@ -26,10 +27,7 @@ export const initExceptionManager = (releaseStage: string, appVersion: string, g
     return exceptionManagerInstance;
 };
 
-export const notify = (error: NotifiableError, opts?: INotifyOpts): boolean => {
-    if (exceptionManagerInstance) {
-        return exceptionManagerInstance.notify(error, opts);
-    }
-    return true;
+export const notify = (error: NotifiableError, opts?: INotifyOpts) => {
+    exceptionManagerInstance?.notify(error, opts);
 };
 

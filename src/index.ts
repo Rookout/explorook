@@ -151,8 +151,8 @@ function registerIpc() {
     e.returnValue = store.get("has-signed-eula", false);
   });
   ipcMain.on("signed-eula", (e: IpcMainEvent) => {
-    if (dataCollectionEnabled && !process.env.development) {
-      initExceptionManager("production", app.getVersion(), () => userId);
+    if (dataCollectionEnabled || process.env.development) {
+      initExceptionManager(process.env.development ? "development" : "production", app.getVersion(), () => userId);
       initAnalytics();
       track("signed-eula");
     }
@@ -223,8 +223,8 @@ function main() {
   userSite = store.getOrCreate("user-site", "default");
   dataCollectionEnabled = store.get("sentry-enabled", true);
   signedEula = store.get("has-signed-eula", false);
-  if (signedEula && dataCollectionEnabled && !process.env.development) {
-    initExceptionManager("production", app.getVersion(), () => userId);
+  if (signedEula && (dataCollectionEnabled || process.env.development)) {
+    initExceptionManager(process.env.development ? "development" : "production", app.getVersion(), () => userId);
     initAnalytics();
   }
 
