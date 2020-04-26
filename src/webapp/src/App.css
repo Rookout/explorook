@@ -131,6 +131,21 @@ div, span {
   background-color: #955FF8;
 }
 
+#test-connection-btn {
+  height: 44px;
+  font-weight: 400;
+  font-size: 14px;
+  font-family: Roboto;
+  color: white;
+  border-radius: 0;
+  background-color: #955FF8;
+}
+
+#perforce-connection-input {
+  width: 80%;
+  color: white;
+}
+
 #close-window-btn {
   color: white;
   margin: 10px;

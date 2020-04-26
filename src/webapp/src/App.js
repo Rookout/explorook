@@ -9,6 +9,7 @@ import { ReposList } from "./components/ReposList";
 import { EulaModal } from "./components/EulaModal";
 import { ipcRenderer } from "electron";
 import "./App.scss";
+import {PerforceConnection} from "./components/PerforceConnection";
 
 const INITIAL_HAS_SIGNED_EULA = ipcRenderer.sendSync("has-signed-eula");
 
@@ -37,6 +38,7 @@ export const App = ({ ...props }) => {
       <div style={{ overflow: "auto"}}>
         <div id="content-container">
           { hasSignedEula && <ReposList /> }
+            {hasSignedEula && <PerforceConnection />}
           { !hasSignedEula && <EulaModal setSignedEula={setHasSignedEula} {...props} /> }
         </div>
       </div>

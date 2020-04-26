@@ -1,8 +1,10 @@
 import fs = require("fs");
+import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
+import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
@@ -29,6 +31,37 @@ export const resolvers = {
   Mutation: {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       return context.onAddRepoRequest(args.fullpath);
+    },
+    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }):
+        Promise<OperationStatus> => {
+      const perforceManager = getPerforceManagerSingleton();
+
+      if (!perforceManager) {
+        return { isSuccess: false, reason: "Perforce client not initialized" };
+      }
+
+      const newRepos = await perforceManager.changeViews(args.views);
+      if (_.isEmpty(newRepos) && !_.isEmpty(args.views)) {
+        return { isSuccess: false, reason: "No depots with those names exist" };
+      }
+
+      const addRepoPromises = [] as Array<Promise<boolean>>;
+
+      _.forEach(newRepos, (repo: IPerforceRepo) => {
+        addRepoPromises.push(context.onAddRepoRequest(repo.fullPath, repo.id));
+      });
+
+      const success = await Promise.all(addRepoPromises);
+
+      const allSuccess = _.every(success, (s: boolean) => s);
+      return {
+        isSuccess: allSuccess,
+        reason: !allSuccess ? "Failed to create some of the repos in Explorook" : undefined
+      };
+    },
+    switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
+      const perforceManager = getPerforceManagerSingleton();
+      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
     }
   },
   Query: {
@@ -99,6 +132,10 @@ export const resolvers = {
     refreshIndex(parent: any, args: { repo: Repository }): boolean {
       args.repo.reIndex();
       return true;
+    },
+    getAllPerforceViews: async (parent: any): Promise<IPerforceView[]> => {
+      const perforceManager = getPerforceManagerSingleton();
+      return perforceManager ? perforceManager.getAllViews() : [];
     }
-  },
+  }
 };
