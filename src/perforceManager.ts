@@ -4,6 +4,10 @@ import {P4} from "p4api";
 import MemStore from "./mem-store";
 import {repStore} from "./repoStore";
 
+export interface IPerforceRepo {
+    fullPath: string;
+    id: string;
+}
 
 export interface IPerforceView {
     map: string;
@@ -12,7 +16,7 @@ export interface IPerforceView {
 
 export interface IPerforceManager {
     getAllViews(): Promise<IPerforceView[]>;
-    changeViews(views: string[]): Promise<string[]>;
+    changeViews(views: string[]): Promise<IPerforceRepo[]>;
     getCurrentViewRepos(): string[];
     switchChangelist(changelistId: string): Promise<boolean>;
     getCurrentClient(): any;
@@ -65,7 +69,7 @@ class PerforceManager {
         return result.stat || [];
     }
 
-    public async changeViews(views: string[]): Promise<string[]> {
+    public async changeViews(views: string[]): Promise<IPerforceRepo[]> {
         const client = this.getCurrentClient();
 
         const allViews = await this.getAllViews();
@@ -115,7 +119,7 @@ class PerforceManager {
         }
 
 
-        return _.map(targetViews, view => `${client.Root}${isWin ? "\\" : "/"}${view.name}`);
+        return _.map(targetViews, view => ({fullPath: `${client.Root}${isWin ? "\\" : "/"}${view.name}`, id: `Perforce-${view.name}`}));
     }
 
     public getCurrentViewRepos(): string[] {

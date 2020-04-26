@@ -15,7 +15,7 @@ import {
   resolveRepoFromId
 } from "./middlewares";
 
-export type onAddRepoRequestHandler = (fullpath: string) => Promise<boolean>;
+export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
 export interface StartOptions {
   accessToken?: string;

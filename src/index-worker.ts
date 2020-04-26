@@ -33,7 +33,7 @@ ipcRenderer.once("exception-manager-enabled-changed", (e: IpcRendererEvent, enab
     }
 });
 
-const onAddRepoRequest = async (fullpath: string) => {
+const onAddRepoRequest = async (fullpath: string, id?: string) => {
     ipcRenderer.send("track", "repo-add-request", { fullpath });
     if (!fullpath) {
         // will pop the menu for the user to choose repository
@@ -43,7 +43,7 @@ const onAddRepoRequest = async (fullpath: string) => {
     }
     const repoName = basename(fullpath);
     // add repository
-    const repoId = await repStore.add({ fullpath, repoName, id: undefined });
+    const repoId = await repStore.add({ fullpath, repoName, id });
     // tell webview to refresh repos view
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
     ipcRenderer.send("track", "repo-add", { repoName, repoId });

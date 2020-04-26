@@ -4,7 +4,7 @@ import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { getLastCommitDescription as getLastCommitDescription } from "./git";
-import { getPerforceManagerSingleton, IPerforceView } from "./perforceManager";
+import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
@@ -46,8 +46,8 @@ export const resolvers = {
 
       const addRepoPromises = [] as Array<Promise<boolean>>;
 
-      _.forEach(newRepos, (repo: string) => {
-        addRepoPromises.push(context.onAddRepoRequest(repo));
+      _.forEach(newRepos, (repo: IPerforceRepo) => {
+        addRepoPromises.push(context.onAddRepoRequest(repo.fullPath, repo.id));
       });
 
       const success = await Promise.all(addRepoPromises);
