@@ -32,16 +32,17 @@ export const resolvers = {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       return context.onAddRepoRequest(args.fullpath);
     },
-    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<OperationStatus> => {
+    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }):
+        Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
 
       if (!perforceManager) {
-        return { isSuccess: false, reason: "TODO" };
+        return { isSuccess: false, reason: "Perforce client not initialized" };
       }
 
       const newRepos = await perforceManager.changeViews(args.views);
       if (_.isEmpty(newRepos) && !_.isEmpty(args.views)) {
-        return { isSuccess: false, reason: "TODO" };
+        return { isSuccess: false, reason: "No depots with those names exist" };
       }
 
       const addRepoPromises = [] as Array<Promise<boolean>>;
@@ -55,12 +56,12 @@ export const resolvers = {
       const allSuccess = _.every(success, (s: boolean) => s);
       return {
         isSuccess: allSuccess,
-        reason: "TODO"
-      }
+        reason: !allSuccess ? "Failed to create some of the repos in Explorook" : undefined
+      };
     },
     switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
-      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "TODO"};
+      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
     }
   },
   Query: {

@@ -2,6 +2,7 @@ const path = require("path");
 import * as Store from "electron-store";
 import _ = require("lodash");
 import {P4} from "p4api";
+import {notify} from "./exceptionManager";
 import MemStore from "./mem-store";
 import {repStore} from "./repoStore";
 
@@ -35,12 +36,14 @@ const PERFORCE_ROOKOUT_CLIENT_PREFIX = "ROOKOUT_DESKTOP_";
 // Currently supporting only Windows and OSX
 const ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\Perforce_Root") :
     path.join(process.env.HOME, "Library/Application Support/Rookout/Perforce_Root");
+const P4API_TIMEOUT = 3000;
 
 class PerforceManager {
     private p4: any;
     constructor(perforceConnectionString: string) {
         this.p4 = new P4({
-            P4PORT: perforceConnectionString
+            P4PORT: perforceConnectionString,
+            P4API_TIMEOUT
         });
 
         // Getting the current client of the connected perforce server. The result contains "stat" which is a list of all the actual results;
@@ -60,13 +63,15 @@ class PerforceManager {
         }
 
         this.p4 = new P4({
-            P4PORT: perforceConnectionString,
-            P4CLIENT: currentRookoutClientName
-        });
+                P4PORT: perforceConnectionString,
+                P4CLIENT: currentRookoutClientName,
+                P4API_TIMEOUT
+            });
     }
 
+
     public async getAllViews(): Promise<IPerforceView[]> {
-        return await this.p4.cmd("depots")?.stat || [];
+        return (await this.p4.cmd("depots"))?.stat || [];
     }
 
     public async changeViews(views: string[]): Promise<IPerforceRepo[]> {
@@ -108,12 +113,14 @@ class PerforceManager {
         let result = await this.p4.cmd("client -i", client);
 
         if (result.error) {
+            notify(result.error);
             return [];
         }
 
         result = await this.p4.cmd("sync -f");
 
         if (result.error) {
+            notify(result.error);
             return [];
         }
 
@@ -138,16 +145,19 @@ class PerforceManager {
 
     public async switchChangelist(changelistId: string): Promise<OperationStatus> {
         const result = await this.p4.cmd(`sync @${changelistId}`);
+        if (result.error) {
+            notify(result.error);
+        }
 
         return {
           isSuccess: !result.error,
           reason: result?.error?.toString()
-        }
+        };
     }
 
     public getCurrentClient(): any {
       const res = this.p4.cmdSync("client -o");
-      return _.first(res?.stat);
+      return _.head(res?.stat);
     }
 }
 
