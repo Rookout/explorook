@@ -1,3 +1,4 @@
+const path = require("path");
 import * as Store from "electron-store";
 import _ = require("lodash");
 import {P4} from "p4api";
@@ -32,8 +33,8 @@ try {
 }
 const PERFORCE_ROOKOUT_CLIENT_PREFIX = "ROOKOUT_DESKTOP_";
 // Currently supporting only Windows and OSX
-const DARWIN_ROOT = `${process.env.HOME}/Library/Application\ Support/Rookout/Perforce_Root`;
-const WINDOWS_ROOT = `${process.env.APPDATA}\\Rookout\\Perforce_Root`;
+const ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\Perforce_Root") :
+    path.join(process.env.HOME, "Library/Application Support/Rookout/Perforce_Root");
 
 class PerforceManager {
     private p4: any;
@@ -88,8 +89,7 @@ class PerforceManager {
         }
 
         // Making sure we create the folders in the right root.
-        const isWin = process.platform === "win32";
-        client.Root = isWin ? WINDOWS_ROOT : DARWIN_ROOT;
+        client.Root = ROOT;
 
         // Remove all existing depots from the repStore
         const existingRepos = await repStore.getRepositories();
@@ -119,7 +119,7 @@ class PerforceManager {
         }
 
 
-        return _.map(targetViews, view => ({fullPath: `${client.Root}${isWin ? "\\" : "/"}${view.name}`, id: `Perforce-${view.name}`}));
+        return _.map(targetViews, view => ({fullPath: path.join(client.Root, view.name), id: `Perforce-${view.name}`}));
     }
 
     public getCurrentViewRepos(): string[] {
