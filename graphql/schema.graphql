@@ -33,6 +33,7 @@ type Query {
   refreshIndex(repoId: String!): Boolean
   repository(repoId: String!): Repository!
   getAllPerforceViews: [PerforceView]
+  getPerforceChangelistForFile(repoId: String!, path: String!): String
 }
 
 type OperationStatus {

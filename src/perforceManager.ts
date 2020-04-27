@@ -16,12 +16,19 @@ export interface IPerforceView {
     name: string;
 }
 
+export interface IPerforceWorkspace {
+    client: string;
+    Owner: string;
+    Root: string;
+}
+
 export interface IPerforceManager {
     getAllViews(): Promise<IPerforceView[]>;
     changeViews(views: string[]): Promise<IPerforceRepo[]>;
     getCurrentViewRepos(): string[];
     switchChangelist(changelistId: string): Promise<OperationStatus>;
     getCurrentClient(): any;
+    getChangelistForFile(fullPath: string): Promise<string>;
 }
 
 let store: any;
@@ -158,6 +165,20 @@ class PerforceManager {
     public getCurrentClient(): any {
       const res = this.p4.cmdSync("client -o");
       return _.head(res?.stat);
+    }
+
+    public async getChangelistForFile(fullPath: string): Promise<string> {
+        const workspaces = (await this.p4.cmd("workspaces"))?.stat;
+        const client = this.getCurrentClient();
+        let workspace: IPerforceWorkspace = null;
+        for (let i = 0; i < workspaces.length; i++) {
+            if (fullPath.includes(workspaces[i].Root) && client.Owner === workspaces[i].Owner) {
+                workspace = workspaces[i];
+                break;
+            }
+        }
+
+        return workspace ? (await this.p4.cmd(`changes -m1 @${workspace.client}`))?.stat?.[0]?.change : null;
     }
 }
 

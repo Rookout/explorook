@@ -136,6 +136,13 @@ export const resolvers = {
     getAllPerforceViews: async (parent: any): Promise<IPerforceView[]> => {
       const perforceManager = getPerforceManagerSingleton();
       return perforceManager ? perforceManager.getAllViews() : [];
+    },
+    getPerforceChangelistForFile: async (parent: any, args: {repo: Repository, path: string}): Promise<string> => {
+      const perforceManager = getPerforceManagerSingleton();
+      const { path, repo } = args;
+      const fileFullpath = join(repo.fullpath, path);
+
+      return perforceManager ? perforceManager.getChangelistForFile(fileFullpath) : null;
     }
   }
 };
