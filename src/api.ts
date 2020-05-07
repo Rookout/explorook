@@ -143,6 +143,16 @@ export const resolvers = {
       const fileFullpath = join(repo.fullpath, path);
 
       return perforceManager ? perforceManager.getChangelistForFile(fileFullpath) : null;
+    },
+    getCommitIdForFile: async (parent: any, args: {provider: any, repo: Repository, path: string}): Promise<string> => {
+      const {provider, repo, path} = args;
+      switch (provider) {
+        case "git":
+          return (await getLastCommitDescription(repo))?.oid;
+        case "perforce":
+          const filePath = join(repo.fullpath, path);
+          return getPerforceManagerSingleton()?.getChangelistForFile(filePath);
+      }
     }
   }
 };
