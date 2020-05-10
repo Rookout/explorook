@@ -8,6 +8,7 @@ import {getLastCommitDescription as getLastCommitDescription, getRemoteOriginFor
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
+import remote = Electron.remote;
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -155,8 +156,11 @@ export const resolvers = {
           return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
           (await getLastCommitDescription(repo))?.oid : null;
         case "perforce":
+          const perforceManager = getPerforceManagerSingleton();
           const filePath = join(repo.fullpath, path);
-          return getPerforceManagerSingleton()?.getChangelistForFile(filePath);
+          const isSameDepot = await perforceManager?.isSameRemoteOrigin(filePath, remoteOrigin);
+
+          return isSameDepot ? getPerforceManagerSingleton().getChangelistForFile(filePath) : null;
         default:
           return null;
       }
