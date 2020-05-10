@@ -34,7 +34,7 @@ type Query {
   repository(repoId: String!): Repository!
   getAllPerforceViews: [PerforceView]
   getPerforceChangelistForFile(repoId: String!, path: String!): String
-  getCommitIdForFile(provider: OnPremSourceProvider!, repoId: String!, path: String!): String
+  getCommitIdForFile(provider: OnPremSourceProvider!,remoteOrigin:String, repoId: String!, path: String!): String
 }
 
 type OperationStatus {

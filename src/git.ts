@@ -53,3 +53,22 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
         return null;
     }
 }
+
+export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.RemoteDescription> {
+    try {
+        let gitRoot = null;
+        try {
+            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
+        } catch (err) {
+            // not inside a git repository
+        }
+        if (!gitRoot) { return null; }
+        return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
+    } catch (error) {
+        notify(error, {
+            metaData : { message: "failed to read repository info", repo, error },
+            severity: "error"
+        });
+        return null;
+    }
+}

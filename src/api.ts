@@ -1,9 +1,10 @@
 import fs = require("fs");
+const GitUrlParse = require("git-url-parse");
 import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
-import { getLastCommitDescription as getLastCommitDescription } from "./git";
+import {getLastCommitDescription as getLastCommitDescription, getRemoteOriginForRepo} from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
@@ -69,7 +70,7 @@ export const resolvers = {
       const { repo } = args;
       return repo.toModel();
     },
-    listRepos(parent: any, args: any): Repository[] {
+    listRepos(): Repository[] {
       return repStore.getRepositories().map((r) => r.toModel());
     },
     // dir get's a target repository (as a user can expose multiple folders on it's PC) and a relative path
@@ -133,7 +134,7 @@ export const resolvers = {
       args.repo.reIndex();
       return true;
     },
-    getAllPerforceViews: async (parent: any): Promise<IPerforceView[]> => {
+    getAllPerforceViews: async (): Promise<IPerforceView[]> => {
       const perforceManager = getPerforceManagerSingleton();
       return perforceManager ? perforceManager.getAllViews() : [];
     },
@@ -144,14 +145,20 @@ export const resolvers = {
 
       return perforceManager ? perforceManager.getChangelistForFile(fileFullpath) : null;
     },
-    getCommitIdForFile: async (parent: any, args: {provider: any, repo: Repository, path: string}): Promise<string> => {
-      const {provider, repo, path} = args;
+    getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
+      const {provider, repo, path, remoteOrigin} = args;
       switch (provider) {
         case "git":
-          return (await getLastCommitDescription(repo))?.oid;
+          const localRemoteOrigin = await getRemoteOriginForRepo(repo);
+          const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
+          const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
+          return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
+          (await getLastCommitDescription(repo))?.oid : null;
         case "perforce":
           const filePath = join(repo.fullpath, path);
           return getPerforceManagerSingleton()?.getChangelistForFile(filePath);
+        default:
+          return null;
       }
     }
   }
