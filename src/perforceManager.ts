@@ -186,7 +186,7 @@ class PerforceManager {
         const remoteOriginWithoutPrefix = _.last(_.split(remoteOrigin, "://"));
 
         // If the Depot name is included in the path we assume it belongs to it.
-        return filePath.endsWith(remoteOriginWithoutPrefix);
+        return filePath?.includes(remoteOriginWithoutPrefix);
     }
 }
 
