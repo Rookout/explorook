@@ -183,10 +183,13 @@ class PerforceManager {
 
     public async isSameRemoteOrigin(filePath: string, remoteOrigin: string): Promise<boolean> {
         // Removing the "Perforce://" prefix
-        const remoteOriginWithoutPrefix = _.last(_.split(remoteOrigin, "://"));
+        const remoteOriginWithoutPrefix: string = _.last(_.split(remoteOrigin, "://"));
+
+        // Making sure that on Windows the path is with the right slashes
+        const normalizedOrigin = path.normalize(remoteOriginWithoutPrefix);
 
         // If the Depot name is included in the path we assume it belongs to it.
-        return filePath?.includes(remoteOriginWithoutPrefix);
+        return filePath?.includes(normalizedOrigin);
     }
 }
 

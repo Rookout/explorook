@@ -1,4 +1,5 @@
 import fs = require("fs");
+const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
 import parseRepo = require("parse-repo");
@@ -71,4 +72,12 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.Rem
         });
         return null;
     }
+}
+
+export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
+    const localRemoteOrigin = await getRemoteOriginForRepo(repo);
+    const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
+    const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
+    return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
+        (await getLastCommitDescription(repo))?.oid : null;
 }

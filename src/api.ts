@@ -1,10 +1,12 @@
 import fs = require("fs");
-const GitUrlParse = require("git-url-parse");
 import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
-import {getLastCommitDescription as getLastCommitDescription, getRemoteOriginForRepo} from "./git";
+import {
+  getCommitIfRightOrigin,
+  getLastCommitDescription as getLastCommitDescription
+} from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
@@ -150,17 +152,13 @@ export const resolvers = {
       const {provider, repo, path, remoteOrigin} = args;
       switch (provider) {
         case "git":
-          const localRemoteOrigin = await getRemoteOriginForRepo(repo);
-          const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
-          const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
-          return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
-          (await getLastCommitDescription(repo))?.oid : null;
+          return getCommitIfRightOrigin(repo, remoteOrigin);
         case "perforce":
           const perforceManager = getPerforceManagerSingleton();
           const filePath = join(repo.fullpath, path);
           const isSameDepot = await perforceManager?.isSameRemoteOrigin(filePath, remoteOrigin);
 
-          return isSameDepot ? getPerforceManagerSingleton().getChangelistForFile(filePath) : null;
+          return isSameDepot ? (await perforceManager.getChangelistForFile(filePath)) : null;
         default:
           return null;
       }
