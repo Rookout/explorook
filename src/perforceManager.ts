@@ -182,7 +182,7 @@ class PerforceManager {
     }
 
     public async isSameRemoteOrigin(filePath: string, remoteOrigin: string): Promise<boolean> {
-        // Removing the "Perforce://" prefix
+        // Removing the "Perforce://" prefix. A remote origin will look like Perforce://MyDepot/MySubDepot
         const remoteOriginWithoutPrefix: string = _.last(_.split(remoteOrigin, "://"));
 
         // Making sure that on Windows the path is with the right slashes

@@ -10,7 +10,6 @@ import {
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
-import remote = Electron.remote;
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -160,7 +159,7 @@ export const resolvers = {
 
           return isSameDepot ? (await perforceManager.getChangelistForFile(filePath)) : null;
         default:
-          return null;
+          throw new Error(`Unreachable code - got unknown source provider: ${provider}`);
       }
     }
   }
