@@ -1,3 +1,5 @@
+import {Repository} from "./common/repository";
+
 const path = require("path");
 import * as Store from "electron-store";
 import _ = require("lodash");
@@ -29,6 +31,7 @@ export interface IPerforceManager {
     switchChangelist(changelistId: string): Promise<OperationStatus>;
     getCurrentClient(): any;
     getChangelistForFile(fullPath: string): Promise<string>;
+    isSameRemoteOrigin(filePath: string, remoteOrigin: string): Promise<boolean>;
 }
 
 let store: any;
@@ -173,9 +176,20 @@ class PerforceManager {
         const workspace = _.find<IPerforceWorkspace | null>(workspaces,
            ws => (fullPath.includes(ws.Root) && client.Owner === ws.Owner));
         if (workspace) {
-          return (await this.p4.cmd(`changes -m1 @${workspace.client}`))?.stat?.[0]?.change
+          return (await this.p4.cmd(`changes -m1 @${workspace.client}`))?.stat?.[0]?.change;
         }
         return null;
+    }
+
+    public async isSameRemoteOrigin(filePath: string, remoteOrigin: string): Promise<boolean> {
+        // Removing the "Perforce://" prefix. A remote origin will look like Perforce://MyDepot/MySubDepot
+        const remoteOriginWithoutPrefix: string = _.last(_.split(remoteOrigin, "://"));
+
+        // Making sure that on Windows the path is with the right slashes
+        const normalizedOrigin = path.normalize(remoteOriginWithoutPrefix);
+
+        // If the Depot name is included in the path we assume it belongs to it.
+        return filePath?.includes(normalizedOrigin);
     }
 }
 

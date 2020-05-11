@@ -34,6 +34,7 @@ type Query {
   repository(repoId: String!): Repository!
   getAllPerforceViews: [PerforceView]
   getPerforceChangelistForFile(repoId: String!, path: String!): String
+  getCommitIdForFile(provider: OnPremSourceProvider!,remoteOrigin:String, repoId: String!, path: String!): String
 }
 
 type OperationStatus {
@@ -50,4 +51,9 @@ type Mutation {
 type PerforceView {
   name: String!
   map: String!
+}
+
+enum OnPremSourceProvider {
+  git
+  perforce
 }

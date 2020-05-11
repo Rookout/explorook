@@ -1,4 +1,5 @@
 import fs = require("fs");
+const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
 import parseRepo = require("parse-repo");
@@ -52,4 +53,31 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
         });
         return null;
     }
+}
+
+export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.RemoteDescription> {
+    try {
+        let gitRoot = null;
+        try {
+            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
+        } catch (err) {
+            // not inside a git repository
+        }
+        if (!gitRoot) { return null; }
+        return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
+    } catch (error) {
+        notify(error, {
+            metaData : { message: "failed to read repository info", repo, error },
+            severity: "error"
+        });
+        return null;
+    }
+}
+
+export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
+    const localRemoteOrigin = await getRemoteOriginForRepo(repo);
+    const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
+    const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
+    return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
+        (await getLastCommitDescription(repo))?.oid : null;
 }
