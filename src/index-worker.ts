@@ -94,6 +94,17 @@ ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionStrin
     ipcRenderer.sendTo(mainWindowId, "test-perforce-connection-result", isSuccess);
 });
 
+ipcRenderer.on("test-git-connection", (e: IpcRendererEvent, connectionString: string) => {
+    const isSuccess = true;
+    try {
+        // TODO check if git is connected
+    } catch (e) {
+        console.error(`Failed to init git with remote :${connectionString}`);
+    }
+
+    ipcRenderer.sendTo(mainWindowId, "test-git-connection-result", isSuccess);
+});
+
 ipcRenderer.on("repos-request", (e: IpcRendererEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));
 
 ipcRenderer.send("index-worker-up");
