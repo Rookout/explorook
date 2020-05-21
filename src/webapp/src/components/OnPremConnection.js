@@ -25,7 +25,6 @@ export const OnPremConnection = () => {
             <ExpansionPanelDetails style={{padding:"0"}}>
                 <div>
                     <OnPremConnectionInput type={OnPremTypes.PERFORCE} label="Perforce Connection String (P4PORT)"/>
-                    <OnPremConnectionInput type={OnPremTypes.GIT} label="Git Remote Connection String"/>
                 </div>
             </ExpansionPanelDetails>
         </ExpansionPanel>

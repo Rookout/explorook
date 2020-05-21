@@ -1,14 +1,26 @@
 import { IpcMessageEvent, ipcRenderer, IpcRendererEvent, remote } from "electron";
+import * as Store from "electron-store";
 import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
+import {checkGitRemote} from "./git";
+import MemStore from "./mem-store";
 import {changePerforceManagerSingleton} from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
 let mainWindowId = -1;
+
+let store: any;
+try {
+    store = new Store({ name: "explorook" });
+} catch (error) { // probably headless mode - defaulting to memory store
+    // tslint:disable-next-line:no-console
+    console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
+    store = new MemStore();
+}
 
 const getRepos = () => repStore.getRepositories().map((r) => r.toModel());
 
@@ -92,17 +104,6 @@ ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionStrin
     }
 
     ipcRenderer.sendTo(mainWindowId, "test-perforce-connection-result", isSuccess);
-});
-
-ipcRenderer.on("test-git-connection", (e: IpcRendererEvent, connectionString: string) => {
-    const isSuccess = true;
-    try {
-        // TODO check if git is connected
-    } catch (e) {
-        console.error(`Failed to init git with remote :${connectionString}`);
-    }
-
-    ipcRenderer.sendTo(mainWindowId, "test-git-connection-result", isSuccess);
 });
 
 ipcRenderer.on("repos-request", (e: IpcRendererEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));

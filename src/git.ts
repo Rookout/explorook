@@ -1,5 +1,7 @@
 import fs = require("fs");
+const { exec } = require("child_process");
 const GitUrlParse = require("git-url-parse");
+import * as Store from "electron-store";
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
 import parseRepo = require("parse-repo");
@@ -8,7 +10,21 @@ import path = require("path");
 import slash = require("slash");
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
+import MemStore from "./mem-store";
 const uuidv4 = require("uuid/v4");
+
+const VALID_URL_REGEX = /\b(((http|https):\/\/?)|git@)[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/?))/;
+export const GIT_ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\git_root") :
+    path.join(process.env.HOME, "Library/Application Support/Rookout/git_root");
+
+let store: any;
+try {
+    store = new Store({ name: "explorook" });
+} catch (error) { // probably headless mode - defaulting to memory store
+    // tslint:disable-next-line:no-console
+    console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
+    store = new MemStore();
+}
 
 export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
     // trying to create a unique id with the git remote path and relative filesystem path
@@ -29,7 +45,7 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
         if (error && !error.toString().includes("Unable to find git root for")) {
             notify("Failed to generate repo id from git", {
                 metaData: { error, repo }
-            })
+            });
         }
         // no git found
         return uuidv4();
@@ -80,4 +96,26 @@ export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: str
     const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
     return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
         (await getLastCommitDescription(repo))?.oid : null;
+}
+
+export function checkGitRemote(remoteOrigin: string): boolean {
+    return VALID_URL_REGEX.test(remoteOrigin);
+}
+
+export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string) {
+     const repoName = _.last(repoUrl.split("/")).replace(".git", "");
+     const repoDir = path.join(GIT_ROOT, repoName);
+
+     const doesRepoExist = fs.existsSync(repoDir);
+
+     return new Promise<string>((resolve, reject) => {
+         exec(`${doesRepoExist ? "" : `cd "${GIT_ROOT}"; git clone ${repoUrl};`}cd "${repoDir}"; git checkout ${commit}`
+             , (error: any) => {
+                 if (error) {
+                     reject(error);
+                     return;
+                 }
+                 resolve(repoDir);
+             });
+     });
 }

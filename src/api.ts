@@ -4,8 +4,9 @@ import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import {
+  checkGitRemote, cloneRemoteOriginWithCommit,
   getCommitIfRightOrigin,
-  getLastCommitDescription as getLastCommitDescription
+  getLastCommitDescription as getLastCommitDescription, getRemoteOriginForRepo, GIT_ROOT
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
@@ -65,6 +66,37 @@ export const resolvers = {
     switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
       return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
+    },
+    getGitRepo: async (parent: any, args: {repos: [{repoUrl: string, commit: string}]},
+                       context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<OperationStatus> => {
+      // TODO remove all repos from this dir
+      fs.rmdirSync(GIT_ROOT);
+
+      const addRepoPromises = _.map(args.repos, async repo => {
+        if (!checkGitRemote(repo.repoUrl)) {
+          return {
+            isSuccess: false,
+            reason: `Got bad format for git remote origin: ${repo.repoUrl}`
+          };
+        }
+        try {
+          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit);
+          const didAddRepo = await context.onAddRepoRequest(cloneDir);
+          return {
+            isSuccess: didAddRepo,
+            reason: didAddRepo ? undefined : `Failed to add repo on folder ${cloneDir}`
+          };
+        } catch (e) {
+          notify(e);
+          return {
+            isSuccess: false,
+            reason: e.message
+          };
+        }
+      });
+
+      const res = await Promise.all(addRepoPromises);
+      return _.find(res, r => !r.isSuccess) || { isSuccess: true };
     }
   },
   Query: {

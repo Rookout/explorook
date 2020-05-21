@@ -42,10 +42,16 @@ type OperationStatus {
   reason: String
 }
 
+input GitSource {
+  repoUrl: String!
+  commit: String!
+}
+
 type Mutation {
   addRepository(fullpath: String): Boolean
   changePerforceViews(views: [String]!): OperationStatus!
   switchPerforceChangelist(changelistId: String!): OperationStatus!
+  getGitRepo(sources: [GitSource]!): OperationStatus!
 }
 
 type PerforceView {
