@@ -4,9 +4,13 @@ import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import {
-  checkGitRemote, cloneRemoteOriginWithCommit,
+  checkGitRemote,
+  cloneRemoteOriginWithCommit,
   getCommitIfRightOrigin,
-  getLastCommitDescription as getLastCommitDescription, getRemoteOriginForRepo, GIT_ROOT
+  getLastCommitDescription as getLastCommitDescription,
+  GIT_ROOT,
+  isGitFolderBiggerThanMaxSize, removeGitReposFromStore,
+  TMP_DIR_PREFIX
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
@@ -67,12 +71,25 @@ export const resolvers = {
       const perforceManager = getPerforceManagerSingleton();
       return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
     },
-    getGitRepo: async (parent: any, args: {repos: [{repoUrl: string, commit: string}]},
+    getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
                        context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<OperationStatus> => {
-      // TODO remove all repos from this dir
-      fs.rmdirSync(GIT_ROOT);
+      const subDirs = fs.readdirSync(GIT_ROOT);
+      // Delete the folder if it's too big
+      if ((await isGitFolderBiggerThanMaxSize())) {
+        fs.rmdirSync(GIT_ROOT);
+        removeGitReposFromStore(subDirs);
+      } else {
+        // If we had any duplicate repos with two different commits we want to delete them now
+        const tmpDirs = _.filter(subDirs, dir => dir.includes(TMP_DIR_PREFIX));
+        if (!_.isEmpty(tmpDirs)) {
+          removeGitReposFromStore(tmpDirs);
+        }
+      }
 
-      const addRepoPromises = _.map(args.repos, async repo => {
+      // If we have the same remote origin with two different commits we will create two folders
+      const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
+
+      const addRepoPromises = _.map(args.sources, async repo => {
         if (!checkGitRemote(repo.repoUrl)) {
           return {
             isSuccess: false,
@@ -80,7 +97,7 @@ export const resolvers = {
           };
         }
         try {
-          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit);
+          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
           const didAddRepo = await context.onAddRepoRequest(cloneDir);
           return {
             isSuccess: didAddRepo,
@@ -96,6 +113,7 @@ export const resolvers = {
       });
 
       const res = await Promise.all(addRepoPromises);
+      // Return the first error or success.
       return _.find(res, r => !r.isSuccess) || { isSuccess: true };
     }
   },

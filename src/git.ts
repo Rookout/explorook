@@ -11,7 +11,9 @@ import slash = require("slash");
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import MemStore from "./mem-store";
+import {repStore} from "./repoStore";
 const uuidv4 = require("uuid/v4");
+const getSize = require("get-folder-size");
 
 const VALID_URL_REGEX = /\b(((http|https):\/\/?)|git@)[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/?))/;
 export const GIT_ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\git_root") :
@@ -102,20 +104,76 @@ export function checkGitRemote(remoteOrigin: string): boolean {
     return VALID_URL_REGEX.test(remoteOrigin);
 }
 
-export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string) {
-     const repoName = _.last(repoUrl.split("/")).replace(".git", "");
-     const repoDir = path.join(GIT_ROOT, repoName);
+export const TMP_DIR_PREFIX = "temp_rookout_";
 
+export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+    // Assuming the last part of the remote origin url is the name of the repo.
+     const repoName = _.last(repoUrl.split("/")).replace(".git", "");
+     // If we have two of the same git remote with a different commit we want to create a sub directory.
+     const gitRoot = isDuplicate ? path.join(GIT_ROOT, `${TMP_DIR_PREFIX}${uuidv4()}`) : GIT_ROOT;
+     // Create the sub directory if needed.
+     if (isDuplicate) fs.mkdirSync(gitRoot);
+
+     // Getting the full path of the repo, including the repo name.
+     const repoDir = path.join(gitRoot, repoName);
+
+     // If the folder already exists we don't need to clone, just checkout.
      const doesRepoExist = fs.existsSync(repoDir);
 
      return new Promise<string>((resolve, reject) => {
-         exec(`${doesRepoExist ? "" : `cd "${GIT_ROOT}"; git clone ${repoUrl};`}cd "${repoDir}"; git checkout ${commit}`
+         exec(`${doesRepoExist ? "" : `cd "${gitRoot}"; git clone ${repoUrl};`}cd "${repoDir}"; git checkout ${commit}`
              , (error: any) => {
                  if (error) {
                      reject(error);
                      return;
                  }
+                 // Return the path of a successful clone
                  resolve(repoDir);
              });
      });
+}
+// 10GB
+const MAX_GIT_FOLDER_SIZE = 10737418240;
+
+export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+        getSize(GIT_ROOT, (err: Error, size: bigint) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            resolve(size > MAX_GIT_FOLDER_SIZE);
+        });
+    });
+}
+
+// Delete a folder even if it is not empty
+function deleteFolderRecursive(dirPath: string) {
+    let files = [];
+    if (fs.existsSync(dirPath)) {
+        files = fs.readdirSync(dirPath);
+        _.forEach(files, (file) => {
+            const curPath = path.join(dirPath, file);
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(dirPath);
+    }
+}
+
+// Get the name of a list of folders under the git root and delete all
+export function removeGitReposFromStore(folderNames: string[]) {
+    const fullPaths = _.map(folderNames, name => path.join(GIT_ROOT, name));
+    _.forEach(fullPaths, dir => {
+        const allRepos = repStore.getRepositories();
+        const repoToRemove = _.find(allRepos, r => r.fullpath.includes(dir));
+        if (repoToRemove) {
+            repStore.remove(repoToRemove.id);
+        }
+        deleteFolderRecursive(dir);
+    });
 }
