@@ -61,7 +61,7 @@ export const OnPremConnectionInput = ({type, label}) => {
         />
         <Button size="small" style={{
             padding: 0,
-            marginLeft: "5%",
+            marginLeft: "20px",
             backgroundColor: "#586C7A",
             color: "white",
             borderRadius: "30px",

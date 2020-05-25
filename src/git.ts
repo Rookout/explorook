@@ -17,7 +17,13 @@ const getSize = require("get-folder-size");
 
 const VALID_URL_REGEX = /\b(((http|https):\/\/?)|git@)[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/?))/;
 export const GIT_ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\git_root") :
-    path.join(process.env.HOME, "Library/Application Support/Rookout/git_root");
+    path.join(process.env.HOME, process.platform === "darwin" ? "Library/Application Support/Rookout" : ".Rookout", "git_root");
+
+if (!fs.existsSync(GIT_ROOT)) {
+    fs.mkdirSync(GIT_ROOT, {
+        recursive: true
+    });
+}
 
 let store: any;
 try {
