@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -106,8 +106,10 @@
     "electron-log": "^2.2.15",
     "electron-store": "^5.1.1",
     "electron-updater": "^4.2.2",
+    "folder-delete": "^1.0.4",
     "git-url-parse": "^11.1.2",
     "graphql-yoga": "^1.16.9",
+    "is-git-url": "^1.0.0",
     "isomorphic-git": "^0.39.2",
     "lodash": "^4.17.10",
     "node-rsa": "^1.0.5",

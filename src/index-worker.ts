@@ -1,4 +1,4 @@
-import { IpcMessageEvent, ipcRenderer, IpcRendererEvent, remote } from "electron";
+import { ipcRenderer, IpcRendererEvent, remote } from "electron";
 import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
