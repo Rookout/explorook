@@ -1,7 +1,6 @@
 import fs = require("fs");
 const { exec } = require("child_process");
 const GitUrlParse = require("git-url-parse");
-import * as Store from "electron-store";
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
 import parseRepo = require("parse-repo");
@@ -10,28 +9,18 @@ import path = require("path");
 import slash = require("slash");
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
-import MemStore from "./mem-store";
 import {repStore} from "./repoStore";
+import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
-const getSize = require("get-folder-size");
+const isGitUrl = require("is-git-url");
+const folderDelete = require("folder-delete");
 
-const VALID_URL_REGEX = /\b(((http|https):\/\/?)|git@)[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/?))/;
-export const GIT_ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\git_root") :
-    path.join(process.env.HOME, process.platform === "darwin" ? "Library/Application Support/Rookout" : ".Rookout", "git_root");
+export const GIT_ROOT = path.join(getLibraryFolder(), "git_root");
 
 if (!fs.existsSync(GIT_ROOT)) {
     fs.mkdirSync(GIT_ROOT, {
         recursive: true
     });
-}
-
-let store: any;
-try {
-    store = new Store({ name: "explorook" });
-} catch (error) { // probably headless mode - defaulting to memory store
-    // tslint:disable-next-line:no-console
-    console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
-    store = new MemStore();
 }
 
 export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
@@ -107,14 +96,14 @@ export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: str
 }
 
 export function checkGitRemote(remoteOrigin: string): boolean {
-    return VALID_URL_REGEX.test(remoteOrigin);
+    return isGitUrl(remoteOrigin);
 }
 
 export const TMP_DIR_PREFIX = "temp_rookout_";
 
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
     // Assuming the last part of the remote origin url is the name of the repo.
-     const repoName = _.last(repoUrl.split("/")).replace(".git", "");
+     const repoName = parseRepo(repoUrl).project;
      // If we have two of the same git remote with a different commit we want to create a sub directory.
      const gitRoot = isDuplicate ? path.join(GIT_ROOT, `${TMP_DIR_PREFIX}${uuidv4()}`) : GIT_ROOT;
      // Create the sub directory if needed.
@@ -126,9 +115,13 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      // If the folder already exists we don't need to clone, just checkout.
      const doesRepoExist = fs.existsSync(repoDir);
 
+     const cloneCommand = `cd "${gitRoot}" && git clone ${repoUrl} && `;
+     const checkoutCommand = `cd "${repoDir}" && git checkout ${commit}`;
+     // If the repo already exists we just need to checkout the commit.
+     const fullCommand = doesRepoExist ? checkoutCommand : `${cloneCommand}${checkoutCommand}`;
+
      return new Promise<string>((resolve, reject) => {
-         exec(`${doesRepoExist ? "" : `cd "${gitRoot}" && git clone ${repoUrl} && `}cd "${repoDir}" && git checkout ${commit}`
-             , (error: any) => {
+         exec(fullCommand, (error: any) => {
                  if (error) {
                      reject(error);
                      return;
@@ -139,36 +132,30 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      });
 }
 // 10GB
-const MAX_GIT_FOLDER_SIZE = 10737418240;
+const MAX_GIT_FOLDER_SIZE_IN_KB = 10485760;
+const packSizeRegex = /(size-pack: )([0-9]+)/;
 
 export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-        getSize(GIT_ROOT, (err: Error, size: bigint) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            resolve(size > MAX_GIT_FOLDER_SIZE);
+    const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
+    const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => path.join(GIT_ROOT, dirName));
+    const repoDirs = _.filter(rootDirContent, isDirectory);
+    const sizePromises = _.map(repoDirs, dir => {
+        return new Promise((resolve, reject) => {
+            // Using git's pre-counted size to get a rough estimation of the repo sizes.
+            exec(`cd "${dir}" && git count-objects -v`, (error: any, stdout: string) => {
+                if (error) {
+                    reject(error);
+                }
+                const match = packSizeRegex.exec(stdout);
+                // Taking the second group which contains the size in KB.
+                resolve(match[2]);
+            });
         });
     });
-}
+    const sizeList = _.map(await Promise.all(sizePromises), size => Number(size));
+    const rootSize = _.sum(sizeList);
 
-// Delete a folder even if it is not empty
-function deleteFolderRecursive(dirPath: string) {
-    let files = [];
-    if (fs.existsSync(dirPath)) {
-        files = fs.readdirSync(dirPath);
-        _.forEach(files, (file) => {
-            const curPath = path.join(dirPath, file);
-            if (fs.lstatSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        fs.rmdirSync(dirPath);
-    }
+    return rootSize > MAX_GIT_FOLDER_SIZE_IN_KB;
 }
 
 // Get the name of a list of folders under the git root and delete all
@@ -180,6 +167,6 @@ export function removeGitReposFromStore(folderNames: string[]) {
         if (repoToRemove) {
             repStore.remove(repoToRemove.id);
         }
-        deleteFolderRecursive(dir);
+        folderDelete(dir, {debugLog: false});
     });
 }

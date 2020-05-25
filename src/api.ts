@@ -91,6 +91,7 @@ export const resolvers = {
 
       const addRepoPromises = _.map(args.sources, async repo => {
         if (!checkGitRemote(repo.repoUrl)) {
+          notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
           return {
             isSuccess: false,
             reason: `Got bad format for git remote origin: ${repo.repoUrl}`
