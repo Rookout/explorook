@@ -127,7 +127,7 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      const doesRepoExist = fs.existsSync(repoDir);
 
      return new Promise<string>((resolve, reject) => {
-         exec(`${doesRepoExist ? "" : `cd "${gitRoot}"; git clone ${repoUrl};`}cd "${repoDir}"; git checkout ${commit}`
+         exec(`${doesRepoExist ? "" : `cd "${gitRoot}" && git clone ${repoUrl} && `}cd "${repoDir}" && git checkout ${commit}`
              , (error: any) => {
                  if (error) {
                      reject(error);
