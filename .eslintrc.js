@@ -131,6 +131,7 @@ module.exports = {
         "no-underscore-dangle": "error",
         "no-unsafe-finally": "error",
         "no-unused-labels": "error",
+        "no-unused-vars": "warn",
         "object-shorthand": "error",
         "one-var": [
             "error",
