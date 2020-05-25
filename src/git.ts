@@ -115,10 +115,10 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      // If the folder already exists we don't need to clone, just checkout.
      const doesRepoExist = fs.existsSync(repoDir);
 
-     const cloneCommand = `cd "${gitRoot}" && git clone ${repoUrl} && `;
+     const cloneCommand = `cd "${gitRoot}" && git clone ${repoUrl}`;
      const checkoutCommand = `cd "${repoDir}" && git checkout ${commit}`;
      // If the repo already exists we just need to checkout the commit.
-     const fullCommand = doesRepoExist ? checkoutCommand : `${cloneCommand}${checkoutCommand}`;
+     const fullCommand = doesRepoExist ? checkoutCommand : `${cloneCommand} && ${checkoutCommand}`;
 
      return new Promise<string>((resolve, reject) => {
          exec(fullCommand, (error: any) => {
@@ -133,7 +133,7 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
 }
 // 10GB
 const MAX_GIT_FOLDER_SIZE_IN_KB = 10485760;
-const packSizeRegex = /(size-pack: )([0-9]+)/;
+const packSizeRegex = /size-pack: ([0-9]+)/;
 
 export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
@@ -146,14 +146,13 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
                 if (error) {
                     reject(error);
                 }
-                const match = packSizeRegex.exec(stdout);
+                const [,size] = packSizeRegex.exec(stdout);
                 // Taking the second group which contains the size in KB.
-                resolve(match[2]);
+                resolve(Number(size));
             });
         });
     });
-    const sizeList = _.map(await Promise.all(sizePromises), size => Number(size));
-    const rootSize = _.sum(sizeList);
+    const rootSize = _.sum(await Promise.all(sizePromises));
 
     return rootSize > MAX_GIT_FOLDER_SIZE_IN_KB;
 }
