@@ -13,19 +13,21 @@ jyePq01Qz3UU/Fdve25+219Zoz+9Bh1p7IWQMsWY3sO0wnSt142iLgIFmhjhZRFb
 lMAUqc2eq79V4iSU2AG/e8u095yIzJjC1uxC3auLTsSjAgMBAAE=
 -----END PUBLIC KEY-----`;
 
-
 const encryptedPublicKey = new NodeRSA(autoAuthPublicKey, {
-    environment: "browser", // Only browser environment supports setting custom hash in encryptionScheme
-    encryptionScheme: {
-        scheme: "pkcs1_oaep",
-        hash: "sha256"
-    },
-    signingScheme: "pkcs1-sha256"
+  environment: "browser", // Only browser environment supports setting custom hash in encryptionScheme
+  encryptionScheme: {
+    scheme: "pkcs1_oaep",
+    hash: "sha256",
+  },
+  signingScheme: "pkcs1-sha256",
 });
 
-
-export const encryptWithPublicKey = (token: string, userId: string, site: string) => {
-    // Format of encryption: site;userId;token
-    const formattedData = `${site};${userId};${token}`;
-    return encryptedPublicKey.encrypt(Buffer.from(formattedData));
+export const encryptWithPublicKey = (
+  token: string,
+  userId: string,
+  site: string
+) => {
+  // Format of encryption: site;userId;token
+  const formattedData = `${site};${userId};${token}`;
+  return encryptedPublicKey.encrypt(Buffer.from(formattedData));
 };

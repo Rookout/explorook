@@ -12,10 +12,13 @@ import {
   configureFirstTimeSettings,
   filterDirTraversal,
   logMiddleware,
-  resolveRepoFromId
+  resolveRepoFromId,
 } from "./middlewares";
 
-export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
+export type onAddRepoRequestHandler = (
+  fullpath: string,
+  id?: string
+) => Promise<boolean>;
 
 export interface StartOptions {
   accessToken?: string;
@@ -28,23 +31,23 @@ export interface StartOptions {
 }
 
 const defaultOptions: StartOptions = {
-  port: 44512
+  port: 44512,
 };
 
 const corsDomainWhitelist = [
-    /^https:\/\/.*\.rookout.com$/,
-    /^https:\/\/.*\.rookout-dev.com$/,
-    "https://localhost:8080"
+  /^https:\/\/.*\.rookout.com$/,
+  /^https:\/\/.*\.rookout-dev.com$/,
+  "https://localhost:8080",
 ];
 
 const corsOptions = {
-  origin: corsDomainWhitelist
+  origin: corsDomainWhitelist,
 };
 
 export const start = (options: StartOptions): Promise<any> => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
-  const typeDefs = join(__dirname, `../graphql/schema.graphql`);
+  const typeDefs = join(__dirname, "../graphql/schema.graphql");
 
   const reconfigure = (id: string, site: string) => {
     settings.userId = id;
@@ -55,32 +58,51 @@ export const start = (options: StartOptions): Promise<any> => {
     resolvers,
     typeDefs,
     context: () => ({ onAddRepoRequest: settings.onAddRepoRequest }),
-    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal]
+    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal],
   });
 
   server.express.use(cors(corsOptions));
   server.express.use(bodyParser.json());
-  server.express.post("/configure", configureFirstTimeSettings(settings.firstTimeLaunch, startedAt, reconfigure));
+  server.express.post(
+    "/configure",
+    configureFirstTimeSettings(settings.firstTimeLaunch, startedAt, reconfigure)
+  );
   // indicates that the authorization v2 feature is available (automatic)
-  server.express.get("/authorize/v2", (req, res) => res.status(200).send("AVAILABLE"));
+  server.express.get("/authorize/v2", (req, res) =>
+    res.status(200).send("AVAILABLE")
+  );
   server.express.post("/authorize/v2", authenticateControllerV2(settings));
   // indicates that the authorization feature is available
-  server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
-  server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
+  server.express.get("/authorize/", (req, res) =>
+    res.status(200).send("AVAILABLE")
+  );
+  server.express.post(
+    "/authorize/:env",
+    authenticateController(settings.accessToken, settings.userId)
+  );
 
   if (options.useTokenAuthorization) {
     server.express.use(authorizationMiddleware(settings.accessToken));
   }
   // tslint:disable-next-line:no-console
-  return server.start({
+  return server.start(
+    {
       // fix webpack doesn't bundle subscriptions
       subscriptions: false,
       port: settings.port,
       formatError: (errors: any) => {
-    if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
-      notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
-    }
-    return defaultErrorFormatter(errors);
-  }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
+        if (
+          errors &&
+          !/repository\s"(.*)?"\snot\sfound/.test(errors.toString())
+        ) {
+          notify(`Explorook returned graphql errors to client: ${errors}`, {
+            metaData: { errors },
+          });
+        }
+        return defaultErrorFormatter(errors);
+      },
+    },
+    (opts: { port: number }) =>
+      console.log(`Server is running on http://localhost:${opts.port}`)
+  );
 };
-

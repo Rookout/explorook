@@ -1,1 +1,1 @@
-declare module 'chrome-opn';
+declare module "chrome-opn";

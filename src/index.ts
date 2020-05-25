@@ -1,3 +1,4 @@
+/* eslint-disable prefer-arrow/prefer-arrow-functions */
 import Analytics = require("analytics-node");
 import {
   app,
@@ -10,7 +11,7 @@ import {
   Notification,
   systemPreferences,
   Tray,
-  nativeTheme
+  nativeTheme,
 } from "electron";
 import * as log from "electron-log";
 import { autoUpdater, UpdateInfo } from "electron-updater";
@@ -30,12 +31,36 @@ const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
 const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
-const CLOSE_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
-const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
-const COPY_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_file_copy_black_18dp.png");
-const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
-const SETTINGS_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_settings_white_18dp.png");
-const COPY_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_file_copy_white_18dp.png");
+const CLOSE_ICON_BLACK = path.join(
+  __dirname,
+  ICONS_DIR,
+  "baseline_close_black_18dp.png"
+);
+const SETTINGS_ICON_BLACK = path.join(
+  __dirname,
+  ICONS_DIR,
+  "baseline_settings_black_18dp.png"
+);
+const COPY_ICON_BLACK = path.join(
+  __dirname,
+  ICONS_DIR,
+  "baseline_file_copy_black_18dp.png"
+);
+const CLOSE_ICON_WHITE = path.join(
+  __dirname,
+  ICONS_DIR,
+  "baseline_close_white_18dp.png"
+);
+const SETTINGS_ICON_WHITE = path.join(
+  __dirname,
+  ICONS_DIR,
+  "baseline_settings_white_18dp.png"
+);
+const COPY_ICON_WHITE = path.join(
+  __dirname,
+  ICONS_DIR,
+  "baseline_file_copy_white_18dp.png"
+);
 const TEN_MINUTES = 1000 * 60 * 10;
 
 let mainWindow: Electron.BrowserWindow;
@@ -66,13 +91,18 @@ function getAppIcon() {
 
 function getTrayIcon() {
   if (process.platform.match("darwin")) {
-    return nativeTheme.shouldUseDarkColors ? "mac/explorook_white_tray@21x21.png" : "mac/explorook_tray@21x21.png";
+    return nativeTheme.shouldUseDarkColors
+      ? "mac/explorook_white_tray@21x21.png"
+      : "mac/explorook_tray@21x21.png";
   }
   return getAppIcon();
 }
 
 async function linuxAutoLaunchPatch() {
-  if (process.platform !== "linux" || !store.get("linux-start-with-os", false)) {
+  if (
+    process.platform !== "linux" ||
+    !store.get("linux-start-with-os", false)
+  ) {
     return;
   }
   // AppImage filename changes after every update so we need to make sure we disable
@@ -111,24 +141,36 @@ function registerIpc() {
   firstTimeAutoLaunch();
   ipcMain.on("hidden", displayWindowHiddenNotification);
   ipcMain.on("start-server-error", (e: IpcMainEvent, err: any) => {
-    displayNotification("Rookout Desktop App", `App failed to start local server: ${err}`);
+    displayNotification(
+      "Rookout Desktop App",
+      `App failed to start local server: ${err}`
+    );
     track("start-server-error", { err });
   });
   ipcMain.on("track", (e: IpcMainEvent, trackEvent: string, props: any) => {
     track(trackEvent, props);
   });
-  ipcMain.on("configure-first-launch", (e: IpcMainEvent, id: string, site: string) => {
-    userId = id;
-    userSite = site;
-    store.set("user-id", userId);
-    store.set("user-site", userSite);
-    identifyAnalytics();
-    track("configure-first-launch");
-  });
-  ipcMain.on("get-user-site", (e: IpcMainEvent) => e.returnValue = store.get("user-site"));
-  ipcMain.on("get-user-id", (e: IpcMainEvent) => e.returnValue = userId);
-  ipcMain.on("get-platform", (e: IpcMainEvent) => e.returnValue = process.platform.toString());
-  ipcMain.on("token-request", (e: IpcMainEvent) => e.returnValue = token);
+  ipcMain.on(
+    "configure-first-launch",
+    (e: IpcMainEvent, id: string, site: string) => {
+      userId = id;
+      userSite = site;
+      store.set("user-id", userId);
+      store.set("user-site", userSite);
+      identifyAnalytics();
+      track("configure-first-launch");
+    }
+  );
+  ipcMain.on(
+    "get-user-site",
+    (e: IpcMainEvent) => (e.returnValue = store.get("user-site"))
+  );
+  ipcMain.on("get-user-id", (e: IpcMainEvent) => (e.returnValue = userId));
+  ipcMain.on(
+    "get-platform",
+    (e: IpcMainEvent) => (e.returnValue = process.platform.toString())
+  );
+  ipcMain.on("token-request", (e: IpcMainEvent) => (e.returnValue = token));
   ipcMain.on("force-exit", (e: IpcMainEvent) => quitApplication());
   ipcMain.on("inspect-all", () => {
     mainWindow.webContents.openDevTools();
@@ -137,22 +179,29 @@ function registerIpc() {
   ipcMain.on("auto-launch-is-enabled-req", async (e: IpcMainEvent) => {
     // inspecting al.isEnabled prompts permissions dialog on macOS
     // so we prevent it from happening on readonly volume
-    const enabled = !(await isReadonlyVolume()) && await al.isEnabled();
+    const enabled = !(await isReadonlyVolume()) && (await al.isEnabled());
     e.sender.send("auto-launch-is-enabled-changed", enabled);
   });
   ipcMain.on("exception-manager-is-enabled-req", (e: IpcMainEvent) => {
     e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
   });
-  ipcMain.on("exception-manager-enabled-set", (e: IpcMainEvent, enable: boolean) => {
-    store.set("sentry-enabled", enable);
-    e.sender.send("exception-manager-enabled-changed", enable);
-  });
+  ipcMain.on(
+    "exception-manager-enabled-set",
+    (e: IpcMainEvent, enable: boolean) => {
+      store.set("sentry-enabled", enable);
+      e.sender.send("exception-manager-enabled-changed", enable);
+    }
+  );
   ipcMain.on("has-signed-eula", (e: IpcMainEvent) => {
     e.returnValue = store.get("has-signed-eula", false);
   });
   ipcMain.on("signed-eula", (e: IpcMainEvent) => {
     if (dataCollectionEnabled || process.env.development) {
-      initExceptionManager(process.env.development ? "development" : "production", app.getVersion(), () => userId);
+      initExceptionManager(
+        process.env.development ? "development" : "production",
+        app.getVersion(),
+        () => userId
+      );
       initAnalytics();
       track("signed-eula");
     }
@@ -162,23 +211,34 @@ function registerIpc() {
   ipcMain.on("auto-launch-set", (e: IpcMainEvent, enable: boolean) => {
     if (enable) {
       store.set("linux-start-with-os", true);
-      al.enable().then(() => e.sender.send("auto-launch-is-enabled-changed", true));
+      al.enable().then(() =>
+        e.sender.send("auto-launch-is-enabled-changed", true)
+      );
     } else {
       store.set("linux-start-with-os", false);
-      al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
+      al.disable().then(() =>
+        e.sender.send("auto-launch-is-enabled-changed", false)
+      );
     }
   });
 }
 
-function track(eventName: string, props: any = null, callback: () => void = null) {
+function track(
+  eventName: string,
+  props: any = null,
+  callback: () => void = null
+) {
   if (!analytics) {
     return;
   }
-  analytics.track({
-    userId,
-    event: eventName,
-    properties: props
-  }, callback);
+  analytics.track(
+    {
+      userId,
+      event: eventName,
+      properties: props,
+    },
+    callback
+  );
 }
 
 function flushAnalytics(callback: () => void) {
@@ -224,7 +284,11 @@ function main() {
   dataCollectionEnabled = store.get("sentry-enabled", true);
   signedEula = store.get("has-signed-eula", false);
   if (signedEula && (dataCollectionEnabled || process.env.development)) {
-    initExceptionManager(process.env.development ? "development" : "production", app.getVersion(), () => userId);
+    initExceptionManager(
+      process.env.development ? "development" : "production",
+      app.getVersion(),
+      () => userId
+    );
     initAnalytics();
   }
 
@@ -244,7 +308,7 @@ function isReadonlyVolume(): Promise<boolean> {
     if (!process.platform.match("darwin")) {
       return resolve(false);
     }
-    fs.access(app.getPath("exe"), fs.constants.W_OK, err => {
+    fs.access(app.getPath("exe"), fs.constants.W_OK, (err) => {
       if (err && err.code === "EROFS") {
         return resolve(true);
       }
@@ -267,12 +331,16 @@ async function update() {
     if (updateInterval) {
       clearInterval(updateInterval);
     }
-    displayNotification(`Update available (${info.version})`, "a new version of the app is available and will be installed on next exit");
+    displayNotification(
+      `Update available (${info.version})`,
+      "a new version of the app is available and will be installed on next exit"
+    );
   });
   const tryUpdate = async () => {
     try {
       await autoUpdater.checkForUpdates();
     } catch (error) {
+      // ignore
     }
   };
   updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
@@ -280,10 +348,17 @@ async function update() {
 }
 
 function displayWindowHiddenNotification() {
-  displayNotification("I'm still here!", "Files are still served in the background");
+  displayNotification(
+    "I'm still here!",
+    "Files are still served in the background"
+  );
 }
 
-function displayNotification(title: string, body: string, onClick?: (event: Electron.Event) => void) {
+function displayNotification(
+  title: string,
+  body: string,
+  onClick?: (event: Electron.Event) => void
+) {
   if (onClick == null) {
     onClick = (e) => maximize();
   }
@@ -292,7 +367,7 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
       title,
       silent: true,
       body,
-      icon: process.platform.match("darwin") ? undefined : APP_ICON,
+      icon: process.platform.match("darwin") ? null : APP_ICON,
     });
     notif.on("click", onClick);
     notif.show();
@@ -310,7 +385,12 @@ function createWindows() {
   // we don't want to open a window on machine startup (only tray pops)
   // const startOptions = app.getLoginItemSettings();
   // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
-  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true } });
+  indexWorker = new BrowserWindow({
+    width: 400,
+    height: 400,
+    show: !!process.env.development,
+    webPreferences: { nodeIntegration: true },
+  });
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
     createMainWindow(indexWorker, !firstTimeLaunch);
   });
@@ -321,10 +401,18 @@ function createWindows() {
 }
 
 function startGraphqlServer() {
-  indexWorker.webContents.send("main-window-id", token, firstTimeLaunch, mainWindow.webContents.id);
+  indexWorker.webContents.send(
+    "main-window-id",
+    token,
+    firstTimeLaunch,
+    mainWindow.webContents.id
+  );
 }
 
-function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = false) {
+function createMainWindow(
+  indexWorkerWindow: BrowserWindow,
+  hidden: boolean = false
+) {
   mainWindow = new BrowserWindow({
     height: 550,
     width: 650,
@@ -333,7 +421,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     frame: false,
     icon,
     show: !hidden,
-    webPreferences: { nodeIntegration: true }
+    webPreferences: { nodeIntegration: true },
   });
   if (signedEula) {
     startGraphqlServer();
@@ -344,7 +432,10 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
       app.dock.hide();
     }
     if (firstTimeLaunch) {
-      displayNotification("Rookout's Desktop App is running in the background", "You can access the app via the tray icon");
+      displayNotification(
+        "Rookout's Desktop App is running in the background",
+        "You can access the app via the tray icon"
+      );
     }
   });
 
@@ -392,9 +483,21 @@ function openTray() {
   }
   tray = new Tray(TRAY_ICON);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Copy Token", icon: darkMode ? COPY_ICON_WHITE : COPY_ICON_BLACK, click: () => clipboard.writeText(token) },
-    { label: "Config...", icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK, click: maximize },
-    { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: quitApplication },
+    {
+      label: "Copy Token",
+      icon: darkMode ? COPY_ICON_WHITE : COPY_ICON_BLACK,
+      click: () => clipboard.writeText(token),
+    },
+    {
+      label: "Config...",
+      icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK,
+      click: maximize,
+    },
+    {
+      label: "Close",
+      icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK,
+      click: quitApplication,
+    },
   ]);
   tray.setToolTip("Rookout");
   tray.setContextMenu(contextMenu);

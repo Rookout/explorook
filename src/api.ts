@@ -3,11 +3,12 @@ import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
+import { getCommitIfRightOrigin, getLastCommitDescription } from "./git";
 import {
-  getCommitIfRightOrigin,
-  getLastCommitDescription as getLastCommitDescription
-} from "./git";
-import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
+  getPerforceManagerSingleton,
+  IPerforceRepo,
+  IPerforceView,
+} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
@@ -32,11 +33,18 @@ export const resolvers = {
     },
   },
   Mutation: {
-    addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
+    addRepository: async (
+      parent: any,
+      args: { fullpath: string },
+      context: { onAddRepoRequest: onAddRepoRequestHandler }
+    ): Promise<boolean> => {
       return context.onAddRepoRequest(args.fullpath);
     },
-    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }):
-        Promise<OperationStatus> => {
+    changePerforceViews: async (
+      parent: any,
+      args: { views: string[] },
+      context: { onAddRepoRequest: onAddRepoRequestHandler }
+    ): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
 
       if (!perforceManager) {
@@ -48,7 +56,7 @@ export const resolvers = {
         return { isSuccess: false, reason: "No depots with those names exist" };
       }
 
-      const addRepoPromises = [] as Array<Promise<boolean>>;
+      const addRepoPromises = [] as Promise<boolean>[];
 
       _.forEach(newRepos, (repo: IPerforceRepo) => {
         addRepoPromises.push(context.onAddRepoRequest(repo.fullPath, repo.id));
@@ -59,25 +67,35 @@ export const resolvers = {
       const allSuccess = _.every(success, (s: boolean) => s);
       return {
         isSuccess: allSuccess,
-        reason: !allSuccess ? "Failed to create some of the repos in Explorook" : undefined
+        reason: !allSuccess
+          ? "Failed to create some of the repos in Explorook"
+          : "",
       };
     },
-    switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
+    switchPerforceChangelist: async (
+      parent: any,
+      args: { changelistId: string }
+    ): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
-      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
-    }
+      return perforceManager
+        ? await perforceManager.switchChangelist(args.changelistId)
+        : { isSuccess: false, reason: "Perforce not initialized" };
+    },
   },
   Query: {
-    async repository(parent: any, args: { repo: Repo, path: string }) {
+    repository: async (parent: any, args: { repo: Repo; path: string }) => {
       const { repo } = args;
       return repo.toModel();
     },
-    listRepos(): Repository[] {
+    listRepos: async (): Promise<Repository[]> => {
       return repStore.getRepositories().map((r) => r.toModel());
     },
     // dir get's a target repository (as a user can expose multiple folders on it's PC) and a relative path
     // and returns a list of all files and folders in that path
-    dir(parent: any, args: { repo: Repository, path: string }): Promise<FileInfo[]> {
+    dir: (
+      parent: any,
+      args: { repo: Repository; path: string }
+    ): Promise<FileInfo[]> => {
       const { path, repo } = args;
       return new Promise((resolve, reject) => {
         const targetDir = join(repo.fullpath, path);
@@ -91,9 +109,9 @@ export const resolvers = {
             let fstats;
             try {
               fstats = fs.statSync(join(repo.fullpath, path, f));
-            } catch (err) {
-              console.error(`Error while listing file: ${path}`, err);
-              notify(`Error while listing file: ${path}`, { metaData: err });
+            } catch (error) {
+              console.error(`Error while listing file: ${path}`, error);
+              notify(`Error while listing file: ${path}`, { metaData: error });
             }
             if (fstats === undefined) {
               return; // File does not exist, move on
@@ -115,12 +133,15 @@ export const resolvers = {
       });
     },
     // file returns the content of a file, given the target repository and inner path.
-    file(parent: any, args: { repo: Repository, path: string }): Promise<string> {
+    file: (
+      parent: any,
+      args: { repo: Repository; path: string }
+    ): Promise<string> => {
       const { path, repo } = args;
       return new Promise((resolve, reject) => {
         const fileFullpath = join(repo.fullpath, path);
         fs.readFile(fileFullpath, "utf8", (err, data) => {
-          if (err != null) {
+          if (err) {
             reject(err);
             return;
           }
@@ -128,11 +149,11 @@ export const resolvers = {
         });
       });
     },
-    listTree(parent: any, args: { repo: Repository }): string[] {
+    listTree: (parent: any, args: { repo: Repository }): string[] => {
       const { repo } = args;
       return repo.listTree();
     },
-    refreshIndex(parent: any, args: { repo: Repository }): boolean {
+    refreshIndex: (parent: any, args: { repo: Repository }): boolean => {
       args.repo.reIndex();
       return true;
     },
@@ -140,27 +161,47 @@ export const resolvers = {
       const perforceManager = getPerforceManagerSingleton();
       return perforceManager ? perforceManager.getAllViews() : [];
     },
-    getPerforceChangelistForFile: async (parent: any, args: {repo: Repository, path: string}): Promise<string> => {
+    getPerforceChangelistForFile: async (
+      parent: any,
+      args: { repo: Repository; path: string }
+    ): Promise<string> => {
       const perforceManager = getPerforceManagerSingleton();
       const { path, repo } = args;
       const fileFullpath = join(repo.fullpath, path);
 
-      return perforceManager ? perforceManager.getChangelistForFile(fileFullpath) : null;
+      return perforceManager
+        ? perforceManager.getChangelistForFile(fileFullpath)
+        : null;
     },
-    getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
-      const {provider, repo, path, remoteOrigin} = args;
+    getCommitIdForFile: async (
+      parent: any,
+      args: {
+        provider: any;
+        remoteOrigin: string;
+        repo: Repository;
+        path: string;
+      }
+    ): Promise<string> => {
+      const { provider, repo, path, remoteOrigin } = args;
       switch (provider) {
         case "git":
           return getCommitIfRightOrigin(repo, remoteOrigin);
         case "perforce":
           const perforceManager = getPerforceManagerSingleton();
           const filePath = join(repo.fullpath, path);
-          const isSameDepot = await perforceManager?.isSameRemoteOrigin(filePath, remoteOrigin);
+          const isSameDepot = await perforceManager?.isSameRemoteOrigin(
+            filePath,
+            remoteOrigin
+          );
 
-          return isSameDepot ? (await perforceManager.getChangelistForFile(filePath)) : null;
+          return isSameDepot
+            ? await perforceManager.getChangelistForFile(filePath)
+            : null;
         default:
-          throw new Error(`Unreachable code - got unknown source provider: ${provider}`);
+          throw new Error(
+            `Unreachable code - got unknown source provider: ${provider}`
+          );
       }
-    }
-  }
+    },
+  },
 };

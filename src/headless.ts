@@ -6,38 +6,45 @@ import * as graphQlServer from "./server";
 const args = require("args-parser")(process.argv);
 
 if (args.help || !args.repo) {
-    console.log("add repository using --repo=<name>,<path>");
-    console.log("customize listen port with --port or -p");
-    console.log("customize access token with --token");
-    process.exit(0);
+  console.log("add repository using --repo=<name>,<path>");
+  console.log("customize listen port with --port or -p");
+  console.log("customize access token with --token");
+  process.exit(0);
 }
 
 let repos = [];
 
-try { // Allow for multiple repos as an array of objects
-    repos = JSON.parse(args.repo);
+try {
+  // Allow for multiple repos as an array of objects
+  repos = JSON.parse(args.repo);
 } catch (err) {
-    const arr = args.repo.split(",");
-    const { name, path } = { name: arr[0], path: arr[1] };
-    repos = [{ name, path }];
+  const arr = args.repo.split(",");
+  const { name, path } = { name: arr[0], path: arr[1] };
+  repos = [{ name, path }];
 }
 
 repos.forEach((repo: any) => {
-    repStore.add({
-        fullpath: repo.path,
-        repoName: repo.name,
-        id: undefined,
-    }).catch((err) => {
-        throw err;
+  repStore
+    .add({
+      fullpath: repo.path,
+      repoName: repo.name,
+      id: undefined,
+    })
+    .catch((err) => {
+      throw err;
     });
 });
 
 process.on("uncaughtException", (error) => {
-    console.error("unhandled exception thrown", error);
+  console.error("unhandled exception thrown", error);
 });
 
 process.on("unhandledRejection", (error) => {
-    console.error("unhandled rejection thrown", error);
+  console.error("unhandled rejection thrown", error);
 });
 
-graphQlServer.start({ useTokenAuthorization: !!args.token, port: args.p || args.port || "", accessToken: args.token || "" });
+graphQlServer.start({
+  useTokenAuthorization: !!args.token,
+  port: args.p || args.port || "",
+  accessToken: args.token || "",
+});
