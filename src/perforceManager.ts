@@ -1,11 +1,10 @@
-import {Repository} from "./common/repository";
+import {getLibraryFolder} from "./utils";
 
 const path = require("path");
-import * as Store from "electron-store";
 import _ = require("lodash");
 import {P4} from "p4api";
 import {notify} from "./exceptionManager";
-import MemStore from "./mem-store";
+import {getStoreSafe} from "./explorook-store";
 import {repStore} from "./repoStore";
 
 export interface IPerforceRepo {
@@ -34,18 +33,10 @@ export interface IPerforceManager {
     isSameRemoteOrigin(filePath: string, remoteOrigin: string): Promise<boolean>;
 }
 
-let store: any;
-try {
-    store = new Store({ name: "explorook" });
-} catch (error) { // probably headless mode - defaulting to memory store
-    // tslint:disable-next-line:no-console
-    console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
-    store = new MemStore();
-}
+const store = getStoreSafe();
 const PERFORCE_ROOKOUT_CLIENT_PREFIX = "ROOKOUT_DESKTOP_";
 // Currently supporting only Windows and OSX
-const ROOT = process.platform === "win32" ? path.join(process.env.APPDATA, "\\Rookout\\Perforce_Root") :
-    path.join(process.env.HOME, "Library/Application Support/Rookout/Perforce_Root");
+const ROOT = path.join(getLibraryFolder(), "Perforce_Root");
 const P4API_TIMEOUT = 3000;
 
 class PerforceManager {
