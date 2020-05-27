@@ -2,9 +2,7 @@
 import { ipcRenderer } from "electron";
 import Store = require("electron-store");
 import fs = require("fs");
-import git = require("isomorphic-git");
 import _ = require("lodash");
-import parseRepo = require("parse-repo");
 import { Repository } from "./common/repository";
 import { IndexWorker } from "./fsIndexer";
 import { getRepoId } from "./git";
