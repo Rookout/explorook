@@ -33,7 +33,17 @@ export const resolvers = {
   Repository: {
     lastCommitDescription: async (parent: Repository) => {
       const repo = repStore.getRepositories().find((r) => r.id === parent.id);
-      return await getLastCommitDescription(repo);
+      const lastCommit = await getLastCommitDescription(repo);
+      if (!lastCommit?.commit?.message) {
+        notify("no commit message on last commit", {
+          metaData: { lastCommit }
+        })
+      }
+      return {
+        oid: lastCommit.oid,
+        message: lastCommit?.commit?.message || "<no commit message>",
+        author: lastCommit?.commit?.author || {}
+      }
     },
   },
   Mutation: {
