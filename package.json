@@ -110,7 +110,7 @@
     "git-url-parse": "^11.1.2",
     "graphql-yoga": "^1.16.9",
     "is-git-url": "^1.0.0",
-    "isomorphic-git": "^0.39.2",
+    "isomorphic-git": "^1.4.0",
     "lodash": "^4.17.10",
     "node-rsa": "^1.0.5",
     "p4api": "^3.3.1",
