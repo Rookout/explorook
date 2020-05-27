@@ -1,5 +1,7 @@
 import fs = require("fs");
-const { exec } = require("child_process");
+import util = require("util");
+import childProcess = require("child_process");
+const exec = util.promisify(childProcess.exec);
 const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
@@ -8,7 +10,7 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
 import { Repository } from "./common/repository";
-import { notify } from "./exceptionManager";
+import { notify, leaveBreadcrumb } from "./exceptionManager";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
@@ -74,7 +76,7 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.Rem
         try {
             gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
         } catch (err) {
-            // not inside a git repository
+            leaveBreadcrumb("Failed to find git root", { ...repo, err })
         }
         if (!gitRoot) { return null; }
         return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
@@ -89,6 +91,10 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.Rem
 
 export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
     const localRemoteOrigin = await getRemoteOriginForRepo(repo);
+    if (!localRemoteOrigin) {
+      notify("Failed to remote origin");
+      return null
+    }
     const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
     const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
     return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
@@ -120,16 +126,8 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      // If the repo already exists we just need to checkout the commit.
      const fullCommand = doesRepoExist ? checkoutCommand : `${cloneCommand} && ${checkoutCommand}`;
 
-     return new Promise<string>((resolve, reject) => {
-         exec(fullCommand, (error: any) => {
-                 if (error) {
-                     reject(error);
-                     return;
-                 }
-                 // Return the path of a successful clone
-                 resolve(repoDir);
-             });
-     });
+     await exec(fullCommand);
+     return repoDir;
 }
 // 10GB
 const MAX_GIT_FOLDER_SIZE_IN_KB = 10485760;
@@ -139,18 +137,10 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
     const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => path.join(GIT_ROOT, dirName));
     const repoDirs = _.filter(rootDirContent, isDirectory);
-    const sizePromises = _.map(repoDirs, dir => {
-        return new Promise((resolve, reject) => {
-            // Using git's pre-counted size to get a rough estimation of the repo sizes.
-            exec(`cd "${dir}" && git count-objects -v`, (error: any, stdout: string) => {
-                if (error) {
-                    reject(error);
-                }
-                const [,size] = packSizeRegex.exec(stdout);
-                // Taking the second group which contains the size in KB.
-                resolve(Number(size));
-            });
-        });
+    const sizePromises = _.map(repoDirs, async dir => {
+      const { stdout } = await exec(`cd "${dir}" && git count-objects -v`);
+      const [,size] = packSizeRegex.exec(stdout);
+      return Number(size);
     });
     const rootSize = _.sum(await Promise.all(sizePromises));
 
