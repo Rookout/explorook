@@ -3,12 +3,21 @@ import _ = require("lodash");
 import { posix } from "path";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
-import { getCommitIfRightOrigin, getLastCommitDescription } from "./git";
 import {
   getPerforceManagerSingleton,
   IPerforceRepo,
   IPerforceView,
 } from "./perforceManager";
+import {
+  getCommitIfRightOrigin,
+  getLastCommitDescription as getLastCommitDescription,
+  GIT_ROOT,
+  isGitFolderBiggerThanMaxSize,
+  removeGitReposFromStore,
+  TMP_DIR_PREFIX,
+  cloneRemoteOriginWithCommit,
+  checkGitRemote
+} from "./git";
 import { Repo, repStore } from "./repoStore";
 import { onAddRepoRequestHandler } from "./server";
 // using posix api makes paths consistent across different platforms
@@ -77,10 +86,54 @@ export const resolvers = {
       args: { changelistId: string }
     ): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
-      return perforceManager
-        ? await perforceManager.switchChangelist(args.changelistId)
-        : { isSuccess: false, reason: "Perforce not initialized" };
+      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
     },
+    getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
+                       context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<OperationStatus> => {
+      const subDirs = fs.readdirSync(GIT_ROOT);
+      // Delete the folder if it's too big
+      if ((await isGitFolderBiggerThanMaxSize())) {
+        fs.rmdirSync(GIT_ROOT);
+        removeGitReposFromStore(subDirs);
+      } else {
+        // If we had any duplicate repos with two different commits we want to delete them now
+        const tmpDirs = _.filter(subDirs, dir => dir.includes(TMP_DIR_PREFIX));
+        if (!_.isEmpty(tmpDirs)) {
+          removeGitReposFromStore(tmpDirs);
+        }
+      }
+
+      // If we have the same remote origin with two different commits we will create two folders
+      const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
+
+      const addRepoPromises = _.map(args.sources, async repo => {
+        if (!checkGitRemote(repo.repoUrl)) {
+          notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
+          return {
+            isSuccess: false,
+            reason: `Got bad format for git remote origin: ${repo.repoUrl}`
+          };
+        }
+        try {
+          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
+          const didAddRepo = await context.onAddRepoRequest(cloneDir);
+          return {
+            isSuccess: didAddRepo,
+            reason: didAddRepo ? undefined : `Failed to add repo on folder ${cloneDir}`
+          };
+        } catch (e) {
+          notify(e);
+          return {
+            isSuccess: false,
+            reason: e.message
+          };
+        }
+      });
+
+      const res = await Promise.all(addRepoPromises);
+      // Return the first error or success.
+      return _.find(res, r => !r.isSuccess) || { isSuccess: true };
+    }
   },
   Query: {
     repository: async (parent: any, args: { repo: Repo; path: string }) => {

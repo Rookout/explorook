@@ -131,14 +131,17 @@ div, span {
   background-color: #955FF8;
 }
 
-#test-connection-btn {
-  height: 44px;
+.test-connection-btn {
   font-weight: 400;
   font-size: 14px;
   font-family: Roboto;
   color: white;
-  border-radius: 0;
   background-color: #955FF8;
+  margin-left: 10px;
+  padding: 0;
+  height: 25px;
+  width: 111px;
+  border-radius: 100px;
 }
 
 #perforce-connection-input {
@@ -253,4 +256,12 @@ div, span {
 
 .eula-modal .agree {
   margin-left: 10px;
+}
+
+.on-prem-input {
+  border-bottom: 2px solid #B6C8D4;
+  color: #b6c8d4 !important;
+}
+.on-prem-input:hover {
+  color: #b6c8d4;
 }

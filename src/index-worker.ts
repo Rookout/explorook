@@ -1,17 +1,12 @@
-import {
-  IpcMessageEvent,
-  ipcRenderer,
-  IpcRendererEvent,
-  remote,
-} from "electron";
+import { ipcRenderer, remote, IpcRendererEvent } from "electron";
 import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
-import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
 import { changePerforceManagerSingleton } from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
+import { Repository } from "./common/repository";
 
 let mainWindowId = -1;
 
