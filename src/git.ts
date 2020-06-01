@@ -92,6 +92,7 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.Rem
 export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
     const localRemoteOrigin = await getRemoteOriginForRepo(repo);
     if (!localRemoteOrigin) {
+      // this notify is empty but the breadcrumbs tell the story
       notify("Failed to remote origin");
       return null
     }
