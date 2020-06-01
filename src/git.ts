@@ -97,7 +97,7 @@ export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: str
 }
 
 export function checkGitRemote(remoteOrigin: string): boolean {
-    return isGitUrl(remoteOrigin);
+    return isGitUrl(remoteOrigin.endsWith(".git") ? remoteOrigin : `${remoteOrigin}.git`);
 }
 
 export const TMP_DIR_PREFIX = "temp_rookout_";
