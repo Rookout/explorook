@@ -29,7 +29,7 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
     // connect to the same repository on different machines
     try {
         const gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
-        const remote = await igit.config({fs, dir: gitRoot, path: "remote.origin.url"});
+        const { url: remote } = await getRemoteOriginForRepo(repo)
         const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
         const repoInfo = parseRepo(remote);
         let repoId = `${repoInfo.repository}/${slash(gitRootRelPath)}`;
@@ -40,8 +40,8 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
         return repoId;
     } catch (error) {
         if (error && !error.toString().includes("Unable to find git root for")) {
-            notify("Failed to generate repo id from git", {
-                metaData: { error, repo }
+            notify(error, {
+                metaData: { error, repo, message: "Failed to generate repo id from git" }
             });
         }
         // no git found
@@ -49,7 +49,7 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
     }
 }
 
-export async function getLastCommitDescription(repo: Repository): Promise<igit.CommitDescription> {
+export async function getLastCommitDescription(repo: Repository): Promise<igit.ReadCommitResult> {
     try {
         let gitRoot = null;
         try {
@@ -68,7 +68,7 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.C
     }
 }
 
-export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.RemoteDescription> {
+export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote: string;url: string; }> {
     try {
         let gitRoot = null;
         try {
