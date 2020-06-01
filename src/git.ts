@@ -89,7 +89,7 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<igit.Rem
 
 export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
     const localRemoteOrigin = await getRemoteOriginForRepo(repo);
-    if(!localRemoteOrigin) return null;
+    if (!localRemoteOrigin) return null;
     const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
     const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
     return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
@@ -147,7 +147,7 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
                 if (error) {
                     reject(error);
                 }
-                const [,size] = packSizeRegex.exec(stdout);
+                const [, size] = packSizeRegex.exec(stdout);
                 // Taking the second group which contains the size in KB.
                 resolve(Number(size));
             });
