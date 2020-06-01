@@ -89,6 +89,7 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote
 
 export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
     const localRemoteOrigin = await getRemoteOriginForRepo(repo);
+    if(!localRemoteOrigin) return null;
     const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
     const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
     return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
