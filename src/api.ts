@@ -34,6 +34,9 @@ export const resolvers = {
     lastCommitDescription: async (parent: Repository) => {
       const repo = repStore.getRepositories().find((r) => r.id === parent.id);
       const lastCommit = await getLastCommitDescription(repo);
+      if (!lastCommit) {
+        return null;
+      }
       if (!lastCommit?.commit?.message) {
         notify("no commit message on last commit", {
           metaData: { lastCommit }
