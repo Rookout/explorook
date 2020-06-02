@@ -2,15 +2,13 @@ import Analytics = require("analytics-node");
 import {
   app,
   BrowserWindow,
-  clipboard,
   ipcMain,
   IpcMainEvent,
   Menu,
   nativeImage,
+  nativeTheme,
   Notification,
-  systemPreferences,
-  Tray,
-  nativeTheme
+  Tray
 } from "electron";
 import * as log from "electron-log";
 import { autoUpdater, UpdateInfo } from "electron-updater";
@@ -20,7 +18,6 @@ import * as path from "path";
 import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
-import _ = require("lodash");
 import { initExceptionManager, notify } from "./exceptionManager";
 
 autoUpdater.logger = log;
@@ -32,10 +29,8 @@ const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
 const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
-const COPY_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_file_copy_black_18dp.png");
 const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
 const SETTINGS_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_settings_white_18dp.png");
-const COPY_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_file_copy_white_18dp.png");
 const TEN_MINUTES = 1000 * 60 * 10;
 
 let mainWindow: Electron.BrowserWindow;
@@ -392,7 +387,6 @@ function openTray() {
   }
   tray = new Tray(TRAY_ICON);
   const contextMenu = Menu.buildFromTemplate([
-    { label: "Copy Token", icon: darkMode ? COPY_ICON_WHITE : COPY_ICON_BLACK, click: () => clipboard.writeText(token) },
     { label: "Config...", icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK, click: maximize },
     { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: quitApplication },
   ]);

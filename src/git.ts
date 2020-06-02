@@ -1,6 +1,6 @@
+import childProcess = require("child_process");
 import fs = require("fs");
 import util = require("util");
-import childProcess = require("child_process");
 const exec = util.promisify(childProcess.exec);
 const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
@@ -10,7 +10,7 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
 import { Repository } from "./common/repository";
-import { notify, leaveBreadcrumb } from "./exceptionManager";
+import { leaveBreadcrumb, notify } from "./exceptionManager";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
@@ -31,7 +31,7 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
     // connect to the same repository on different machines
     try {
         const gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
-        const { url: remote } = await getRemoteOriginForRepo(repo)
+        const { url: remote } = await getRemoteOriginForRepo(repo);
         const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
         const repoInfo = parseRepo(remote);
         let repoId = `${repoInfo.repository}/${slash(gitRootRelPath)}`;
@@ -70,13 +70,13 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.R
     }
 }
 
-export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote: string;url: string; }> {
+export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote: string; url: string; }> {
     try {
         let gitRoot = null;
         try {
             gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
         } catch (err) {
-            leaveBreadcrumb("Failed to find git root", { ...repo, err })
+            leaveBreadcrumb("Failed to find git root", { ...repo, err });
         }
         if (!gitRoot) { return null; }
         return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
@@ -94,7 +94,7 @@ export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: str
     if (!localRemoteOrigin) {
       // this notify is empty but the breadcrumbs tell the story
       notify("Failed to remote origin");
-      return null
+      return null;
     }
     const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
     const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
@@ -140,7 +140,7 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
     const repoDirs = _.filter(rootDirContent, isDirectory);
     const sizePromises = _.map(repoDirs, async dir => {
       const { stdout } = await exec(`cd "${dir}" && git count-objects -v`);
-      const [,size] = packSizeRegex.exec(stdout);
+      const [, size] = packSizeRegex.exec(stdout);
       return Number(size);
     });
     const rootSize = _.sum(await Promise.all(sizePromises));
