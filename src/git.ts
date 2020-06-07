@@ -10,7 +10,7 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
 import { Repository } from "./common/repository";
-import { leaveBreadcrumb, notify } from "./exceptionManager";
+import { notify } from "./exceptionManager";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
@@ -122,9 +122,11 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      const doesRepoExist = fs.existsSync(repoDir);
 
      const cloneCommand = `cd "${gitRoot}" && git clone ${repoUrl}`;
-     const checkoutCommand = `cd "${repoDir}" && git checkout ${commit}`;
-     // If the repo already exists we just need to checkout the commit.
-     const fullCommand = doesRepoExist ? checkoutCommand : `${cloneCommand} && ${checkoutCommand}`;
+     const fetchCommand = "git fetch";
+     const cdCommand = `cd "${repoDir}"`;
+     const checkoutCommand = `git checkout ${commit}`;
+     // If the repo already exists we just need to fetch and checkout the commit.
+     const fullCommand = `${doesRepoExist ? `${cdCommand} && ${fetchCommand}` : `${cloneCommand} && ${cdCommand}`} && ${checkoutCommand}`;
 
      await exec(fullCommand);
      return repoDir;
