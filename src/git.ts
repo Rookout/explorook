@@ -51,14 +51,18 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
     }
 }
 
+async function getGitRootForPath(filepath: string) {
+    try {
+        return await igit.findRoot({ fs, filepath });
+    } catch (err) {
+        // No git root was found, probably not a git repository
+        return null;
+    }
+}
+
 export async function getLastCommitDescription(repo: Repository): Promise<igit.ReadCommitResult> {
     try {
-        let gitRoot = null;
-        try {
-            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
-        } catch (err) {
-            // not inside a git repository
-        }
+        const gitRoot = await getGitRootForPath(repo.fullpath);
         if (!gitRoot) { return null; }
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
@@ -72,12 +76,7 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.R
 
 export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote: string; url: string; }> {
     try {
-        let gitRoot = null;
-        try {
-            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
-        } catch (err) {
-            leaveBreadcrumb("Failed to find git root", { ...repo, err });
-        }
+        const gitRoot = await getGitRootForPath(repo.fullpath);
         if (!gitRoot) { return null; }
         return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
     } catch (error) {
