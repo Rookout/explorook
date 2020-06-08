@@ -10,7 +10,7 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
 import { Repository } from "./common/repository";
-import { leaveBreadcrumb, notify } from "./exceptionManager";
+import { notify } from "./exceptionManager";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
@@ -51,14 +51,18 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
     }
 }
 
+async function getGitRootForPath(filepath: string) {
+    try {
+        return await igit.findRoot({ fs, filepath });
+    } catch (err) {
+        // No git root was found, probably not a git repository
+        return null;
+    }
+}
+
 export async function getLastCommitDescription(repo: Repository): Promise<igit.ReadCommitResult> {
     try {
-        let gitRoot = null;
-        try {
-            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
-        } catch (err) {
-            // not inside a git repository
-        }
+        const gitRoot = await getGitRootForPath(repo.fullpath);
         if (!gitRoot) { return null; }
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
@@ -72,12 +76,7 @@ export async function getLastCommitDescription(repo: Repository): Promise<igit.R
 
 export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote: string; url: string; }> {
     try {
-        let gitRoot = null;
-        try {
-            gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
-        } catch (err) {
-            leaveBreadcrumb("Failed to find git root", { ...repo, err });
-        }
+        const gitRoot = await getGitRootForPath(repo.fullpath);
         if (!gitRoot) { return null; }
         return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
     } catch (error) {
@@ -123,9 +122,11 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      const doesRepoExist = fs.existsSync(repoDir);
 
      const cloneCommand = `cd "${gitRoot}" && git clone ${repoUrl}`;
-     const checkoutCommand = `cd "${repoDir}" && git checkout ${commit}`;
-     // If the repo already exists we just need to checkout the commit.
-     const fullCommand = doesRepoExist ? checkoutCommand : `${cloneCommand} && ${checkoutCommand}`;
+     const fetchCommand = "git fetch";
+     const cdCommand = `cd "${repoDir}"`;
+     const checkoutCommand = `git checkout ${commit}`;
+     // If the repo already exists we just need to fetch and checkout the commit.
+     const fullCommand = `${doesRepoExist ? `${cdCommand} && ${fetchCommand}` : `${cloneCommand} && ${cdCommand}`} && ${checkoutCommand}`;
 
      await exec(fullCommand);
      return repoDir;
