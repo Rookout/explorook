@@ -41,7 +41,7 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
         }
         return repoId;
     } catch (error) {
-        if (error && !error.toString().includes("Unable to find git root for")) {
+        if (error?.code !== "NotFoundError") {
             notify(error, {
                 metaData: { error, repo, message: "Failed to generate repo id from git" }
             });
