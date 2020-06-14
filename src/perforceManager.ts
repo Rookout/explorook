@@ -55,8 +55,8 @@ class PerforceManager {
         if (!client || client.Client === currentRookoutClientName) {
           return;
         }
-        // Check if workspace exists. If not, create it.
-        const allWorkspaces = this.p4.cmdSync("workspaces")?.stat;
+        // Check if workspace exists. If not, create it. Only get this user's workspaces.
+        const allWorkspaces = this.p4.cmdSync(`workspaces -u ${client.Owner}`)?.stat;
         if (!_.find(allWorkspaces, workspace => workspace.Client === currentRookoutClientName)) {
             // Creating a new client for Rookout desktop app without own root so we can change depots when needed
             const newClient = { ...client, Client: currentRookoutClientName };
