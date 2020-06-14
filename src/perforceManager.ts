@@ -162,8 +162,8 @@ class PerforceManager {
     }
 
     public async getChangelistForFile(fullPath: string): Promise<string> {
-        const workspaces = (await this.p4.cmd("workspaces"))?.stat;
         const client = this.getCurrentClient();
+        const workspaces = (await this.p4.cmd(`workspaces -u ${client.Owner}`))?.stat;
         const workspace = _.find<IPerforceWorkspace | null>(workspaces,
            ws => (fullPath.includes(ws.Root) && client.Owner === ws.Owner));
         if (workspace) {
