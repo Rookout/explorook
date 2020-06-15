@@ -392,6 +392,7 @@ function openTray() {
   ]);
   tray.setToolTip("Rookout");
   tray.setContextMenu(contextMenu);
+  tray.on("double-click", maximize);
   if (process.platform.match("darwin")) {
     tray.on("right-click", (e) => tray.popUpContextMenu());
   }
