@@ -1,0 +1,53 @@
+diff --git a/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js b/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js
+index 4125a36..85133a0 100644
+--- a/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js
++++ b/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js
+@@ -52,8 +52,8 @@ function verifySignature(publisherNames, tempUpdateFile, logger) {
+       try {
+         if (error != null || stderr) {
+           handleError(logger, error, stderr);
+-          resolve(null);
+-          return;
++          logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error || stderr}. Aborting update.`);
++          throw error;
+         }
+ 
+         const data = parseOut(stdout);
+@@ -62,6 +62,7 @@ function verifySignature(publisherNames, tempUpdateFile, logger) {
+           const name = (0, _builderUtilRuntime().parseDn)(data.SignerCertificate.Subject).get("CN");
+ 
+           if (publisherNames.includes(name)) {
++             // Indicates that the signature looks good and CN is in publisherNames
+             resolve(null);
+             return;
+           }
+@@ -71,9 +72,8 @@ function verifySignature(publisherNames, tempUpdateFile, logger) {
+         logger.warn(`Sign verification failed, installer signed with incorrect certificate: ${result}`);
+         resolve(result);
+       } catch (e) {
+-        logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error}. Ignoring signature validation due to unknown error.`);
+-        resolve(null);
+-        return;
++        logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error}. Aborting update.`);
++        throw error;
+       }
+     });
+   });
+@@ -101,7 +101,7 @@ function parseOut(out) {
+ 
+ function handleError(logger, error, stderr) {
+   if (isOldWin6()) {
+-    logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error || stderr}. Ignoring signature validation due to unsupported powershell version. Please upgrade to powershell 3 or higher.`);
++    logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error || stderr}. Aborting update. Please upgrade to powershell 3 or higher.`);
+     return;
+   }
+ 
+@@ -119,7 +119,7 @@ function handleError(logger, error, stderr) {
+   }
+ 
+   if (stderr) {
+-    logger.warn(`Cannot execute Get-AuthenticodeSignature, stderr: ${stderr}. Ignoring signature validation due to unknown stderr.`);
++    logger.warn(`Cannot execute Get-AuthenticodeSignature, stderr: ${stderr}. Aborting update.`);
+     return;
+   }
+ }
