@@ -10,7 +10,7 @@ export const OnPremTypes = {
 
 export const OnPremConnectionInput = ({type, label}) => {
     const [connectionString, setConnectionString] = useState('');
-    const [connectionState, setConnectionState] = useState(connectionStates.PENDING);
+    const [connectionState, setConnectionState] = useState(connectionStates.NOT_TESTED);
 
     useEffect(() => {
         ipcRenderer.on(`test-${type}-connection-result`, (e, isSuccess) => {
@@ -30,6 +30,7 @@ export const OnPremConnectionInput = ({type, label}) => {
 
     const onTestConnection = (stringToTest) => {
         ipcRenderer.sendTo(window.indexWorkerId,`test-${type}-connection`, stringToTest)
+        setConnectionState(connectionStates.PENDING)
     };
 
     return <>
