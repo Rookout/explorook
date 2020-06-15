@@ -88,6 +88,9 @@ ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionStrin
     try {
         isSuccess = !!changePerforceManagerSingleton(connectionString);
     } catch (e) {
+        if (e.message?.code === "ENOENT") {
+            ipcRenderer.send("no-p4-found");
+        }
         console.error(`Failed to init perforce manager with port :${connectionString}`);
     }
 
