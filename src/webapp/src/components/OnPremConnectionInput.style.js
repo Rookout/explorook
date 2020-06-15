@@ -1,8 +1,8 @@
 import {Button, TextField} from "@material-ui/core";
 import React from "react";
-import {Check as CheckIcon, Clear as ClearIcon} from "@material-ui/icons";
 
 export const connectionStates = {
+    NOT_TESTED: 'NOT_TESTED',
     PENDING: 'PENDING',
     SUCCESS: 'SUCCESS',
     ERROR: 'ERROR'
@@ -21,11 +21,24 @@ export const OnPremSourceInput = ({label, value, setValue, ...props}) => (<TextF
 const getTestConnectionButtonContent = (connectionState) => {
     switch (connectionState) {
         case connectionStates.SUCCESS:
-            return <CheckIcon style={{fontSize:'18px'}}/>;
+            return "Connected";
         case connectionStates.ERROR:
-            return <ClearIcon style={{fontSize:'18px'}}/>;
+            return "Failed";
+        case connectionStates.PENDING:
+            return "Testing..."
         default:
             return "Test";
+    }
+}
+
+const getTestConnectionButtonColor = (connectionState) => {
+    switch (connectionState) {
+        case connectionStates.SUCCESS:
+            return "green";
+        case connectionStates.ERROR:
+            return "red";
+        default:
+            return "#586C7A";
     }
 }
 
@@ -35,7 +48,7 @@ export const TestConnectionButton = ({onTestConnection, connectionState, ...prop
         style={{
             padding: 0,
             marginLeft: "20px",
-            backgroundColor: "#586C7A",
+            backgroundColor: getTestConnectionButtonColor(connectionState),
             color: "white",
             borderRadius: "30px",
             boxShadow: "none",
