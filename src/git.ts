@@ -10,7 +10,7 @@ import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
 import { Repository } from "./common/repository";
-import { notify } from "./exceptionManager";
+import { notify, leaveBreadcrumb } from "./exceptionManager";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
@@ -55,6 +55,7 @@ async function getGitRootForPath(filepath: string) {
     try {
         return await igit.findRoot({ fs, filepath });
     } catch (err) {
+        leaveBreadcrumb("Failed to find git root", { filepath, err })
         // No git root was found, probably not a git repository
         return null;
     }
