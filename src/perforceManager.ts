@@ -126,7 +126,8 @@ class PerforceManager {
         // I couldn't find a flag that does not sync the files so if shouldSync is false we set the max synced files to 1
         result = await this.p4.cmd(`sync ${shouldSync ? "-f" : "-m 1" }`);
 
-        if (result.error) {
+        // @ts-ignore result.error[0].data is a string but ts-ling thinks it's a boolean. This error means we didn't actually need to change anything
+        if (result.error && !result.error[0].data === "File(s) up-to-date.\n") {
             notify(result.error);
             return [];
         }
