@@ -51,7 +51,7 @@ const onAddRepoRequest = async (fullpath: string, id?: string) => {
 };
 
 const updateGitLoadingState = (isLoading: boolean) => {
-    ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", [isLoading]);
+    ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", isLoading);
 };
 
 ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firstTimeLaunch: boolean, id: number) => {
