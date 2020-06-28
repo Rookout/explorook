@@ -50,6 +50,10 @@ const onAddRepoRequest = async (fullpath: string, id?: string) => {
     return true;
 };
 
+const updateGitLoadingState = (isLoading: boolean) => {
+    ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", [isLoading]);
+};
+
 ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firstTimeLaunch: boolean, id: number) => {
     mainWindowId = id;
     const port = 44512;
@@ -60,7 +64,7 @@ ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firs
         }
         const userId: string = ipcRenderer.sendSync("get-user-id");
         const userSite: string = ipcRenderer.sendSync("get-user-site");
-        await graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch, onAddRepoRequest });
+        await graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch, onAddRepoRequest, updateGitLoadingState });
     } catch (err) {
         console.error(err);
         notify("Failed to start local server", { metaData: { err }});

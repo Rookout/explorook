@@ -17,6 +17,8 @@ import {
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
+export type loadingStateUpdateHandler = (isLoading: boolean) => void;
+
 export interface StartOptions {
   accessToken?: string;
   userId?: string;
@@ -25,6 +27,7 @@ export interface StartOptions {
   firstTimeLaunch?: boolean;
   onAddRepoRequest?: onAddRepoRequestHandler;
   useTokenAuthorization?: boolean;
+  updateGitLoadingState?: loadingStateUpdateHandler;
 }
 
 const defaultOptions: StartOptions = {
@@ -54,7 +57,7 @@ export const start = (options: StartOptions): Promise<any> => {
   const server = new GraphQLServer({
     resolvers,
     typeDefs,
-    context: () => ({ onAddRepoRequest: settings.onAddRepoRequest }),
+    context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
     middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal]
   });
 
