@@ -123,7 +123,8 @@ class PerforceManager {
             return [];
         }
 
-        result = await this.p4.cmd(`sync ${shouldSync ? "-f" : "-k" }`);
+        // I couldn't find a flag that does not sync the files so if shouldSync is false we set the max synced files to 1
+        result = await this.p4.cmd(`sync ${shouldSync ? "-f" : "-m 1" }`);
 
         if (result.error) {
             notify(result.error);
