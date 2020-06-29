@@ -54,10 +54,6 @@ const updateGitLoadingState = (isLoading: boolean, repo: string) => {
     ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", { isLoading, repo });
 };
 
-const updatePerforceLoadingState = (isLoading: boolean, repo: string) => {
-    ipcRenderer.sendTo(mainWindowId, "set-perforce-is-loading", { isLoading, repo });
-};
-
 ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firstTimeLaunch: boolean, id: number) => {
     mainWindowId = id;
     const port = 44512;
@@ -69,7 +65,7 @@ ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firs
         const userId: string = ipcRenderer.sendSync("get-user-id");
         const userSite: string = ipcRenderer.sendSync("get-user-site");
         await graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch,
-            onAddRepoRequest, updateGitLoadingState, updatePerforceLoadingState });
+            onAddRepoRequest, updateGitLoadingState });
     } catch (err) {
         console.error(err);
         notify("Failed to start local server", { metaData: { err }});

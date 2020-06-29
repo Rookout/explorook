@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from "react";
 import * as Store from "electron-store";
-import {Button, ExpansionPanelSummary, TextField} from "@material-ui/core";
-import {ipcRenderer, IpcRendererEvent} from "electron";
+import {ExpansionPanelSummary} from "@material-ui/core";
+import {ipcRenderer} from "electron";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import {ExpandMore as ExpandMoreIcon, Check as CheckIcon, Clear as ClearIcon} from "@material-ui/icons";
+import {ExpandMore as ExpandMoreIcon} from "@material-ui/icons";
 import {OnPremConnectionInput, OnPremTypes} from "./OnPremConnectionInput";
-import {connectionStates} from "./OnPremConnectionInput.style";
 
 export const OnPremConnection = () => {
     // Expand this panel by default only if this is the first time the user opened this app
@@ -17,7 +16,7 @@ export const OnPremConnection = () => {
     }
     const [expanded, setExpanded] = useState(storeIsFirstTimeOpen);
     const [repoLoadingText, setRepoLoadingText] = useState(null);
-    const [repoLoadingDotCount, setGitLoadingDotCount] = useState(0);
+    const [repoLoadingDotCount, setRepoLoadingDotCount] = useState(0);
 
     useEffect(() => {
         ipcRenderer.on('set-git-is-loading', (e, { isLoading, repo }) => {
@@ -29,7 +28,7 @@ export const OnPremConnection = () => {
     useEffect(() => {
         if(repoLoadingText) {
             setTimeout(() => {
-                setGitLoadingDotCount((repoLoadingDotCount + 1)%4);
+                setRepoLoadingDotCount((repoLoadingDotCount + 1)%4);
             }, 400)
         }
     }, [repoLoadingText, repoLoadingDotCount])

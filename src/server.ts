@@ -28,7 +28,6 @@ export interface StartOptions {
   onAddRepoRequest?: onAddRepoRequestHandler;
   useTokenAuthorization?: boolean;
   updateGitLoadingState?: loadingStateUpdateHandler;
-  updatePerforceLoadingState?: loadingStateUpdateHandler;
 }
 
 const defaultOptions: StartOptions = {
