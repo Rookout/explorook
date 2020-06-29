@@ -41,13 +41,13 @@ export const resolvers = {
       if (!lastCommit?.commit?.message) {
         notify("no commit message on last commit", {
           metaData: { lastCommit }
-        })
+        });
       }
       return {
         oid: lastCommit.oid,
         message: lastCommit?.commit?.message || "<no commit message>",
         author: lastCommit?.commit?.author || {}
-      }
+      };
     },
   },
   Mutation: {
@@ -136,6 +136,36 @@ export const resolvers = {
       // Return the first error or success.
       context.updateGitLoadingState(false, "");
       return _.find(res, r => !r.isSuccess) || { isSuccess: true };
+    },
+    getFileFromPerforce: async (parent: any, args: { depotFilePath: string, labelOrChangelist: string }): Promise<string> => {
+      const perforceManager = getPerforceManagerSingleton();
+      if (!perforceManager) {
+        return "";
+      }
+
+      return await perforceManager.getSpecificFile(args.depotFilePath, args.labelOrChangelist, true);
+    },
+    changePerforceViewsV2: async (parent: any, args: {views: string[], shouldSync: boolean}): Promise<OperationStatus> => {
+      const perforceManager = getPerforceManagerSingleton();
+      if (!perforceManager) {
+        return {
+          isSuccess: false,
+          reason: "Perforce client not initialized"
+        };
+      }
+
+      try {
+        const result = await perforceManager.changeViews(args.views, args.shouldSync);
+        return {
+          isSuccess: !_.isEmpty(result)
+        };
+      } catch (e) {
+        notify(e);
+        return {
+          isSuccess: false,
+          reason: e.message
+        }
+      }
     }
   },
   Query: {
@@ -232,6 +262,14 @@ export const resolvers = {
         default:
           throw new Error(`Unreachable code - got unknown source provider: ${provider}`);
       }
+    },
+    getFilesTreeFromPerforce: async (parent: any, args: { depot: string, labelOrChangelist: string}): Promise<[string]> => {
+      const perforceManager = getPerforceManagerSingleton();
+      if (!perforceManager) {
+        return null;
+      }
+
+      return await perforceManager.getDepotFileTree(args.depot, args.labelOrChangelist);
     }
   }
 };
