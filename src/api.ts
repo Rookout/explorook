@@ -14,7 +14,8 @@ import {
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
-import { onAddRepoRequestHandler } from "./server";
+import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
+import {ipcMain, ipcRenderer} from "electron";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -85,7 +86,8 @@ export const resolvers = {
       return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
     },
     getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
-                       context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<OperationStatus> => {
+                       context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
+        Promise<OperationStatus> => {
       const subDirs = fs.readdirSync(GIT_ROOT);
       // Delete the folder if it's too big
       if ((await isGitFolderBiggerThanMaxSize())) {
@@ -103,8 +105,10 @@ export const resolvers = {
       const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
 
       const addRepoPromises = _.map(args.sources, async repo => {
+        context.updateGitLoadingState(true, repo.repoUrl);
         if (!checkGitRemote(repo.repoUrl)) {
           notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
+          context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: false,
             reason: `Got bad format for git remote origin: ${repo.repoUrl}`
@@ -113,12 +117,14 @@ export const resolvers = {
         try {
           const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
           const didAddRepo = await context.onAddRepoRequest(cloneDir);
+          context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: didAddRepo,
             reason: didAddRepo ? undefined : `Failed to add repo on folder ${cloneDir}`
           };
         } catch (e) {
           notify(e);
+          context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: false,
             reason: e.message
@@ -128,6 +134,7 @@ export const resolvers = {
 
       const res = await Promise.all(addRepoPromises);
       // Return the first error or success.
+      context.updateGitLoadingState(false, "");
       return _.find(res, r => !r.isSuccess) || { isSuccess: true };
     },
     getFileFromPerforce: async (parent: any, args: { depotFilePath: string, labelOrChangelist: string }): Promise<string> => {
