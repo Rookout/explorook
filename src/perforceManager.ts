@@ -1,11 +1,14 @@
 import {getLibraryFolder} from "./utils";
 
 const path = require("path");
+import * as fs from "fs";
 import _ = require("lodash");
 import {P4} from "p4api";
+import * as util from "util";
 import {notify} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
 import {repStore} from "./repoStore";
+const getFileContent = util.promisify(fs.readFile);
 
 export interface IPerforceRepo {
     fullPath: string;
@@ -25,12 +28,14 @@ export interface IPerforceWorkspace {
 
 export interface IPerforceManager {
     getAllViews(): Promise<IPerforceView[]>;
-    changeViews(views: string[]): Promise<IPerforceRepo[]>;
+    changeViews(views: string[], shouldSync?: boolean): Promise<IPerforceRepo[]>;
     getCurrentViewRepos(): string[];
     switchChangelist(changelistId: string): Promise<OperationStatus>;
     getCurrentClient(): any;
     getChangelistForFile(fullPath: string): Promise<string>;
     isSameRemoteOrigin(filePath: string, remoteOrigin: string): Promise<boolean>;
+    getSpecificFile(fileDepotPath: string, labelOrChangelist: string, retry?: boolean): Promise<string>;
+    getDepotFileTree(depot: string, labelOrChangelist: string): Promise<[string]>;
 }
 
 const store = getStoreSafe();
@@ -75,7 +80,7 @@ class PerforceManager {
         return (await this.p4.cmd("depots"))?.stat || [];
     }
 
-    public async changeViews(views: string[]): Promise<IPerforceRepo[]> {
+    public async changeViews(views: string[], shouldSync: boolean = true): Promise<IPerforceRepo[]> {
         const client = this.getCurrentClient();
 
         const allViews = await this.getAllViews();
@@ -107,7 +112,7 @@ class PerforceManager {
         // Adding all the repos from the given list to the client.
         for (let i = 0; i < targetViews.length; i++) {
             // Small hack here to handle weird views with triple slashes.
-            client["View" + i] = `//${targetViews[i].name}/... //${client.Client}/${targetViews[i].map}`.replace("///", "/");
+            client["View" + i] = `//${targetViews[i].name}/... //${client.Client}/${targetViews[i].map}`.replace(/\/\/\//g, "/");
         }
 
         // Update the client. If successful sync the files
@@ -118,9 +123,11 @@ class PerforceManager {
             return [];
         }
 
-        result = await this.p4.cmd("sync -f");
+        // I couldn't find a flag that does not sync the files so if shouldSync is false we set the max synced files to 1
+        result = await this.p4.cmd(`sync ${shouldSync ? "-f" : "-m 1" }`);
 
-        if (result.error) {
+        // @ts-ignore result.error[0].data is a string but ts-ling thinks it's a boolean. This error means we didn't actually need to change anything
+        if (result.error && !result.error[0].data === "File(s) up-to-date.\n") {
             notify(result.error);
             return [];
         }
@@ -181,6 +188,36 @@ class PerforceManager {
 
         // If the Depot name is included in the path we assume it belongs to it.
         return filePath?.includes(normalizedOrigin);
+    }
+
+    public async getSpecificFile(fileDepotPath: string, labelOrChangelist: string, retry: boolean = true): Promise<string> {
+        const result = await this.p4.cmd(`sync ${fileDepotPath} @${labelOrChangelist}`);
+
+        const fileData: any = _.find(result.stat, file =>
+            file.depotFile === fileDepotPath
+        );
+
+        if (!fileData) {
+            return "";
+        }
+
+        const filePath = fileData.clientFile;
+        // This is a hack to handle Perforce deleting the file if it already exists
+        return getFileContent(filePath, "utf-8").catch(e => {
+                if (retry) {
+                    return this.getSpecificFile(fileDepotPath, labelOrChangelist, false);
+                } else {
+                    throw e;
+                }
+        });
+    }
+
+    public async getDepotFileTree(depot: string, labelOrChangelist: string): Promise<[string]> {
+        // If depot doesn't end with /... we need to normalize it, taking into consideration that it might end with '/'
+        const formattedDepot = depot.endsWith("/...") ? depot : `//${depot.endsWith("/") ? depot : `${depot}/`}...`;
+        const result = await this.p4.cmd(`files ${formattedDepot} @${labelOrChangelist}`);
+        // @ts-ignore
+        return _.map(result?.stat, file => file.depotFile);
     }
 }
 

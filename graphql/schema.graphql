@@ -40,6 +40,7 @@ type Query {
     repoId: String!
     path: String!
   ): String
+  getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
 }
 
 type OperationStatus {
@@ -57,6 +58,8 @@ type Mutation {
   changePerforceViews(views: [String]!): OperationStatus!
   switchPerforceChangelist(changelistId: String!): OperationStatus!
   getGitRepo(sources: [GitSource]!): OperationStatus!
+  getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
+  changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
 }
 
 type PerforceView {
