@@ -88,7 +88,6 @@ export const resolvers = {
     getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
                        context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
         Promise<OperationStatus> => {
-      context.updateGitLoadingState(true);
       const subDirs = fs.readdirSync(GIT_ROOT);
       // Delete the folder if it's too big
       if ((await isGitFolderBiggerThanMaxSize())) {
@@ -106,9 +105,10 @@ export const resolvers = {
       const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
 
       const addRepoPromises = _.map(args.sources, async repo => {
+        context.updateGitLoadingState(true, repo.repoUrl);
         if (!checkGitRemote(repo.repoUrl)) {
           notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
-          context.updateGitLoadingState(false);
+          context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: false,
             reason: `Got bad format for git remote origin: ${repo.repoUrl}`
@@ -117,14 +117,14 @@ export const resolvers = {
         try {
           const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
           const didAddRepo = await context.onAddRepoRequest(cloneDir);
-          context.updateGitLoadingState(false);
+          context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: didAddRepo,
             reason: didAddRepo ? undefined : `Failed to add repo on folder ${cloneDir}`
           };
         } catch (e) {
           notify(e);
-          context.updateGitLoadingState(false);
+          context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: false,
             reason: e.message
@@ -134,7 +134,7 @@ export const resolvers = {
 
       const res = await Promise.all(addRepoPromises);
       // Return the first error or success.
-      context.updateGitLoadingState(false);
+      context.updateGitLoadingState(false, "");
       return _.find(res, r => !r.isSuccess) || { isSuccess: true };
     }
   },

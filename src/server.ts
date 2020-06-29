@@ -17,7 +17,7 @@ import {
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
-export type loadingStateUpdateHandler = (isLoading: boolean) => void;
+export type loadingStateUpdateHandler = (isLoading: boolean, repo: string) => void;
 
 export interface StartOptions {
   accessToken?: string;
@@ -28,6 +28,7 @@ export interface StartOptions {
   onAddRepoRequest?: onAddRepoRequestHandler;
   useTokenAuthorization?: boolean;
   updateGitLoadingState?: loadingStateUpdateHandler;
+  updatePerforceLoadingState?: loadingStateUpdateHandler;
 }
 
 const defaultOptions: StartOptions = {
