@@ -39,12 +39,15 @@ export class Logger {
 
   info(message?: any) {
     exceptionManagerInstance?.leaveBreadcrumb("log", { message }, "info");
+    console.info(message);
   }
   warn(message?: any) {
     exceptionManagerInstance?.leaveBreadcrumb("log", { message }, "warn");
+    console.warn(message);
   }
   error(message?: any) {
     exceptionManagerInstance?.notify(message);
+    console.error(message);
   }
   debug(message: string) {
     // ignore
