@@ -35,3 +35,19 @@ export const leaveBreadcrumb = (name: string, metaData?: any, type?: string, tim
   exceptionManagerInstance?.leaveBreadcrumb(name, metaData, type, timestamp)
 }
 
+export class Logger {
+
+  info(message?: any) {
+    exceptionManagerInstance?.leaveBreadcrumb("log", { message }, "info");
+  }
+  warn(message?: any) {
+    exceptionManagerInstance?.leaveBreadcrumb("log", { message }, "warn");
+  }
+  error(message?: any) {
+    exceptionManagerInstance?.notify(message);
+  }
+  debug(message: string) {
+    // ignore
+  }
+}
+

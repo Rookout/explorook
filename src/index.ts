@@ -18,9 +18,9 @@ import * as path from "path";
 import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
-import { initExceptionManager, notify } from "./exceptionManager";
+import { initExceptionManager, notify, Logger } from "./exceptionManager";
 
-autoUpdater.logger = log;
+autoUpdater.logger = new Logger();
 log.transports.console.level = "warn";
 
 const ICONS_DIR = "../assets/icons/";
