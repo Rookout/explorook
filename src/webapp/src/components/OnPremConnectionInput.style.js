@@ -1,10 +1,7 @@
-import {Button, ExpansionPanelSummary, TextField} from "@material-ui/core";
+import {Button, TextField} from "@material-ui/core";
 import React from "react";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import {ExpandMore as ExpandMoreIcon} from "@material-ui/icons";
-import Radio from "@material-ui/core/Radio";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 export const connectionStates = {
     NOT_TESTED: 'NOT_TESTED',

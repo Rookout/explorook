@@ -2,19 +2,14 @@ import React, {useEffect, useState} from "react";
 import * as Store from "electron-store";
 import {ExpansionPanelSummary} from "@material-ui/core";
 import {ipcRenderer} from "electron";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import {ExpandMore as ExpandMoreIcon} from "@material-ui/icons";
 import {OnPremConnectionInput, OnPremTypes} from "./OnPremConnectionInput";
 import {
-    InnerExpansionPanel, OnPremExpansionPanelDetails,
-    OnPremExpansionPanelSummery,
+    InnerExpansionPanel,
+    OnPremExpansionPanelDetails,
     OuterExpansionPanel,
     Title
 } from "./OnPremConnectionInput.style";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import Radio from "@material-ui/core/Radio";
 import {GitProtocolPicker} from "./GitProtocolPicker";
 
 export const OnPremConnection = () => {
