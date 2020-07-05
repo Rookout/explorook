@@ -41,13 +41,13 @@ export const ConfirmModal = ({ body, title, open, onClose, classes, onCancel, on
             </DialogContent>
             <DialogActions style={{ display: "flex" }}>
                 <FormControlLabel
-                classes={{ label: classes.checkBoxLabel }}
+                classes={{ connectionStringLabel: classes.checkBoxLabel }}
                 style={{ marginRight: "auto", marginLeft: 10 }}
                 control={<Checkbox checked={askAgainChecked} onChange={(e, checked) => {
                       setAskAgainChecked(checked);
                       store.set("non-git-dialog-never-ask-again", checked);
                 }} />}
-                label="Never ask again" />
+                connectionStringLabel="Never ask again" />
                 <Button onClick={onCancel} style={{ color: "#B6C8D4" }}>
                 Cancel
                 </Button>
