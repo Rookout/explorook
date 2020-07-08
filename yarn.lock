@@ -3965,10 +3965,9 @@ isomorphic-fetch@^2.1.1:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
 
-isomorphic-git@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/isomorphic-git/-/isomorphic-git-1.4.0.tgz#20bd3007751034d2e3fb4547cc857881d0d98083"
-  integrity sha512-8IIfRQR+7dl3tALg2VuxebkI1gJqIcGJ4t3tu1OltQhUA303W2qi3B4zH6fHDS0j353pshAWrmL81L2v6wzHXQ==
+"isomorphic-git@https://github.com/Rookout/isomorphic-git/releases/download/explorook_v1.0.2/isomorphic-git-explorook-1.0.2-development.tgz":
+  version "0.0.0-development"
+  resolved "https://github.com/Rookout/isomorphic-git/releases/download/explorook_v1.0.2/isomorphic-git-explorook-1.0.2-development.tgz#2e6353ca51c859ce143eb665e4bb17080d37443e"
   dependencies:
     async-lock "^1.1.0"
     clean-git-ref "^2.0.1"

@@ -4,6 +4,7 @@ import util = require("util");
 const exec = util.promisify(childProcess.exec);
 const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
+import http from "isomorphic-git/http/web"
 import _ = require("lodash");
 import parseRepo = require("parse-repo");
 import path = require("path");
@@ -161,4 +162,31 @@ export function removeGitReposFromStore(folderNames: string[]) {
         }
         folderDelete(dir, {debugLog: false});
     });
+}
+let cache = new Map<string, any>();
+
+export const fetchTree = async (remoteUrl: string, commit: string) => {
+  const cacheKey = `${remoteUrl}::${commit}`
+  const fromCache = cache.get(cacheKey)
+  if (fromCache) return fromCache
+
+  const repoTree = await igit.fetchTree({
+    http,
+    url: remoteUrl,
+    commitId: commit,
+  })
+  cache.set(cacheKey, repoTree)
+
+  return repoTree;
+}
+
+export const fetchBlob = async (remoteUrl: string, oid: string): Promise<string> => {
+  const cacheKey = `${remoteUrl}::${oid}`
+  const fromCache = cache.get(cacheKey)
+  if (fromCache) return fromCache
+
+  const blob = await igit.fetchBlob({ oid, http, url: remoteUrl })
+  const fileText = blob.object.toString()
+  cache.set(cacheKey, fileText)
+  return fileText
 }

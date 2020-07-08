@@ -10,12 +10,14 @@ import {
   getLastCommitDescription as getLastCommitDescription,
   GIT_ROOT,
   isGitFolderBiggerThanMaxSize, removeGitReposFromStore,
-  TMP_DIR_PREFIX
+  TMP_DIR_PREFIX,
+  fetchTree,
+  fetchBlob
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import { Repo, repStore } from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
-import {ipcMain, ipcRenderer} from "electron";
+import {ipcMain, ipcRenderer, remote} from "electron";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -214,6 +216,12 @@ export const resolvers = {
           resolve(res);
         });
       });
+    },
+    gitBlob(parent: any, args: { remoteUrl: string, oid: string }): Promise<string> {
+      return fetchBlob(args.remoteUrl, args.oid)
+    },
+    listTreeRemoteGit(parent: any, args: { remoteUrl: string, commitId: string }): Promise<{fullpath: string, oid: string}[]> {
+      return fetchTree(args.remoteUrl, '4a0fcf9f760c9774be77f51e1e88a7499b53d2e2')//args.commitId)
     },
     // file returns the content of a file, given the target repository and inner path.
     file(parent: any, args: { repo: Repository, path: string }): Promise<string> {
