@@ -138,11 +138,7 @@ export const TMP_DIR_PREFIX = "temp_rookout_";
 
 const getProtocolFromStore = () => {
     const protocol = store.get("gitProtocol", "0");
-    if (isNaN(protocol)) {
-        return 0;
-    } else {
-        return Number(protocol);
-    }
+    return parseInt(protocol, 10)
 };
 
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {

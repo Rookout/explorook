@@ -21,15 +21,16 @@ export const OnPremConnectionInput = ({type, connectionStringLabel: connectionSt
     }, []);
 
     useEffect(() => {
-        if (type !== OnPremTypes.GIT) {
-            const store = new Store({ name: "explorook" });
-            const camelCaseType = type.charAt(0).toUpperCase() + type.slice(1);
-            const storeConnectionString = store.get(`${camelCaseType}ConnectionString`, '');
-            if(storeConnectionString) {
-                onTestConnection(storeConnectionString);
-            }
-            setConnectionString(storeConnectionString);
+        if (type === OnPremTypes.GIT) {
+          return
         }
+        const store = new Store({ name: "explorook" });
+        const camelCaseType = type.charAt(0).toUpperCase() + type.slice(1);
+        const storeConnectionString = store.get(`${camelCaseType}ConnectionString`, '');
+        if(storeConnectionString) {
+            onTestConnection(storeConnectionString);
+        }
+        setConnectionString(storeConnectionString);
     }, []);
 
     const onTestConnection = (stringToTest) => {

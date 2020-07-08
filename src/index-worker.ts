@@ -106,9 +106,10 @@ ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptio
 ipcRenderer.on("test-git-connection", async (e: IpcRendererEvent, connectionOptions: GitConnectionOptions) => {
     let isSuccess = false;
     try {
-        isSuccess = !!(await cloneRemoteOriginWithCommit(connectionOptions.connectionString, "master", false));
+      isSuccess = !!(await cloneRemoteOriginWithCommit(connectionOptions.connectionString, "master", false));
     } catch (e) {
-        console.error(`Failed to clone git repo ${connectionOptions.connectionString}`, e);
+      notify(e, { metaData: { extra: { message: 'Cannot clone remote origin', connectionOptions } } })
+      console.error(`Failed to clone git repo ${connectionOptions.connectionString}`, e);
     }
 
     ipcRenderer.sendTo(mainWindowId, "test-git-connection-result", isSuccess);
