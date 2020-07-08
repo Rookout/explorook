@@ -38,18 +38,25 @@ export interface IPerforceManager {
     getDepotFileTree(depot: string, labelOrChangelist: string): Promise<[string]>;
 }
 
+export interface PerforceConnectionOptions {
+    connectionString: string;
+    timeout?: number;
+    username?: string;
+}
+
 const store = getStoreSafe();
 const PERFORCE_ROOKOUT_CLIENT_PREFIX = "ROOKOUT_DESKTOP_";
 // Currently supporting only Windows and OSX
 const ROOT = path.join(getLibraryFolder(), "Perforce_Root");
-const P4API_TIMEOUT = 3000;
+const P4API_TIMEOUT = 5000;
 
 class PerforceManager {
     private p4: any;
-    constructor(perforceConnectionString: string) {
+    constructor(connectionOptions: PerforceConnectionOptions) {
         this.p4 = new P4({
-            P4PORT: perforceConnectionString,
-            P4API_TIMEOUT
+            P4PORT: connectionOptions.connectionString,
+            P4API_TIMEOUT: connectionOptions.timeout > 0 ? connectionOptions.timeout : P4API_TIMEOUT,
+            P4USER: connectionOptions.username
         });
 
         // Getting the current client of the connected perforce server. The result contains "stat" which is a list of all the actual results;
@@ -69,10 +76,11 @@ class PerforceManager {
         }
 
         this.p4 = new P4({
-                P4PORT: perforceConnectionString,
-                P4CLIENT: currentRookoutClientName,
-                P4API_TIMEOUT
-            });
+            P4PORT: connectionOptions.connectionString,
+            P4CLIENT: currentRookoutClientName,
+            P4API_TIMEOUT: connectionOptions.timeout > 0 ? connectionOptions.timeout : P4API_TIMEOUT,
+            P4USER: connectionOptions.username
+        });
     }
 
 
@@ -232,14 +240,16 @@ export const getPerforceManagerSingleton = (): IPerforceManager => {
     return perforceManagerSingleton;
 };
 
-export const changePerforceManagerSingleton = (newConnectionString: string): boolean => {
-        perforceManagerSingleton = new PerforceManager(newConnectionString);
+export const changePerforceManagerSingleton = (connectionOptions: PerforceConnectionOptions): boolean => {
+        perforceManagerSingleton = new PerforceManager(connectionOptions);
 
         // p4 client creation works no matter what so we make sure the client is created.
         const client = perforceManagerSingleton.getCurrentClient();
         if (!client) {
             return false;
         }
-        store.set("PerforceConnectionString", newConnectionString);
+        store.set("PerforceConnectionString", connectionOptions.connectionString);
+        store.set("PerforceTimeout", connectionOptions.timeout || 5000);
+        store.set("PerforceUser", connectionOptions.username || "");
         return true;
 };
