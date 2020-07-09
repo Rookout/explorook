@@ -10,15 +10,30 @@ import parseRepo = require("parse-repo");
 import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
+import {isNumeric} from "tslint";
 import { Repository } from "./common/repository";
-import { notify, leaveBreadcrumb } from "./exceptionManager";
+import { leaveBreadcrumb, notify } from "./exceptionManager";
+import {getStoreSafe} from "./explorook-store";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
 const isGitUrl = require("is-git-url");
 const folderDelete = require("folder-delete");
 
+export interface GitConnectionOptions {
+    connectionString: string;
+    commit?: string;
+}
+
+export enum GitProtocols {
+    DEFAULT,
+    HTTPS,
+    SSH
+}
+
 export const GIT_ROOT = path.join(getLibraryFolder(), "git_root");
+
+const store = getStoreSafe();
 
 if (!fs.existsSync(GIT_ROOT)) {
     fs.mkdirSync(GIT_ROOT, {
@@ -56,7 +71,7 @@ async function getGitRootForPath(filepath: string) {
     try {
         return await igit.findRoot({ fs, filepath });
     } catch (err) {
-        leaveBreadcrumb("Failed to find git root", { filepath, err })
+        leaveBreadcrumb("Failed to find git root", { filepath, err });
         // No git root was found, probably not a git repository
         return null;
     }
@@ -107,31 +122,62 @@ export function checkGitRemote(remoteOrigin: string): boolean {
     return isGitUrl(remoteOrigin.endsWith(".git") ? remoteOrigin : `${remoteOrigin}.git`);
 }
 
+export function convertUrlToProtocol(originalUri: string, format: GitProtocols) {
+    const parsedUri = GitUrlParse(originalUri);
+    switch (format) {
+        case GitProtocols.HTTPS:
+            return parsedUri.toString("https");
+        case GitProtocols.SSH:
+            return parsedUri.toString("ssh");
+        case GitProtocols.DEFAULT:
+        default:
+            return originalUri;
+    }
+}
+
 export const TMP_DIR_PREFIX = "temp_rookout_";
 
+const getProtocolFromStore = () => {
+    const protocol = store.get("gitProtocol", "0");
+    return parseInt(protocol, 10)
+};
+
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+    const protocol = getProtocolFromStore();
+    const formattedRepoUri = convertUrlToProtocol(repoUrl, protocol);
     // Assuming the last part of the remote origin url is the name of the repo.
-     const repoName = parseRepo(repoUrl).project;
+    const repoName = parseRepo(formattedRepoUri).project;
      // If we have two of the same git remote with a different commit we want to create a sub directory.
-     const gitRoot = isDuplicate ? path.join(GIT_ROOT, `${TMP_DIR_PREFIX}${uuidv4()}`) : GIT_ROOT;
+    const gitRoot = isDuplicate ? path.join(GIT_ROOT, `${TMP_DIR_PREFIX}${uuidv4()}`) : GIT_ROOT;
      // Create the sub directory if needed.
-     if (isDuplicate) fs.mkdirSync(gitRoot);
+    if (isDuplicate) fs.mkdirSync(gitRoot);
 
      // Getting the full path of the repo, including the repo name.
-     const repoDir = path.join(gitRoot, repoName);
+    const repoDir = path.join(gitRoot, repoName);
 
      // If the folder already exists we don't need to clone, just checkout.
-     const doesRepoExist = fs.existsSync(repoDir);
+    const doesRepoExist = fs.existsSync(repoDir);
 
-     const cloneCommand = `cd "${gitRoot}" && git clone ${repoUrl}`;
-     const fetchCommand = "git fetch";
-     const cdCommand = `cd "${repoDir}"`;
-     const checkoutCommand = `git checkout ${commit}`;
-     // If the repo already exists we just need to fetch and checkout the commit.
-     const fullCommand = `${doesRepoExist ? `${cdCommand} && ${fetchCommand}` : `${cloneCommand} && ${cdCommand}`} && ${checkoutCommand}`;
+    if (!doesRepoExist) {
+      fs.mkdirSync(repoDir);
+      // based on https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
+      const cloneCommand = `
+        cd "${repoDir}" &&
+        git init &&
+        git remote add origin ${formattedRepoUri} &&
+        git fetch --depth=1 origin ${commit} &&
+        git checkout ${commit}`;
+      await exec(cloneCommand);
+      return repoDir;
+    }
 
-     await exec(fullCommand);
-     return repoDir;
+    const command = `
+    cd "${repoDir}" &&
+    git fetch --depth=1 origin ${commit} &&
+    git checkout ${commit}`
+
+    await exec(command);
+    return repoDir;
 }
 // 10GB
 const MAX_GIT_FOLDER_SIZE_IN_KB = 10485760;

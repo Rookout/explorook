@@ -1,5 +1,7 @@
 import {Button, TextField} from "@material-ui/core";
 import React from "react";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
 export const connectionStates = {
     NOT_TESTED: 'NOT_TESTED',
@@ -10,7 +12,7 @@ export const connectionStates = {
 
 export const OnPremSourceInput = ({label, value, setValue, ...props}) => (<TextField
     label={label}
-    style={{width:"400px", color: "#B6C8D4"}}
+    style={{width:"400px", color: "#B6C8D4", marginBottom:"1%"}}
     value={value}
     onChange={setValue}
     InputProps={{className: 'on-prem-input'}}
@@ -62,3 +64,21 @@ export const TestConnectionButton = ({onTestConnection, connectionState, ...prop
         {getTestConnectionButtonContent(connectionState)}
     </Button>
 );
+
+export const OuterExpansionPanel = ({expanded, setExpanded, children}) => (
+    <ExpansionPanel style={{width: "99%", backgroundColor:"transparent", boxShadow:"none", padding:"0"}} expanded={expanded}
+                    onChange={() => setExpanded(e => !e)}>
+        {children}
+    </ExpansionPanel>
+)
+
+export const InnerExpansionPanel = ({expanded, setExpanded, children}) => (
+    <ExpansionPanel style={{width: "90%", backgroundColor:"transparent", boxShadow:"none", padding:"0", marginLeft:"3%", marginTop: "-5%"}} expanded={expanded}
+                    onChange={() => setExpanded(e => !e)}>
+        {children}
+    </ExpansionPanel>
+)
+
+export const OnPremExpansionPanelDetails = ({children}) => (<ExpansionPanelDetails style={{padding:"0"}}>{children}</ExpansionPanelDetails>)
+
+export const Title = ({label}) => (<p className="gray-shaded">{label}</p>)

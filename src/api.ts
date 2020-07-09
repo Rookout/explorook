@@ -1,23 +1,25 @@
 import fs = require("fs");
 import _ = require("lodash");
-import { posix } from "path";
-import { Repository } from "./common/repository";
-import { notify } from "./exceptionManager";
+import {posix} from "path";
+import {Repository} from "./common/repository";
+import {notify} from "./exceptionManager";
 import {
   checkGitRemote,
   cloneRemoteOriginWithCommit,
+  convertUrlToProtocol,
   getCommitIfRightOrigin,
   getLastCommitDescription as getLastCommitDescription,
   GIT_ROOT,
-  isGitFolderBiggerThanMaxSize, removeGitReposFromStore,
-  TMP_DIR_PREFIX,
   fetchTree,
-  fetchBlob
+  fetchBlob,
+  GitProtocols,
+  isGitFolderBiggerThanMaxSize,
+  removeGitReposFromStore,
+  TMP_DIR_PREFIX
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
-import { Repo, repStore } from "./repoStore";
+import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
-import {ipcMain, ipcRenderer, remote} from "electron";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
