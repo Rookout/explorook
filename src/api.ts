@@ -221,7 +221,7 @@ export const resolvers = {
       return fetchBlob(args.remoteUrl, args.oid)
     },
     listTreeRemoteGit(parent: any, args: { remoteUrl: string, commitId: string }): Promise<{fullpath: string, oid: string}[]> {
-      return fetchTree(args.remoteUrl, '4a0fcf9f760c9774be77f51e1e88a7499b53d2e2')//args.commitId)
+      return fetchTree(args.remoteUrl, args.commitId)
     },
     // file returns the content of a file, given the target repository and inner path.
     file(parent: any, args: { repo: Repository, path: string }): Promise<string> {

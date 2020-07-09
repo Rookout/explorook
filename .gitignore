@@ -9,3 +9,5 @@ installers
 analyze/
 
 *.p12
+
+src/temp.ts
