@@ -141,7 +141,7 @@ const getProtocolFromStore = () => {
     return parseInt(protocol, 10)
 };
 
-export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean, rootDir: string = GIT_ROOT) {
+export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean, rootDir: string = GIT_ROOT): Promise<string> {
     const protocol = getProtocolFromStore();
     const formattedRepoUri = convertUrlToProtocol(repoUrl, protocol);
     // Assuming the last part of the remote origin url is the name of the repo.
