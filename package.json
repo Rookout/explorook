@@ -114,6 +114,7 @@
     "is-git-url": "^1.0.0",
     "isomorphic-git": "^1.4.0",
     "lodash": "^4.17.10",
+    "log4js": "^6.3.0",
     "node-rsa": "^1.0.5",
     "p4api": "^3.3.1",
     "parse-repo": "^1.0.4",
