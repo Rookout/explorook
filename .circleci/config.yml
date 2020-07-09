@@ -34,6 +34,8 @@ jobs:
             npm install -g yarn@1.17.3
             # install electron main window dependencies
             yarn
+            # run unit tests
+            yarn run test
             # build typescript code
             yarn run build
             # CircleCI sets CI=true which makes react return an error when there are warnings in the code

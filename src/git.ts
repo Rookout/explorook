@@ -141,13 +141,13 @@ const getProtocolFromStore = () => {
     return parseInt(protocol, 10)
 };
 
-export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean, rootDir: string = GIT_ROOT) {
     const protocol = getProtocolFromStore();
     const formattedRepoUri = convertUrlToProtocol(repoUrl, protocol);
     // Assuming the last part of the remote origin url is the name of the repo.
     const repoName = parseRepo(formattedRepoUri).project;
      // If we have two of the same git remote with a different commit we want to create a sub directory.
-    const gitRoot = isDuplicate ? path.join(GIT_ROOT, `${TMP_DIR_PREFIX}${uuidv4()}`) : GIT_ROOT;
+    const gitRoot = isDuplicate ? path.join(rootDir, `${TMP_DIR_PREFIX}${uuidv4()}`) : rootDir;
      // Create the sub directory if needed.
     if (isDuplicate) fs.mkdirSync(gitRoot);
 
