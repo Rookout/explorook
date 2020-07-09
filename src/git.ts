@@ -157,14 +157,25 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      // If the folder already exists we don't need to clone, just checkout.
     const doesRepoExist = fs.existsSync(repoDir);
 
-    const cloneCommand = `cd "${gitRoot}" && git clone ${formattedRepoUri}`;
-    const fetchCommand = "git fetch";
-    const cdCommand = `cd "${repoDir}"`;
-    const checkoutCommand = `git checkout ${commit}`;
-     // If the repo already exists we just need to fetch and checkout the commit.
-    const fullCommand = `${doesRepoExist ? `${cdCommand} && ${fetchCommand}` : `${cloneCommand} && ${cdCommand}`} && ${checkoutCommand}`;
+    if (!doesRepoExist) {
+      fs.mkdirSync(repoDir);
+      // based on https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
+      const cloneCommand = `
+        cd "${repoDir}" &&
+        git init &&
+        git remote add origin ${formattedRepoUri} &&
+        git fetch --depth=1 origin ${commit} &&
+        git checkout ${commit}`;
+      await exec(cloneCommand);
+      return repoDir;
+    }
 
-    await exec(fullCommand);
+    const command = `
+    cd "${repoDir}" &&
+    git fetch --depth=1 origin ${commit} &&
+    git checkout ${commit}`
+
+    await exec(command);
     return repoDir;
 }
 // 10GB
