@@ -4,7 +4,8 @@ import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
-import {cloneRemoteOriginWithCommit, GitConnectionOptions, GitProtocols} from "./git";
+import {cloneRemoteOriginWithCommit, GitConnectionOptions} from "./git";
+import {getLogger} from "./logger";
 import {changePerforceManagerSingleton, PerforceConnectionOptions} from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
@@ -97,7 +98,8 @@ ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptio
         if (e.message?.code === "ENOENT") {
             ipcRenderer.send("no-p4-found");
         }
-        console.error(`Failed to init perforce manager with port :${connectionOptions}`);
+        getLogger("Perforce").error("Failed to init Perforce manager", e);
+        console.error(`Failed to init perforce manager with port: ${connectionOptions}`);
     }
 
     ipcRenderer.sendTo(mainWindowId, "test-perforce-connection-result", isSuccess);
@@ -108,7 +110,7 @@ ipcRenderer.on("test-git-connection", async (e: IpcRendererEvent, connectionOpti
     try {
       isSuccess = !!(await cloneRemoteOriginWithCommit(connectionOptions.connectionString, "master", false));
     } catch (e) {
-      notify(e, { metaData: { extra: { message: 'Cannot clone remote origin', connectionOptions } } })
+      notify(e, { metaData: { extra: { message: "Cannot clone remote origin", connectionOptions } } });
       console.error(`Failed to clone git repo ${connectionOptions.connectionString}`, e);
     }
 
