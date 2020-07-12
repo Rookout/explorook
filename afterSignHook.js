@@ -32,7 +32,7 @@ module.exports = async function (params) {
             appBundleId: appId,
             appPath: appPath,
             appleId: process.env.appleId,
-            appleIdPassword: process.env.appleIdPassword2,
+            appleIdPassword: process.env.appleIdPassword,
         });
     } catch (error) {
         console.error(error);
