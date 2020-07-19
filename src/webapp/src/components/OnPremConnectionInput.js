@@ -26,15 +26,17 @@ export const OnPremConnectionInput = ({type, connectionStringLabel: connectionSt
         }
         const store = new Store({ name: "explorook" });
         const camelCaseType = type.charAt(0).toUpperCase() + type.slice(1);
-        const storeConnectionString = store.get(`${camelCaseType}ConnectionString`, '');
+        const storeConnectionString = store.get(`${camelCaseType}ConnectionString`, undefined);
+        const storeUsername = store.get(`${camelCaseType}Username`, undefined)
+        const storeTimeout = store.get(`${camelCaseType}Timeout`, 0)
         if(storeConnectionString) {
-            onTestConnection(storeConnectionString);
+            onTestConnection({connectionString: storeConnectionString, timeout: storeTimeout, username: storeUsername});
         }
         setConnectionString(storeConnectionString);
     }, []);
 
-    const onTestConnection = (stringToTest) => {
-        ipcRenderer.sendTo(window.indexWorkerId,`test-${type}-connection`, {connectionString, timeout, username})
+    const onTestConnection = (options) => {
+        ipcRenderer.sendTo(window.indexWorkerId,`test-${type}-connection`, options)
         setConnectionState(connectionStates.PENDING)
     };
 
@@ -45,7 +47,7 @@ export const OnPremConnectionInput = ({type, connectionStringLabel: connectionSt
             setValue={e => setConnectionString(e.currentTarget.value)}
         />
         <TestConnectionButton
-            onTestConnection={() => onTestConnection(connectionString)}
+            onTestConnection={() => onTestConnection({connectionString, timeout, username})}
             connectionState={connectionState}
         />
         {timeoutLabel && <OnPremSourceInput label={timeoutLabel} value={timeout} setValue={e => setTimeout(Number(e.currentTarget.value))} />}
