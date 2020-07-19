@@ -138,7 +138,7 @@ export const TMP_DIR_PREFIX = "temp_rookout_";
 
 const getProtocolFromStore = () => {
     const protocol = store.get("gitProtocol", "0");
-    return parseInt(protocol, 10)
+    return parseInt(protocol, 10);
 };
 
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
@@ -173,7 +173,7 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
     const command = `
     cd "${repoDir}" &&
     git fetch --depth=1 origin ${commit} &&
-    git checkout ${commit}`
+    git checkout ${commit}`;
 
     await exec(command);
     return repoDir;
@@ -184,7 +184,15 @@ const packSizeRegex = /size-pack: ([0-9]+)/;
 
 export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
-    const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => path.join(GIT_ROOT, dirName));
+    const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => {
+        const subdir = path.join(GIT_ROOT, dirName);
+        if (dirName.includes(TMP_DIR_PREFIX)) {
+            const duplicatedRepoDir = _.head(fs.readdirSync(subdir));
+            return path.join(subdir, duplicatedRepoDir);
+        }
+
+        return subdir;
+    });
     const repoDirs = _.filter(rootDirContent, isDirectory);
     const sizePromises = _.map(repoDirs, async dir => {
       const { stdout } = await exec(`cd "${dir}" && git count-objects -v`);
