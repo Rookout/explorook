@@ -18,6 +18,7 @@ import {
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
+import * as path from "path";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -90,10 +91,16 @@ export const resolvers = {
     getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
                        context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
         Promise<OperationStatus> => {
-      const subDirs = fs.readdirSync(GIT_ROOT);
+      // If we have a duplicate repo with two commits the actual repo folder is under the first folder.
+      const subDirs = _.map(fs.readdirSync(GIT_ROOT), dir => {
+        if (dir.startsWith(TMP_DIR_PREFIX)) {
+          return _.head(fs.readdirSync(path.join(GIT_ROOT, dir)));
+        }
+        return dir;
+      });
+
       // Delete the folder if it's too big
       if ((await isGitFolderBiggerThanMaxSize())) {
-        fs.rmdirSync(GIT_ROOT);
         removeGitReposFromStore(subDirs);
       } else {
         // If we had any duplicate repos with two different commits we want to delete them now
