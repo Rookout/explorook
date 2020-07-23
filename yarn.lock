@@ -2297,9 +2297,10 @@ electron-builder@^22.3.2:
     update-notifier "^4.0.0"
     yargs "^15.1.0"
 
-electron-log@^2.2.15:
-  version "2.2.15"
-  resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-2.2.15.tgz#28c2dd65c9437fcf31f09f5f856c338a83daab76"
+electron-log@^2.2.17:
+  version "2.2.17"
+  resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-2.2.17.tgz#e71e2ebb949fc96ded7cdb99eeee7202e48981d2"
+  integrity sha512-v+Af5W5z99ehhaLOfE9eTSXUwjzh2wFlQjz51dvkZ6ZIrET6OB/zAZPvsuwT6tm3t5x+M1r+Ed3U3xtPZYAyuQ==
 
 electron-notarize@^0.2.1:
   version "0.2.1"
