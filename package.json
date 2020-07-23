@@ -121,7 +121,7 @@
     "patch-package": "^6.2.2",
     "postinstall-postinstall": "^2.1.0",
     "slash": "^2.0.0",
-    "uuid": "^3.2.1",
+    "uuid": "^3.4.0",
     "valid-url": "^1.0.9",
     "walk": "^2.3.13"
   },
