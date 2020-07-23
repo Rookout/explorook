@@ -107,7 +107,7 @@
     "cors": "^2.8.5",
     "electron-log": "^2.2.15",
     "electron-store": "^5.1.1",
-    "electron-updater": "^4.2.2",
+    "electron-updater": "^4.3.3",
     "folder-delete": "^1.0.4",
     "git-url-parse": "^11.1.2",
     "graphql-yoga": "^1.16.9",
