@@ -11,7 +11,7 @@ export const OnPremTypes = {
 export const OnPremConnectionInput = ({type, connectionStringLabel: connectionStringLabel, usernameLabel, timeoutLabel}) => {
     const [connectionString, setConnectionString] = useState('');
     const [connectionState, setConnectionState] = useState(connectionStates.NOT_TESTED);
-    const [username, setUsername] = useState(undefined);
+    const [username, setUsername] = useState('');
     const [timeout, setTimeout] = useState(5000);
 
     useEffect(() => {
@@ -27,12 +27,14 @@ export const OnPremConnectionInput = ({type, connectionStringLabel: connectionSt
         const store = new Store({ name: "explorook" });
         const camelCaseType = type.charAt(0).toUpperCase() + type.slice(1);
         const storeConnectionString = store.get(`${camelCaseType}ConnectionString`, undefined);
-        const storeUsername = store.get(`${camelCaseType}Username`, undefined)
+        const storeUsername = store.get(`${camelCaseType}User`, undefined)
         const storeTimeout = store.get(`${camelCaseType}Timeout`, 0)
         if(storeConnectionString) {
             onTestConnection({connectionString: storeConnectionString, timeout: storeTimeout, username: storeUsername});
         }
         setConnectionString(storeConnectionString);
+        setUsername(storeUsername);
+        if(storeTimeout > 0) setTimeout(storeTimeout);
     }, []);
 
     const onTestConnection = (options) => {
