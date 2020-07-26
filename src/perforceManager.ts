@@ -11,6 +11,18 @@ import {getLogger} from "./logger";
 import {repStore} from "./repoStore";
 const getFileContent = util.promisify(fs.readFile);
 
+const addUsrBinToPathIfNeeded = () => {
+    if (process.platform === "darwin") {
+        if (process.env.PATH.includes("/usr/local/bin")) return;
+
+        // Add /usr/local/bin to the end of the PATH env var to make sure we find p4 if it is there. Making sure we don't get a double colon
+        process.env.PATH = process.env.PATH.endsWith(":") ?
+            `${process.env.PATH}/usr/local/bin` : `${process.env.PATH}:/usr/local/bin`;
+    }
+};
+
+addUsrBinToPathIfNeeded();
+
 export interface IPerforceRepo {
     fullPath: string;
     id: string;
