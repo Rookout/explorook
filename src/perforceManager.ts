@@ -226,7 +226,8 @@ class PerforceManager {
     public async getSpecificFile(fileDepotPath: string, labelOrChangelist: string, retry: boolean = true): Promise<string> {
         logger.debug("Fetching single file", {fileDepotPath, labelOrChangelist});
         const client = this.getCurrentClient();
-        const result = await exec(`p4 -c ${client.Client} sync -f ${fileDepotPath} @${labelOrChangelist}`);
+        // -f forces p4 to refresh the files. -m 1 makes sure that we only get 1 file and not the whole workspace.
+        const result = await exec(`p4 -c ${client.Client} sync -f -m 1 ${fileDepotPath} @${labelOrChangelist}`);
 
         if (result.stderr.includes("not in client view")) {
             logger.error("depot not in client view", {fileDepotPath});
@@ -252,10 +253,12 @@ class PerforceManager {
         // If depot doesn't end with /... we need to normalize it, taking into consideration that it might end with '/'
         const formattedDepot = depot.endsWith("/...") ? depot : `//${depot.endsWith("/") ? depot : `${depot}/`}...`;
         logger.debug("Getting depot file tree", {depot, labelOrChangelist, formattedDepot});
-        const result = await this.p4.cmd(`files ${formattedDepot} @${labelOrChangelist}`);
+        const result = await this.p4.cmd(`files ${formattedDepot}@${labelOrChangelist}`);
         result.error ? logger.error("Failed to get tree", result.error) : logger.debug("Depot file tree retrieved successfully");
+        // Last action on a file can be: ["add","change","delete"].
+        const noneDeletedFiles = _.filter(result?.stat, file => file.action !== "delete");
         // @ts-ignore
-        return _.map(result?.stat, file => file.depotFile);
+        return _.map(noneDeletedFiles, file => file.depotFile);
     }
 }
 
