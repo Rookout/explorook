@@ -1,5 +1,6 @@
 import {getLibraryFolder} from "./utils";
 
+import childProcess = require("child_process");
 const path = require("path");
 import * as fs from "fs";
 import _ = require("lodash");
@@ -10,6 +11,7 @@ import {getStoreSafe} from "./explorook-store";
 import {getLogger} from "./logger";
 import {repStore} from "./repoStore";
 const getFileContent = util.promisify(fs.readFile);
+const exec = util.promisify(childProcess.exec);
 
 const addUsrBinToPathIfNeeded = () => {
     if (process.platform === "darwin") {
@@ -74,6 +76,10 @@ class PerforceManager {
             P4USER: connectionOptions.username
         });
 
+        process.env.P4PORT = connectionOptions.connectionString;
+        process.env.P4API_TIMEOUT = String(connectionOptions.timeout > 0 ? connectionOptions.timeout : P4API_TIMEOUT);
+        process.env.P4USER = connectionOptions.username;
+
         // Getting the current client of the connected perforce server. The result contains "stat" which is a list of all the actual results;
         const client = this.getCurrentClient();
         const currentRookoutClientName = `${PERFORCE_ROOKOUT_CLIENT_PREFIX}_${client?.Owner}_${client?.Host}`;
@@ -88,7 +94,8 @@ class PerforceManager {
         const allWorkspaces = this.p4.cmdSync(`workspaces -u ${client.Owner}`)?.stat;
         if (!_.find(allWorkspaces, workspace => workspace.Client === currentRookoutClientName)) {
             // Creating a new client for Rookout desktop app without own root so we can change depots when needed
-            const newClient = { ...client, Client: currentRookoutClientName };
+            const newClient = { ...client, Client: currentRookoutClientName,
+                Options: "noallwrite noclobber nocompress unlocked nomodtime normdir", SubmitOptions: "submitunchanged" };
             logger.debug("Creating new client", newClient);
             this.p4.cmdSync(`client -i`, newClient);
         }
@@ -230,17 +237,18 @@ class PerforceManager {
 
     public async getSpecificFile(fileDepotPath: string, labelOrChangelist: string, retry: boolean = true): Promise<string> {
         logger.debug("Fetching single file", {fileDepotPath, labelOrChangelist});
-        const result = await this.p4.cmd(`sync ${fileDepotPath} @${labelOrChangelist}`);
+        const client = this.getCurrentClient();
+        // -f forces p4 to refresh the files. -m 1 makes sure that we only get 1 file and not the whole workspace.
+        const result = await exec(`p4 -c ${client.Client} sync -f -m 1 ${fileDepotPath} @${labelOrChangelist}`);
 
-        const fileData: any = _.find(result.stat, file =>
-            file.depotFile === fileDepotPath
-        );
-
-        if (!fileData) {
-            return "";
+        if (result.stderr.includes("not in client view")) {
+            logger.error("depot not in client view", {fileDepotPath});
+            throw new Error("Depot not in client view");
         }
 
-        const filePath = fileData.clientFile;
+        logger.debug("result of execution for single file", result);
+        // Turn depot file into a proper path in the root folder
+        const filePath = path.join(client.Root, fileDepotPath.replace("//", ""));
         // This is a hack to handle Perforce deleting the file if it already exists
         logger.debug("Synced file. Getting content of file", filePath);
         return getFileContent(filePath, "utf-8").catch(e => {
@@ -257,18 +265,22 @@ class PerforceManager {
         // If depot doesn't end with /... we need to normalize it, taking into consideration that it might end with '/'
         const formattedDepot = depot.endsWith("/...") ? depot : `//${depot.endsWith("/") ? depot : `${depot}/`}...`;
         logger.debug("Getting depot file tree", {depot, labelOrChangelist, formattedDepot});
-        const result = await this.p4.cmd(`files ${formattedDepot} @${labelOrChangelist}`);
+        const result = await this.p4.cmd(`files ${formattedDepot}@${labelOrChangelist}`);
         result.error ? logger.error("Failed to get tree", result.error) : logger.debug("Depot file tree retrieved successfully");
+        // Last action on a file can be: ["add","change","delete"].
+        const noneDeletedFiles = _.filter(result?.stat, file => file.action !== "delete");
         // @ts-ignore
-        return _.map(result?.stat, file => file.depotFile);
+        return _.map(noneDeletedFiles, file => file.depotFile);
     }
 }
 
 let perforceManagerSingleton: IPerforceManager = null;
 
 const connectionString = store.get("PerforceConnectionString", null);
+const username = store.get("PerforceUser", null);
+const timeout = store.get("PerforceTimeout", 0);
 if (connectionString) {
-    perforceManagerSingleton = new PerforceManager(connectionString);
+    perforceManagerSingleton = new PerforceManager({connectionString, username, timeout});
 }
 
 export const getPerforceManagerSingleton = (): IPerforceManager => {
