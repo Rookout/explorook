@@ -9,7 +9,6 @@ import parseRepo = require("parse-repo");
 import path = require("path");
 // for normalization of windows paths to linux style paths
 import slash = require("slash");
-import {isNumeric} from "tslint";
 import { Repository } from "./common/repository";
 import { leaveBreadcrumb, notify } from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
@@ -108,7 +107,7 @@ export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: str
     const localRemoteOrigin = await getRemoteOriginForRepo(repo);
     if (!localRemoteOrigin) {
       // this notify is empty but the breadcrumbs tell the story
-      notify("Failed to remote origin");
+      notify({message: `Failed to find remote origin for ${repo.id} in ${repo.fullpath}`});
       return null;
     }
     const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
