@@ -14,4 +14,8 @@ export default class MemStore {
     public set(key: string, value: string) {
         this.store.set(key, value);
     }
+
+    public onDidChange(key: string, callback: (newValue?: string, oldValue?: string) => void): () => null {
+        return () => null;
+    }
 }

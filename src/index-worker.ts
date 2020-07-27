@@ -5,10 +5,11 @@ import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
 import {cloneRemoteOriginWithCommit, GitConnectionOptions} from "./git";
-import {getLogger} from "./logger";
+import {getLogger, setLogLevel} from "./logger";
 import {changePerforceManagerSingleton, PerforceConnectionOptions} from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
+import {getStoreSafe} from "./explorook-store";
 
 let mainWindowId = -1;
 
@@ -118,6 +119,10 @@ ipcRenderer.on("test-git-connection", async (e: IpcRendererEvent, connectionOpti
 });
 
 ipcRenderer.on("repos-request", (e: IpcRendererEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));
+
+ipcRenderer.on("set-log-level", (e: IpcRendererEvent, newLogLevel: string) => {
+    setLogLevel(newLogLevel);
+});
 
 ipcRenderer.send("index-worker-up");
 ipcRenderer.send("exception-manager-is-enabled-req");

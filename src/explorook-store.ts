@@ -23,7 +23,7 @@ export class ExplorookStore extends Store {
 
 export const getStoreSafe = () => {
     try {
-        return new Store({ name: "explorook" });
+        return new Store({ name: "explorook", watch: true });
     } catch (error) { // probably headless mode - defaulting to memory store
         // tslint:disable-next-line:no-console
         console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
