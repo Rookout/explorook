@@ -5,6 +5,7 @@ const path = require("path");
 import * as fs from "fs";
 import _ = require("lodash");
 import {P4} from "p4api";
+import {isNumeric} from "tslint";
 import * as util from "util";
 import {notify} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
@@ -275,15 +276,19 @@ class PerforceManager {
 
     private async getLabelOrChangelistWithWorkspace(fullPath: string, workspace: IPerforceWorkspace): Promise<string> {
         const cstat = await this.p4.cmd(`cstat "${fullPath}"@${workspace.client} `);
-        if (cstat.error) {
+
+        // The first changelist number is the latest
+        const changelist = cstat?.stat?.[0]?.change;
+        if (cstat.error || !changelist || isNaN(changelist)) {
             logger.error("Failed to get changelist for file", {fullPath, cstat});
             return null;
         }
-        const changelist = cstat?.stat?.[0]?.change;
+
         const labels = await this.p4.cmd(`labels "${fullPath}"@${changelist}`);
         if (labels.error) {
             logger.error("Failed to get labels for file", {fullPath, changelist, labels});
         }
+
         // @ts-ignore
         return _.last(labels.stat)?.label || changelist;
     }
