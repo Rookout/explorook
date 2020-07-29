@@ -3,6 +3,7 @@ import { Close } from "@material-ui/icons";
 import { remote, ipcRenderer } from "electron";
 import { Menu, MenuItem } from "@material-ui/core";
 import { closeWindow } from "../utils";
+import * as Store from "electron-store";
 
 const EXPLOROOK_VERSION = remote.app.getVersion();
 
@@ -21,12 +22,20 @@ export const Header = () => {
         setOpen(false);
     };
 
+    const store = new Store({ name: "explorook" });
+    const isLogLevelDebug = store.get("logLevel", "error") === "debug";
+    const setLogLever = isDebug => {
+        ipcRenderer.sendTo(window.indexWorkerId, "set-log-level", isDebug ? "debug" : "error")
+        setOpen(false);
+    }
+
     return (
         <div>
             <div id="close-window-wrapper" onContextMenu={onCloseRightClick}>
                 <Close id="close-window-btn" onClick={closeWindow}/>
                 <Menu anchorEl={anchorEl} open={open}>
                     <MenuItem key="debug" onClick={startDebug}>Debug</MenuItem>
+                    <MenuItem key="log-level" onClick={() => setLogLever(!isLogLevelDebug)}>{isLogLevelDebug ? "Error Logs" : "Debug Logs"}</MenuItem>
                     <MenuItem key="close" onClick={() => setOpen(false)}>Close</MenuItem>
                 </Menu>
             </div>

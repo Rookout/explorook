@@ -1,6 +1,7 @@
 import fs = require("fs");
 import _ = require("lodash");
 import {posix} from "path";
+import * as path from "path";
 import {Repository} from "./common/repository";
 import {notify} from "./exceptionManager";
 import {
@@ -18,13 +19,15 @@ import {
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
-import * as path from "path";
+import {getLogger} from "./logger";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
 // Our schema for file size is `Int` which is limited to int32 (https://www.apollographql.com/docs/apollo-server/schemas/types.html)
 // if a file we stat is bigger than 2.14GB then graphql will return some errors
 const GRAPHQL_INT_MAX = 2147483647;
+
+const logger = getLogger("api");
 
 interface FileInfo {
   path: string;
@@ -37,15 +40,19 @@ export const resolvers = {
   Repository: {
     lastCommitDescription: async (parent: Repository) => {
       const repo = repStore.getRepositories().find((r) => r.id === parent.id);
+      logger.debug("Getting last commit description for repo", repo)
       const lastCommit = await getLastCommitDescription(repo);
       if (!lastCommit) {
+        logger.error("Last commit not found");
         return null;
       }
       if (!lastCommit?.commit?.message) {
         notify("no commit message on last commit", {
           metaData: { lastCommit }
         });
+        logger.warn("No commit message on last commit")
       }
+      logger.debug("Found last commit", lastCommit);
       return {
         oid: lastCommit.oid,
         message: lastCommit?.commit?.message || "<no commit message>",
@@ -55,6 +62,7 @@ export const resolvers = {
   },
   Mutation: {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
+      logger.debug("Adding repo", args.fullpath);
       return context.onAddRepoRequest(args.fullpath);
     },
     changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }):
@@ -62,23 +70,31 @@ export const resolvers = {
       const perforceManager = getPerforceManagerSingleton();
 
       if (!perforceManager) {
+        logger.error("Failed to get Perforce manager instance", args.views);
         return { isSuccess: false, reason: "Perforce client not initialized" };
       }
 
       const newRepos = await perforceManager.changeViews(args.views);
       if (_.isEmpty(newRepos) && !_.isEmpty(args.views)) {
+        logger.error("No depots with given input found", args.views);
         return { isSuccess: false, reason: "No depots with those names exist" };
       }
 
       const addRepoPromises = [] as Array<Promise<boolean>>;
 
       _.forEach(newRepos, (repo: IPerforceRepo) => {
+        logger.debug("Adding repo", repo);
         addRepoPromises.push(context.onAddRepoRequest(repo.fullPath, repo.id));
       });
 
       const success = await Promise.all(addRepoPromises);
 
       const allSuccess = _.every(success, (s: boolean) => s);
+
+      if(!allSuccess) {
+        logger.error("Failed to create some of the depots");
+      }
+
       return {
         isSuccess: allSuccess,
         reason: !allSuccess ? "Failed to create some of the repos in Explorook" : undefined
@@ -86,7 +102,12 @@ export const resolvers = {
     },
     switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
-      return perforceManager ? (await perforceManager.switchChangelist(args.changelistId)) : { isSuccess: false, reason: "Perforce not initialized"};
+      if (!perforceManager) {
+        logger.error("Failed to get Perforce manager instance");
+        return { isSuccess: false, reason: "Perforce not initialized"};
+      }
+      logger.debug("Changing perforce to", args.changelistId);
+      return await perforceManager.switchChangelist(args.changelistId);
     },
     getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
                        context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
@@ -101,22 +122,26 @@ export const resolvers = {
 
       // Delete the folder if it's too big
       if ((await isGitFolderBiggerThanMaxSize())) {
+        logger.debug("Removing repos because git folder is too big", subDirs);
         removeGitReposFromStore(subDirs);
       } else {
         // If we had any duplicate repos with two different commits we want to delete them now
         const tmpDirs = _.filter(subDirs, dir => dir.includes(TMP_DIR_PREFIX));
         if (!_.isEmpty(tmpDirs)) {
+          logger.debug("Removing temporary git folders", tmpDirs);
           removeGitReposFromStore(tmpDirs);
         }
       }
 
       // If we have the same remote origin with two different commits we will create two folders
       const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
+      logger.debug("Found duplicate repos", duplicates);
 
       const addRepoPromises = _.map(args.sources, async repo => {
         context.updateGitLoadingState(true, repo.repoUrl);
         if (!checkGitRemote(repo.repoUrl)) {
           notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
+          logger.error("Failed to parse git url", repo);
           context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: false,
@@ -124,15 +149,18 @@ export const resolvers = {
           };
         }
         try {
+          logger.debug("Cloning repo", repo);
           const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
           const didAddRepo = await context.onAddRepoRequest(cloneDir);
           context.updateGitLoadingState(false, repo.repoUrl);
+          logger.debug("Finished loading repo", {repo: repo.repoUrl, didAddRepo});
           return {
             isSuccess: didAddRepo,
             reason: didAddRepo ? undefined : `Failed to add repo on folder ${cloneDir}`
           };
         } catch (e) {
           notify(e);
+          logger.error("Failed to clone repo", {repo, e});
           context.updateGitLoadingState(false, repo.repoUrl);
           return {
             isSuccess: false,
@@ -144,19 +172,23 @@ export const resolvers = {
       const res = await Promise.all(addRepoPromises);
       // Return the first error or success.
       context.updateGitLoadingState(false, "");
+      logger.debug("Finished cloning git repos", res);
       return _.find(res, r => !r.isSuccess) || { isSuccess: true };
     },
     getFileFromPerforce: async (parent: any, args: { depotFilePath: string, labelOrChangelist: string }): Promise<string> => {
       const perforceManager = getPerforceManagerSingleton();
       if (!perforceManager) {
+        logger.error("Could not get Perforce manager instace");
         return "";
       }
 
+      logger.debug("Getting file from Perforce", args);
       return await perforceManager.getSpecificFile(args.depotFilePath, args.labelOrChangelist, true);
     },
     changePerforceViewsV2: async (parent: any, args: {views: string[], shouldSync: boolean}): Promise<OperationStatus> => {
       const perforceManager = getPerforceManagerSingleton();
       if (!perforceManager) {
+        logger.error("Could not get Perforce manager instace");
         return {
           isSuccess: false,
           reason: "Perforce client not initialized"
@@ -165,15 +197,17 @@ export const resolvers = {
 
       try {
         const result = await perforceManager.changeViews(args.views, args.shouldSync);
+        logger.debug("Changed views for Perforce", {result});
         return {
           isSuccess: !_.isEmpty(result)
         };
       } catch (e) {
         notify(e);
+        logger.error("Failed to change views for Perforce", e);
         return {
           isSuccess: false,
           reason: e.message
-        }
+        };
       }
     }
   },
@@ -191,12 +225,15 @@ export const resolvers = {
       const { path, repo } = args;
       return new Promise((resolve, reject) => {
         const targetDir = join(repo.fullpath, path);
+        logger.debug("Reading dir", targetDir);
         fs.readdir(targetDir, (err, files) => {
           if (err != null) {
+            logger.error("Failed to read dir", {targetDir, err});
             reject(err);
             return;
           }
           const res: FileInfo[] = [];
+          logger.debug(`Found ${files.length} files`);
           files.forEach((f) => {
             let fstats;
             try {
@@ -204,8 +241,10 @@ export const resolvers = {
             } catch (err) {
               console.error(`Error while listing file: ${path}`, err);
               notify(`Error while listing file: ${path}`, { metaData: err });
+              logger.error(`Error while listing file: ${path}`, err);
             }
             if (fstats === undefined) {
+              logger.warn("File does not exist", path);
               return; // File does not exist, move on
             }
             let fPath = join(path, f);
@@ -229,8 +268,10 @@ export const resolvers = {
       const { path, repo } = args;
       return new Promise((resolve, reject) => {
         const fileFullpath = join(repo.fullpath, path);
+        logger.debug("Getting file", fileFullpath);
         fs.readFile(fileFullpath, "utf8", (err, data) => {
           if (err != null) {
+            logger.error("Failed to read file", fileFullpath);
             reject(err);
             return;
           }
@@ -255,9 +296,16 @@ export const resolvers = {
       const { path, repo } = args;
       const fileFullpath = join(repo.fullpath, path);
 
-      return perforceManager ? perforceManager.getChangelistForFile(fileFullpath) : null;
+      if (!perforceManager) {
+        logger.error("Could not get Perforce manager instace");
+        return null;
+      }
+
+      logger.debug("Getting changelist for file", args);
+      return perforceManager.getChangelistForFile(fileFullpath);
     },
     getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
+      logger.debug("Getting commit ID for file", args);
       const {provider, repo, path, remoteOrigin} = args;
       switch (provider) {
         case "git":
@@ -266,8 +314,12 @@ export const resolvers = {
           const perforceManager = getPerforceManagerSingleton();
           const filePath = join(repo.fullpath, path);
           const isSameDepot = await perforceManager?.isSameRemoteOrigin(filePath, remoteOrigin);
+          if (!isSameDepot) {
+            logger.warn("This is not the depot you're looking for", args);
+            return null;
+          }
 
-          return isSameDepot ? (await perforceManager.getChangelistForFile(filePath)) : null;
+          return await perforceManager.getChangelistForFile(filePath);
         default:
           throw new Error(`Unreachable code - got unknown source provider: ${provider}`);
       }
@@ -275,9 +327,11 @@ export const resolvers = {
     getFilesTreeFromPerforce: async (parent: any, args: { depot: string, labelOrChangelist: string}): Promise<[string]> => {
       const perforceManager = getPerforceManagerSingleton();
       if (!perforceManager) {
+        logger.error("Could not get Perforce manager instace");
         return null;
       }
 
+      logger.debug("Getting file tree for depot", args);
       return await perforceManager.getDepotFileTree(args.depot, args.labelOrChangelist);
     }
   }

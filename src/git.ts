@@ -12,6 +12,7 @@ import slash = require("slash");
 import { Repository } from "./common/repository";
 import { leaveBreadcrumb, notify } from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
+import {getLogger} from "./logger";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
 const uuidv4 = require("uuid/v4");
@@ -39,19 +40,26 @@ if (!fs.existsSync(GIT_ROOT)) {
     });
 }
 
+const logger = getLogger("git");
+
 export async function getRepoId(repo: Repository, idList: string[]): Promise<string> {
     // trying to create a unique id with the git remote path and relative filesystem path
     // this way, when different clients share the same workspace they automatically
     // connect to the same repository on different machines
     try {
+        logger.debug("Trying to get git root for repo", repo);
         const gitRoot = await igit.findRoot({ fs, filepath: repo.fullpath });
+
         const { url: remote } = await getRemoteOriginForRepo(repo);
+        logger.debug("Repo remote origin fetched", remote);
         const gitRootRelPath = path.relative(gitRoot, repo.fullpath);
         const repoInfo = parseRepo(remote);
         let repoId = `${repoInfo.repository}/${slash(gitRootRelPath)}`;
+        logger.debug("Created repo Id", repoId);
         if (_.includes(idList, repoId)) {
             const branch = await igit.currentBranch({ fs, dir: gitRoot, fullname: false });
             repoId = `${repoId}:${branch}`;
+            logger.debug("Found duplicate repos. Using branch", repoId);
         }
         return repoId;
     } catch (error) {
@@ -59,17 +67,21 @@ export async function getRepoId(repo: Repository, idList: string[]): Promise<str
             notify(error, {
                 metaData: { error, repo, message: "Failed to generate repo id from git" }
             });
+            logger.error("Failed to generate repo id from git", {error, repo});
         }
         // no git found
+        logger.debug("Git not found. creating UUID");
         return uuidv4();
     }
 }
 
 async function getGitRootForPath(filepath: string) {
     try {
+        logger.debug("Getting git root for path", filepath);
         return await igit.findRoot({ fs, filepath });
     } catch (err) {
         leaveBreadcrumb("Failed to find git root", { filepath, err });
+        logger.warn("Failed to find git root", { filepath, err });
         // No git root was found, probably not a git repository
         return null;
     }
@@ -77,14 +89,19 @@ async function getGitRootForPath(filepath: string) {
 
 export async function getLastCommitDescription(repo: Repository): Promise<igit.ReadCommitResult> {
     try {
+        logger.debug("Getting last commit description for repo", repo);
         const gitRoot = await getGitRootForPath(repo.fullpath);
-        if (!gitRoot) { return null; }
+        if (!gitRoot) {
+            logger.warn("Could find git root when getting last commit description");
+            return null;
+        }
         return _.first((await igit.log({ fs, dir: gitRoot, depth: 1 })));
     } catch (error) {
         notify(error, {
             metaData : { message: "failed to read repository info", repo, error },
             severity: "error"
         });
+        logger.error("Failed to read repository info", {repo, error});
         return null;
     }
 }
@@ -108,20 +125,24 @@ export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: str
     if (!localRemoteOrigin) {
       // this notify is empty but the breadcrumbs tell the story
       notify({message: `Failed to find remote origin for ${repo.id} in ${repo.fullpath}`});
+      logger.error("Could not find remote origin for local file", repo, remoteOrigin);
       return null;
     }
     const parsedLocalRemoteOrigin = GitUrlParse(localRemoteOrigin.url);
     const argsParsedRemoteOrigin = GitUrlParse(remoteOrigin);
+    logger.debug("Got remote origin for local file", {parsedLocalRemoteOrigin, argsParsedRemoteOrigin});
     return (parsedLocalRemoteOrigin.name === argsParsedRemoteOrigin.name && parsedLocalRemoteOrigin.owner === argsParsedRemoteOrigin.owner) ?
         (await getLastCommitDescription(repo))?.oid : null;
 }
 
 export function checkGitRemote(remoteOrigin: string): boolean {
+    logger.debug("Checking if remote origin is a valid git URI", remoteOrigin);
     return isGitUrl(remoteOrigin.endsWith(".git") ? remoteOrigin : `${remoteOrigin}.git`);
 }
 
 export function convertUrlToProtocol(originalUri: string, format: GitProtocols) {
     const parsedUri = GitUrlParse(originalUri);
+    logger.debug("Converting URI to protocol", {originalUri, format, parsedUri});
     switch (format) {
         case GitProtocols.HTTPS:
             return parsedUri.toString("https");
@@ -141,8 +162,11 @@ const getProtocolFromStore = () => {
 };
 
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+    logger.debug("Cloning repo", {repoUrl, commit, isDuplicate});
     const protocol = getProtocolFromStore();
     const formattedRepoUri = convertUrlToProtocol(repoUrl, protocol);
+    logger.debug("Uri formatted", formattedRepoUri);
+
     // Assuming the last part of the remote origin url is the name of the repo.
     const repoName = parseRepo(formattedRepoUri).project;
      // If we have two of the same git remote with a different commit we want to create a sub directory.
@@ -156,6 +180,8 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      // If the folder already exists we don't need to clone, just checkout.
     const doesRepoExist = fs.existsSync(repoDir);
 
+    logger.debug("Cloning into", {gitRoot, doesRepoExist});
+
     if (!doesRepoExist) {
       fs.mkdirSync(repoDir);
       // based on https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
@@ -165,6 +191,7 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
         git remote add origin ${formattedRepoUri} &&
         git fetch --depth=1 origin ${commit} &&
         git checkout ${commit}`;
+      logger.debug("Running command", cloneCommand);
       await exec(cloneCommand);
       return repoDir;
     }
@@ -174,6 +201,7 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
     git fetch --depth=1 origin ${commit} &&
     git checkout ${commit}`;
 
+    logger.debug("Running command", command);
     await exec(command);
     return repoDir;
 }
@@ -183,6 +211,7 @@ const packSizeRegex = /size-pack: ([0-9]+)/;
 
 export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
+
     const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => {
         const subdir = path.join(GIT_ROOT, dirName);
         if (dirName.includes(TMP_DIR_PREFIX)) {
@@ -192,6 +221,8 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
 
         return subdir;
     });
+    logger.debug("Checking root dir size", rootDirContent);
+
     const repoDirs = _.filter(rootDirContent, isDirectory);
     const sizePromises = _.map(repoDirs, async dir => {
       const { stdout } = await exec(`cd "${dir}" && git count-objects -v`);
@@ -199,6 +230,7 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
       return Number(size);
     });
     const rootSize = _.sum(await Promise.all(sizePromises));
+    logger.debug("Root folder size is", rootSize);
 
     return rootSize > MAX_GIT_FOLDER_SIZE_IN_KB;
 }
@@ -210,6 +242,7 @@ export function removeGitReposFromStore(folderNames: string[]) {
         const allRepos = repStore.getRepositories();
         const repoToRemove = _.find(allRepos, r => r.fullpath.includes(dir));
         if (repoToRemove) {
+            logger.debug("Removing git repo", repoToRemove);
             repStore.remove(repoToRemove.id);
         }
         folderDelete(dir, {debugLog: false});
