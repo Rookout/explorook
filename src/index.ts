@@ -192,7 +192,7 @@ function identifyAnalytics() {
 }
 
 function initAnalytics() {
-  analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+  analytics = new Analytics("Bv9efyI9vbX0i3Wgl7ShfKFBHXCDnm2j");
   identifyAnalytics();
   track("startup");
 }
