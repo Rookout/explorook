@@ -1,4 +1,5 @@
 import childProcess = require("child_process");
+import { platform } from 'os';
 import fs = require("fs");
 import util = require("util");
 const exec = util.promisify(childProcess.exec);
@@ -15,6 +16,7 @@ import {getStoreSafe} from "./explorook-store";
 import {getLogger} from "./logger";
 import {repStore} from "./repoStore";
 import {getLibraryFolder} from "./utils";
+import { ipcRenderer } from "electron";
 const uuidv4 = require("uuid/v4");
 const isGitUrl = require("is-git-url");
 const folderDelete = require("folder-delete");
@@ -110,7 +112,9 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote
     try {
         const gitRoot = await getGitRootForPath(repo.fullpath);
         if (!gitRoot) { return null; }
-        return _.first((await igit.listRemotes({ fs, dir: gitRoot })));
+        const remotes = await igit.listRemotes({ fs, dir: gitRoot });
+        trackRemoteVersion(remotes || [])
+        return _.first(remotes)
     } catch (error) {
         notify(error, {
             metaData : { message: "failed to read repository info", repo, error },
@@ -118,6 +122,51 @@ export async function getRemoteOriginForRepo(repo: Repository): Promise<{ remote
         });
         return null;
     }
+}
+
+const getGitCliVersion = async () => {
+  const { stdout } = await exec('git version');
+  return stdout;
+}
+
+const trackRemoteVersion = async (remotes: { remote: string; url: string;}[]) => {
+  for (const { url, remote } of remotes) {
+    /* tracing packet data to extract git headers from remote
+    * see https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables
+    * example output:
+    * ~ GIT_TRACE_PACKET=true git ls-remote --heads https://github.com/libgit2/libgit2.git
+        14:04:51.830728 pkt-line.c:80           packet:          git< # service=git-upload-pack
+        14:04:51.830765 pkt-line.c:80           packet:          git< 0000
+        14:04:51.830775 pkt-line.c:80           packet:          git< version 2
+        14:04:51.830785 pkt-line.c:80           packet:          git< agent=git/github-gd72361c7e766
+        14:04:51.830793 pkt-line.c:80           packet:          git< ls-refs
+        14:04:51.830800 pkt-line.c:80           packet:          git< fetch=shallow filter
+        14:04:52.213643 pkt-line.c:80           packet:          git< 4a30c53146e7d1068af6f02dba3ef925878d11b8 refs/heads/bindings/libgit2sharp/020_2
+        14:04:52.213693 pkt-line.c:80           packet:          git< 921e3a68e26ad23d9c5b389fdc61c9591bdc4cff refs/heads/bindings/libgit2sharp/022_1
+        14:04:52.213710 pkt-line.c:80           packet:          git< 634dbfa0207708d39806e33b67dd3d19f9050a12 refs/heads/brianmario/attr-from-tree
+    */
+    const command = `GIT_TRACE_PACKET=true git ls-remote --heads ${url}`;
+    const { stderr } = await exec(command);
+    // read until the first object id
+    const oidRegex = /[a-z0-9]{40}/
+    const agentRegex = /agent=(.*)/
+    const lines = stderr.split(/(?:\r\n|\r|\n)/g)
+    let isFilterInCapabilities = false;
+    let agent = "<unknown>";
+    let headers = ""
+    for (const line of lines) {
+      if (oidRegex.test(line)) {
+        break;
+      }
+      headers+=line+'\n';
+      if (line.toLowerCase().includes('filter')) {
+        isFilterInCapabilities = true;
+      }
+      const [,agentVer] = agentRegex.exec(line) || [];
+      agent = agentVer || agent;
+    }
+    ipcRenderer.send("track", "remote-capabilities", { remote, url, agent, gitCliVersion: await getGitCliVersion(), platform: platform(), headers });
+  }
 }
 
 export async function getCommitIfRightOrigin(repo: Repository, remoteOrigin: string): Promise<string> {
@@ -162,6 +211,7 @@ const getProtocolFromStore = () => {
 };
 
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+    trackRemoteVersion([{ remote: repoUrl, url: repoUrl }])
     logger.debug("Cloning repo", {repoUrl, commit, isDuplicate});
     const protocol = getProtocolFromStore();
     const formattedRepoUri = convertUrlToProtocol(repoUrl, protocol);
