@@ -145,8 +145,9 @@ const trackRemoteVersion = async (remotes: { remote: string; url: string;}[]) =>
         14:04:52.213693 pkt-line.c:80           packet:          git< 921e3a68e26ad23d9c5b389fdc61c9591bdc4cff refs/heads/bindings/libgit2sharp/022_1
         14:04:52.213710 pkt-line.c:80           packet:          git< 634dbfa0207708d39806e33b67dd3d19f9050a12 refs/heads/brianmario/attr-from-tree
     */
-    const command = `GIT_TRACE_PACKET=true git ls-remote --heads ${url}`;
-    const { stderr } = await exec(command);
+    const command = `git ls-remote --heads ${url}`;
+    const envVars = Object.assign({}, process.env, { GIT_TRACE_PACKET: true });
+    const { stderr } = await exec(command, { env: envVars });
     // read until the first object id
     const oidRegex = /[a-z0-9]{40}/
     const agentRegex = /agent=(.*)/
