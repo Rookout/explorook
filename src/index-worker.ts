@@ -94,7 +94,7 @@ ipcRenderer.on("edit-repo", (e: IpcRendererEvent, args: { id: string, repoName: 
 ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptions: PerforceConnectionOptions) => {
     let isSuccess = false;
     try {
-        isSuccess = !!changePerforceManagerSingleton(connectionOptions);
+      isSuccess = changePerforceManagerSingleton(connectionOptions);
     } catch (e) {
         if (e.message?.code === "ENOENT") {
             ipcRenderer.send("no-p4-found");

@@ -3,6 +3,7 @@ import { platform } from 'os';
 import fs = require("fs");
 import util = require("util");
 const exec = util.promisify(childProcess.exec);
+const spawn = childProcess.spawn;
 const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
@@ -20,6 +21,8 @@ import { ipcRenderer } from "electron";
 const uuidv4 = require("uuid/v4");
 const isGitUrl = require("is-git-url");
 const folderDelete = require("folder-delete");
+
+const TEN_MEGABYTE = 10_485_760
 
 export interface GitConnectionOptions {
     connectionString: string;
@@ -298,3 +301,34 @@ export function removeGitReposFromStore(folderNames: string[]) {
         folderDelete(dir, {debugLog: false});
     });
 }
+
+const lsRemote = async (url: string) => {
+  return new Promise((resolve) => {
+    // timeout for sanity - detached to block stdin - stdio: ignore to prevent stdout from blocking
+    const child = childProcess.spawn('git', ['ls-remote', url], { timeout: 20_000, detached: true, stdio: 'ignore' })
+    // if the process will need to ask for username+password from stdin it will get an error and exit with error code != 0
+    child.on('close', code => {
+      resolve(code === 0)
+    })
+  })
+}
+
+export async function canQueryGitRepo(repoUrl: string): Promise<{ querySuccessful: boolean, protocol: GitProtocols }> {
+  const sshFormat = convertUrlToProtocol(repoUrl, GitProtocols.SSH);
+  const httpFormat = convertUrlToProtocol(repoUrl, GitProtocols.HTTPS);
+
+  if (await lsRemote(sshFormat)) {
+    return {
+      querySuccessful: true,
+      protocol: GitProtocols.SSH
+    }
+  } else if (await lsRemote(httpFormat)) {
+    return {
+      querySuccessful: true,
+      protocol: GitProtocols.HTTPS
+    }
+  }
+
+  return { querySuccessful: false, protocol: GitProtocols.DEFAULT };
+}
+

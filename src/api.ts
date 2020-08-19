@@ -14,12 +14,15 @@ import {
   GitProtocols,
   isGitFolderBiggerThanMaxSize,
   removeGitReposFromStore,
-  TMP_DIR_PREFIX
+  TMP_DIR_PREFIX,
+  canQueryGitRepo
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import {getLogger} from "./logger";
+import { setSettings, getSettings } from "./utils";
+import { protocol } from "electron";
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -61,6 +64,9 @@ export const resolvers = {
     },
   },
   Mutation: {
+    settings: (parent: any, args: { settings: Settings }): Settings => {
+      return setSettings(args.settings);
+    },
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       logger.debug("Adding repo", args.fullpath);
       return context.onAddRepoRequest(args.fullpath);
@@ -212,6 +218,20 @@ export const resolvers = {
     }
   },
   Query: {
+    async canQueryGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
+      const promises = _.map(args.sources, async src => {
+        const res = await canQueryGitRepo(src.repoUrl)
+        return {
+          isSuccess: res.querySuccessful,
+          repoUrl: src.repoUrl,
+          protocol: res.protocol.toString()
+        }
+      });
+      return Promise.all(promises);
+    },
+    settings(): Settings {
+      return getSettings()
+    },
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
       return repo.toModel();
