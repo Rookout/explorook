@@ -248,7 +248,8 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
 const MAX_GIT_FOLDER_SIZE_IN_KB = 10485760;
 const packSizeRegex = /size-pack: ([0-9]+)/;
 
-export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
+export async function isGitFolderBiggerThanMaxSize(): Promise<{ sizeOverMaxSize: boolean, failedFolders: string[] }> {
+    const failedFolders: string[] = [];
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
 
     const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => {
@@ -269,6 +270,7 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
         stdout = await (await exec("git count-objects -v", { cwd: dir })).stdout;
       } catch (error) {
         logger.error("Failed to estimate git repository size", error)
+        failedFolders.push(dir);
         return 0;
       }
       const [, size] = packSizeRegex.exec(stdout);
@@ -277,7 +279,7 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
     const rootSize = _.sum(await Promise.all(sizePromises));
     logger.debug("Root folder size is", rootSize);
 
-    return rootSize > MAX_GIT_FOLDER_SIZE_IN_KB;
+    return { sizeOverMaxSize: rootSize > MAX_GIT_FOLDER_SIZE_IN_KB, failedFolders };
 }
 
 // Get the name of a list of folders under the git root and delete all
