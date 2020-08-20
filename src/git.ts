@@ -21,6 +21,8 @@ const uuidv4 = require("uuid/v4");
 const isGitUrl = require("is-git-url");
 const folderDelete = require("folder-delete");
 
+const TEN_MEGABYTE = 10_485_760
+
 export interface GitConnectionOptions {
     connectionString: string;
     commit?: string;
@@ -231,36 +233,23 @@ export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: strin
      // If the folder already exists we don't need to clone, just checkout.
     const doesRepoExist = fs.existsSync(repoDir);
 
-    logger.debug("Cloning into", {gitRoot, doesRepoExist});
-
-    if (!doesRepoExist) {
-      fs.mkdirSync(repoDir);
-      // based on https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
-      const cloneCommand = `
-        cd "${repoDir}" &&
-        git init &&
-        git remote add origin ${formattedRepoUri} &&
-        git fetch --depth=1 origin ${commit} &&
-        git checkout ${commit}`;
-      logger.debug("Running command", cloneCommand);
-      await exec(cloneCommand);
-      return repoDir;
+    if (doesRepoExist) {
+      logger.debug("fetching latest code", { gitRoot, doesRepoExist });
+      await exec("git fetch", { cwd: repoDir, maxBuffer: TEN_MEGABYTE })
+    } else {
+      logger.debug("cloning into", { gitRoot, doesRepoExist });
+      await exec(`git clone ${formattedRepoUri}`, { cwd: gitRoot, maxBuffer: TEN_MEGABYTE })
     }
-
-    const command = `
-    cd "${repoDir}" &&
-    git fetch --depth=1 origin ${commit} &&
-    git checkout ${commit}`;
-
-    logger.debug("Running command", command);
-    await exec(command);
+    logger.debug(`checking out to commit ${commit}`, { commit, gitRoot, doesRepoExist });
+    await exec(`git checkout ${commit}`, { cwd: repoDir, maxBuffer: TEN_MEGABYTE })
     return repoDir;
 }
 // 10GB
 const MAX_GIT_FOLDER_SIZE_IN_KB = 10485760;
 const packSizeRegex = /size-pack: ([0-9]+)/;
 
-export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
+export async function isGitFolderBiggerThanMaxSize(): Promise<{ sizeOverMaxSize: boolean, failedFolders: string[] }> {
+    const failedFolders: string[] = [];
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
 
     const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => {
@@ -276,14 +265,21 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<boolean> {
 
     const repoDirs = _.filter(rootDirContent, isDirectory);
     const sizePromises = _.map(repoDirs, async dir => {
-      const { stdout } = await exec(`cd "${dir}" && git count-objects -v`);
+      let stdout
+      try {
+        stdout = await (await exec("git count-objects -v", { cwd: dir })).stdout;
+      } catch (error) {
+        logger.error("Failed to estimate git repository size", error)
+        failedFolders.push(dir);
+        return 0;
+      }
       const [, size] = packSizeRegex.exec(stdout);
       return Number(size);
     });
     const rootSize = _.sum(await Promise.all(sizePromises));
     logger.debug("Root folder size is", rootSize);
 
-    return rootSize > MAX_GIT_FOLDER_SIZE_IN_KB;
+    return { sizeOverMaxSize: rootSize > MAX_GIT_FOLDER_SIZE_IN_KB, failedFolders };
 }
 
 // Get the name of a list of folders under the git root and delete all
