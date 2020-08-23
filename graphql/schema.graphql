@@ -42,14 +42,14 @@ type Query {
   ): String
   getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
   settings: Settings!
-  canAuthGitRepos(sources: [GitRepo]!): [CanQueryRepoStatus]!
+  canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
 }
 
 input GitRepo {
   repoUrl: String!
 }
 
-type CanQueryRepoStatus {
+type CanAuthGitRepoResponse {
   repoUrl: String!
   isSuccess: Boolean!
   reason: String
