@@ -42,7 +42,7 @@ type Query {
   ): String
   getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
   settings: Settings!
-  canQueryGitRepos(sources: [GitRepo]!): [CanQueryRepoStatus]!
+  canAuthGitRepos(sources: [GitRepo]!): [CanQueryRepoStatus]!
 }
 
 input GitRepo {

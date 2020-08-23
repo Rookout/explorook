@@ -15,7 +15,7 @@ import {
   isGitFolderBiggerThanMaxSize,
   removeGitReposFromStore,
   TMP_DIR_PREFIX,
-  canQueryGitRepo
+  canAuthGitRepo
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
@@ -218,9 +218,9 @@ export const resolvers = {
     }
   },
   Query: {
-    async canQueryGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
+    async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
-        const res = await canQueryGitRepo(src.repoUrl)
+        const res = await canAuthGitRepo(src.repoUrl)
         return {
           isSuccess: res.querySuccessful,
           repoUrl: src.repoUrl,
