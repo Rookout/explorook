@@ -12,7 +12,7 @@ import {
   getLastCommitDescription as getLastCommitDescription,
   GIT_ROOT,
   GitProtocols,
-  isGitFolderBiggerThanMaxSize,
+  isGitFolderBiggerThanMaxSize as computeGitFoldersSize,
   removeGitReposFromStore,
   TMP_DIR_PREFIX,
   canAuthGitRepo
@@ -22,7 +22,8 @@ import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import {getLogger} from "./logger";
 import { setSettings, getSettings } from "./utils";
-import { protocol } from "electron";
+const folderDelete = require("folder-delete");
+
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
 
@@ -127,7 +128,18 @@ export const resolvers = {
       });
 
       // Delete the folder if it's too big
-      if ((await isGitFolderBiggerThanMaxSize())) {
+      const sizeResult = await computeGitFoldersSize()
+      if (!_.isEmpty(sizeResult.failedFolders)) {
+        logger.debug("Deleting failed folders", sizeResult.failedFolders)
+        _.forEach(sizeResult.failedFolders, folderPath => {
+          try {
+            folderDelete(folderPath);
+          } catch(err) {
+            logger.error("Failed to delete folder", { folderPath, err })
+          }
+        })
+      }
+      if (sizeResult.sizeOverMaxSize) {
         logger.debug("Removing repos because git folder is too big", subDirs);
         removeGitReposFromStore(subDirs);
       } else {

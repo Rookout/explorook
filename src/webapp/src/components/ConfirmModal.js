@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ const style = {
 
 const store = new Store({ name: "explorook"});
 
-export const ConfirmModal = ({ body, title, open, onClose, classes, onCancel, onAgree, ...props }) => {
+export const ConfirmModal = ({ body, title, open, onClose, classes, onCancel, onAgree }) => {
     const [askAgainChecked, setAskAgainChecked] = useState(false);
 
     return (
@@ -41,13 +41,13 @@ export const ConfirmModal = ({ body, title, open, onClose, classes, onCancel, on
             </DialogContent>
             <DialogActions style={{ display: "flex" }}>
                 <FormControlLabel
-                classes={{ connectionStringLabel: classes.checkBoxLabel }}
+                classes={{ label: classes.checkBoxLabel }}
                 style={{ marginRight: "auto", marginLeft: 10 }}
                 control={<Checkbox checked={askAgainChecked} onChange={(e, checked) => {
                       setAskAgainChecked(checked);
                       store.set("non-git-dialog-never-ask-again", checked);
                 }} />}
-                connectionStringLabel="Never ask again" />
+                label={"Never ask again"}/>
                 <Button onClick={onCancel} style={{ color: "#B6C8D4" }}>
                 Cancel
                 </Button>
