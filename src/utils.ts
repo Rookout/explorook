@@ -1,5 +1,5 @@
 import * as path from "path";
-import { getStoreSafe } from './explorook-store';
+import {getStoreSafe} from "./explorook-store";
 
 const store = getStoreSafe();
 
@@ -16,14 +16,13 @@ export const getLibraryFolder = () => {
 
 export const getSettings = (): Settings => {
   const settings: any = {};
-  ['PerforceConnectionString', 'PerforceTimeout', 'PerforceUser'].forEach(key => {
-    const val = store.get(key, undefined)
-    settings[key] = val;
+  ["PerforceConnectionString", "PerforceTimeout", "PerforceUser"].forEach(key => {
+      settings[key] = store.get(key, undefined);
   });
   return settings as Settings;
-}
+};
 
 export const setSettings = (settings: Settings): Settings => {
-  Object.entries(settings).forEach(([key,val]) => store.set(key, val));
+  Object.entries(settings).forEach(([key, val]) => store.set(key, val));
   return  getSettings();
-}
+};
