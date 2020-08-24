@@ -14,13 +14,14 @@ import {
   GitProtocols,
   isGitFolderBiggerThanMaxSize as computeGitFoldersSize,
   removeGitReposFromStore,
-  TMP_DIR_PREFIX
+  TMP_DIR_PREFIX,
+  canAuthGitRepo
 } from "./git";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import {getLogger} from "./logger";
-import { size } from "lodash";
+import { setSettings, getSettings } from "./utils";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -64,6 +65,9 @@ export const resolvers = {
     },
   },
   Mutation: {
+    settings: (parent: any, args: { settings: Settings }): Settings => {
+      return setSettings(args.settings);
+    },
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       logger.debug("Adding repo", args.fullpath);
       return context.onAddRepoRequest(args.fullpath);
@@ -226,6 +230,20 @@ export const resolvers = {
     }
   },
   Query: {
+    async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
+      const promises = _.map(args.sources, async src => {
+        const res = await canAuthGitRepo(src.repoUrl)
+        return {
+          isSuccess: res.querySuccessful,
+          repoUrl: src.repoUrl,
+          protocol: res.protocol.toString()
+        }
+      });
+      return Promise.all(promises);
+    },
+    settings(): Settings {
+      return getSettings()
+    },
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
       return repo.toModel();

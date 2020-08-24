@@ -41,6 +41,30 @@ type Query {
     path: String!
   ): String
   getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
+  settings: Settings!
+  canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
+}
+
+input GitRepo {
+  repoUrl: String!
+}
+
+type CanAuthGitRepoResponse {
+  repoUrl: String!
+  isSuccess: Boolean!
+  reason: String
+}
+
+type Settings {
+  PerforceConnectionString: String
+  PerforceUser: String
+  PerforceTimeout: String
+}
+
+input SettingsInput {
+  PerforceConnectionString: String
+  PerforceUser: String
+  PerforceTimeout: String
 }
 
 type OperationStatus {
@@ -60,6 +84,7 @@ type Mutation {
   getGitRepo(sources: [GitSource]!): OperationStatus!
   getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
   changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
+  settings(settings: SettingsInput): Settings!
 }
 
 type PerforceView {

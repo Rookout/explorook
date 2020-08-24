@@ -3,6 +3,7 @@ import { platform } from 'os';
 import fs = require("fs");
 import util = require("util");
 const exec = util.promisify(childProcess.exec);
+const spawn = childProcess.spawn;
 const GitUrlParse = require("git-url-parse");
 import * as igit from "isomorphic-git";
 import _ = require("lodash");
@@ -214,6 +215,11 @@ const getProtocolFromStore = () => {
 };
 
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+    const canAuthRes = await canAuthGitRepo(repoUrl);
+    if (!canAuthRes.querySuccessful) {
+      throw new Error(`UNAUTHORIZED to remote ${repoUrl}`);
+    }
+    repoUrl = convertUrlToProtocol(repoUrl, canAuthRes.protocol);
     trackRemoteVersion([{ remote: repoUrl, url: repoUrl }])
     logger.debug("Cloning repo", {repoUrl, commit, isDuplicate});
     const protocol = getProtocolFromStore();
@@ -295,3 +301,36 @@ export function removeGitReposFromStore(folderNames: string[]) {
         folderDelete(dir, {debugLog: false});
     });
 }
+
+const lsRemote = async (url: string) => {
+  return new Promise((resolve) => {
+    // detached to block stdin - stdio: ignore to prevent stdout from blocking
+    const child = childProcess.spawn('git', ['ls-remote', url], { timeout: 10_000, detached: true, stdio: 'ignore' })
+    // if the process will need to ask for username+password from stdin it will get an error and exit with error code != 0
+    child.on('close', code => {
+      resolve(code === 0)
+    })
+    // somewhy spawn timeout doesnt work in all scenarios
+    setTimeout(() => resolve(false), 10_000)
+  })
+}
+
+export async function canAuthGitRepo(repoUrl: string): Promise<{ querySuccessful: boolean, protocol: GitProtocols }> {
+  const sshFormat = convertUrlToProtocol(repoUrl, GitProtocols.SSH);
+  const httpFormat = convertUrlToProtocol(repoUrl, GitProtocols.HTTPS);
+
+  if (await lsRemote(sshFormat)) {
+    return {
+      querySuccessful: true,
+      protocol: GitProtocols.SSH
+    }
+  } else if (await lsRemote(httpFormat)) {
+    return {
+      querySuccessful: true,
+      protocol: GitProtocols.HTTPS
+    }
+  }
+
+  return { querySuccessful: false, protocol: GitProtocols.DEFAULT };
+}
+

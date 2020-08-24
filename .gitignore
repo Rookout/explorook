@@ -9,3 +9,4 @@ installers
 analyze/
 
 *.p12
+src/test.js
