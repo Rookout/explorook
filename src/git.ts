@@ -304,12 +304,14 @@ export function removeGitReposFromStore(folderNames: string[]) {
 
 const lsRemote = async (url: string) => {
   return new Promise((resolve) => {
-    // timeout for sanity - detached to block stdin - stdio: ignore to prevent stdout from blocking
+    // detached to block stdin - stdio: ignore to prevent stdout from blocking
     const child = childProcess.spawn('git', ['ls-remote', url], { timeout: 10_000, detached: true, stdio: 'ignore' })
     // if the process will need to ask for username+password from stdin it will get an error and exit with error code != 0
     child.on('close', code => {
       resolve(code === 0)
     })
+    // somewhy spawn timeout doesnt work in all scenarios
+    setTimeout(() => resolve(false), 10_000)
   })
 }
 
