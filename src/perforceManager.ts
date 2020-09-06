@@ -298,7 +298,10 @@ let perforceManagerSingleton: IPerforceManager = null;
 
 const connectionString = store.get("PerforceConnectionString", null);
 const username = store.get("PerforceUser", null);
-const timeout = store.get("PerforceTimeout", 0);
+let timeout = Number(store.get("PerforceTimeout", 0));
+if (isNaN(timeout)) {
+  timeout = 0;
+}
 if (connectionString) {
     perforceManagerSingleton = new PerforceManager({connectionString, username, timeout});
 }

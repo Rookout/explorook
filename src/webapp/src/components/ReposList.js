@@ -65,10 +65,8 @@ export const ReposList = ({ ...props }) => {
         const win = remote.getCurrentWindow();
         const { filePaths } = await dialog.showOpenDialog(win, { properties: ["openDirectory", "multiSelections"] });
         if (!filePaths) { // user closed dialog without choosing
-          console.log("hedwig");
             return;
         }
-        console.log("hedwig", filePaths);
         for (let i = 0; i < filePaths.length; i++) {
             const folder = filePaths[i];
             const repoName = path.basename(folder);
