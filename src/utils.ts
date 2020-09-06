@@ -22,7 +22,22 @@ export const getSettings = (): Settings => {
   return settings as Settings;
 };
 
+const overrideGlobalName = (settingKey: string) => `${settingKey}-is-overriding-global`
+
 export const setSettings = (settings: Settings): Settings => {
-  Object.entries(settings).forEach(([key, val]) => store.set(key, val));
+  if (settings.OverrideGlobal) {
+    Object.entries(settings).forEach(([key, val]) => {
+      store.set(key, val)
+      store.set(overrideGlobalName(key), true)
+    });
+  } else {
+    Object.entries(settings).forEach(([key, val]) => {
+      if (store.get(overrideGlobalName(key), false)) {
+        console.info(`skipping setting ${key}:${val} since it was overriden locally`)
+        return
+      }
+      store.set(key, val)
+    });
+  }
   return  getSettings();
 };

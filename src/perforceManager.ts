@@ -308,15 +308,15 @@ export const getPerforceManagerSingleton = (): IPerforceManager => {
 };
 
 export const changePerforceManagerSingleton = (connectionOptions: PerforceConnectionOptions): boolean => {
-        perforceManagerSingleton = new PerforceManager(connectionOptions);
+  perforceManagerSingleton = new PerforceManager(connectionOptions);
 
-        // p4 client creation works no matter what so we make sure the client is created.
-        const client = perforceManagerSingleton.getCurrentClient();
-        if (!client) {
-            return false;
-        }
-        store.set("PerforceConnectionString", connectionOptions.connectionString);
-        store.set("PerforceTimeout", connectionOptions.timeout || 5000);
-        store.set("PerforceUser", connectionOptions.username || "");
-        return true;
+  // p4 client creation works no matter what so we make sure the client is created.
+  const client = perforceManagerSingleton.getCurrentClient();
+  if (!client) {
+      return false;
+  }
+  store.set("PerforceConnectionString", connectionOptions.connectionString);
+  store.set("PerforceTimeout", connectionOptions.timeout || 5000);
+  store.set("PerforceUser", connectionOptions.username || "");
+  return true;
 };

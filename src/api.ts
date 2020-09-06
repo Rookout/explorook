@@ -17,11 +17,12 @@ import {
   TMP_DIR_PREFIX,
   canAuthGitRepo
 } from "./git";
-import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
+import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView, changePerforceManagerSingleton} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import {getLogger} from "./logger";
 import { setSettings, getSettings } from "./utils";
+import { isNumber } from "lodash";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -230,6 +231,20 @@ export const resolvers = {
     }
   },
   Query: {
+    async testPerforceConnection(parent: any, args: { connectionSettings: Settings }): Promise<OperationStatus> {
+      try {
+        const isSuccess = changePerforceManagerSingleton({
+          connectionString: args.connectionSettings.PerforceConnectionString,
+          timeout: parseInt(args.connectionSettings.PerforceTimeout || "5000", 10),
+          username: args.connectionSettings.PerforceUser
+        });
+        return { isSuccess, reason: 'make sure your configuration is correct' }
+      } catch (e) {
+        getLogger("Perforce").error("Failed to connect to Perforce", { e, settings: args.connectionSettings });
+        console.error(`Failed to init perforce manager with port: ${args.connectionSettings}`);
+        return { isSuccess: false, reason: e?.toString() };
+      }
+    },
     async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
         const res = await canAuthGitRepo(src.repoUrl)
