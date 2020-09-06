@@ -22,7 +22,6 @@ import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import {getLogger} from "./logger";
 import { setSettings, getSettings } from "./utils";
-import { isNumber } from "lodash";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
