@@ -43,6 +43,7 @@ type Query {
   getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
   settings: Settings!
   canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
+  BitbucketOnPrem(url: String!, projectKey: String, repoName: String, commit: String, branch: String, accessToken: String!, filePath: String): BitbucketOnPrem!
 }
 
 input GitRepo {
@@ -95,4 +96,49 @@ type PerforceView {
 enum OnPremSourceProvider {
   git
   perforce
+}
+
+type BitbucketOnPrem {
+  fileTree: [String]
+  user: BitbucketUser
+  projects: [BitbucketProject]
+  repos: [BitbucketRepo]
+  commits: [BitbucketCommit]
+  branches: [BitbucketBranch]
+  file: String
+}
+
+type BitbucketUser {
+  name: String!
+  emailAddress: String!
+  id: Int!
+  displayName: String!
+  slug: String!
+}
+
+type BitbucketProject {
+  key: String!
+  name: String!
+  id: Int!
+}
+
+type BitbucketRepo {
+  slug: String!
+  id: Int!
+  project: BitbucketProject!
+  name: String!
+}
+
+type BitbucketCommit {
+  id: String!
+  committer: BitbucketUser!
+  message: String!
+  authorTimestamp: Float!
+}
+
+type BitbucketBranch {
+  id: String!
+  displayId: String!
+  latestCommit: String!
+  isDefault: Boolean!
 }

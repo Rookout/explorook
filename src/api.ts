@@ -2,9 +2,16 @@ import fs = require("fs");
 import _ = require("lodash");
 import {posix} from "path";
 import * as path from "path";
+import {
+  BitbucketOnPrem, getBranchesForRepoFromBitbucket, getCommitsForRepoFromBitbucket, getFileContentFromBitbucket,
+  getFileTreeFromBitbucket,
+  getProjectsFromBitbucket, getReposForProjectFromBitbucket,
+  getUserFromBitbucket
+} from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify} from "./exceptionManager";
 import {
+  canAuthGitRepo,
   checkGitRemote,
   cloneRemoteOriginWithCommit,
   convertUrlToProtocol,
@@ -14,14 +21,13 @@ import {
   GitProtocols,
   isGitFolderBiggerThanMaxSize as computeGitFoldersSize,
   removeGitReposFromStore,
-  TMP_DIR_PREFIX,
-  canAuthGitRepo
+  TMP_DIR_PREFIX
 } from "./git";
+import {getLogger} from "./logger";
 import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
-import {getLogger} from "./logger";
-import { setSettings, getSettings } from "./utils";
+import { getSettings, setSettings } from "./utils";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -44,7 +50,7 @@ export const resolvers = {
   Repository: {
     lastCommitDescription: async (parent: Repository) => {
       const repo = repStore.getRepositories().find((r) => r.id === parent.id);
-      logger.debug("Getting last commit description for repo", repo)
+      logger.debug("Getting last commit description for repo", repo);
       const lastCommit = await getLastCommitDescription(repo);
       if (!lastCommit) {
         logger.error("Last commit not found");
@@ -54,7 +60,7 @@ export const resolvers = {
         notify("no commit message on last commit", {
           metaData: { lastCommit }
         });
-        logger.warn("No commit message on last commit")
+        logger.warn("No commit message on last commit");
       }
       logger.debug("Found last commit", lastCommit);
       return {
@@ -98,7 +104,7 @@ export const resolvers = {
 
       const allSuccess = _.every(success, (s: boolean) => s);
 
-      if(!allSuccess) {
+      if (!allSuccess) {
         logger.error("Failed to create some of the depots");
       }
 
@@ -128,16 +134,16 @@ export const resolvers = {
       });
 
       // Delete the folder if it's too big
-      const sizeResult = await computeGitFoldersSize()
+      const sizeResult = await computeGitFoldersSize();
       if (!_.isEmpty(sizeResult.failedFolders)) {
-        logger.debug("Deleting failed folders", sizeResult.failedFolders)
+        logger.debug("Deleting failed folders", sizeResult.failedFolders);
         _.forEach(sizeResult.failedFolders, folderPath => {
           try {
             folderDelete(folderPath);
-          } catch(err) {
-            logger.error("Failed to delete folder", { folderPath, err })
+          } catch (err) {
+            logger.error("Failed to delete folder", { folderPath, err });
           }
-        })
+        });
       }
       if (sizeResult.sizeOverMaxSize) {
         logger.debug("Removing repos because git folder is too big", subDirs);
@@ -230,19 +236,19 @@ export const resolvers = {
     }
   },
   Query: {
-    async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
+    async canAuthGitRepos(parent: any, args: { sources: Array<{ repoUrl: string }> }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
-        const res = await canAuthGitRepo(src.repoUrl)
+        const res = await canAuthGitRepo(src.repoUrl);
         return {
           isSuccess: res.querySuccessful,
           repoUrl: src.repoUrl,
           protocol: res.protocol.toString()
-        }
+        };
       });
       return Promise.all(promises);
     },
     settings(): Settings {
-      return getSettings()
+      return getSettings();
     },
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
@@ -365,6 +371,25 @@ export const resolvers = {
 
       logger.debug("Getting file tree for depot", args);
       return await perforceManager.getDepotFileTree(args.depot, args.labelOrChangelist);
+    },
+    BitbucketOnPrem: async (parent: any,
+                            args: { url: string, projectKey: string, repoName: string,
+                              commit: string, branch: string, accessToken: string, filePath: string }):
+        Promise<BitbucketOnPrem> => {
+      return args;
     }
+  },
+  BitbucketOnPrem: {
+    fileTree: async (parent: BitbucketOnPrem): Promise<string[]> =>
+      getFileTreeFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName, parent.commit),
+    user: async (parent: BitbucketOnPrem): Promise<any> => getUserFromBitbucket(parent.url, parent.accessToken),
+    projects: async (parent: BitbucketOnPrem): Promise<any> => getProjectsFromBitbucket(parent.url, parent.accessToken),
+    repos: async (parent: BitbucketOnPrem): Promise<any> => getReposForProjectFromBitbucket(parent.url, parent.accessToken, parent.projectKey),
+    commits: async (parent: BitbucketOnPrem): Promise<any> =>
+        getCommitsForRepoFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName),
+    branches: async (parent: BitbucketOnPrem): Promise<any> =>
+        getBranchesForRepoFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName),
+    file: async (parent: BitbucketOnPrem): Promise<string> =>
+        getFileContentFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName, parent.commit, parent.filePath)
   }
 };
