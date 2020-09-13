@@ -1,18 +1,25 @@
 import _ = require("lodash");
+import {getStoreSafe} from "./explorook-store";
+import {getLogger} from "./logger";
+
+const store = getStoreSafe();
+const logger = getLogger("bitbucket");
 
 export interface BitbucketOnPrem {
     url: string;
-    commit?: string;
     projectKey: string;
     repoName: string;
-    branch?: string;
     accessToken: string;
+    commit?: string;
+    branch?: string;
     fileTree?: string[];
     filePath?: string;
 }
 
 export const getFileTreeFromBitbucket =
     async (url: string, accessToken: string, projectKey: string, repoName: string, commit: string): Promise<string[]> => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const fileQueryUrl = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/files?at=${commit}`;
     let isLastPage = false;
     let start = 0;
@@ -36,6 +43,8 @@ export const getFileTreeFromBitbucket =
 };
 
 export const getUserFromBitbucket = async (url: string, accessToken: string) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const userQuery = `${url}/rest/api/1.0/users`;
     const res = await fetch(userQuery, {
         headers: {
@@ -47,6 +56,8 @@ export const getUserFromBitbucket = async (url: string, accessToken: string) => 
 };
 
 export const getProjectsFromBitbucket = async (url: string, accessToken: string) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const projectsQuery = `${url}/rest/api/1.0/projects`;
     const res = await fetch(projectsQuery, {
         headers: {
@@ -58,6 +69,8 @@ export const getProjectsFromBitbucket = async (url: string, accessToken: string)
 };
 
 export const getReposForProjectFromBitbucket = async (url: string, accessToken: string, projectKey: string) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const reposQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos`;
     const res = await fetch(reposQuery, {
         headers: {
@@ -69,6 +82,8 @@ export const getReposForProjectFromBitbucket = async (url: string, accessToken: 
 };
 
 export const getCommitsForRepoFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const commitsQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/commits`;
     const res = await fetch(commitsQuery, {
         headers: {
@@ -80,6 +95,8 @@ export const getCommitsForRepoFromBitbucket = async (url: string, accessToken: s
 };
 
 export const getBranchesForRepoFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const branchesQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/branches`;
     const res = await fetch(branchesQuery, {
         headers: {
@@ -90,7 +107,10 @@ export const getBranchesForRepoFromBitbucket = async (url: string, accessToken: 
     return branches.values;
 };
 
-export const getFileContentFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string, commit: string, path: string) => {
+export const getFileContentFromBitbucket =
+    async (url: string, accessToken: string, projectKey: string, repoName: string, commit: string, path: string) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
     const fileQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/browse/${path}?at=${commit}`;
     const res = await fetch(fileQuery, {
         headers: {
@@ -103,4 +123,14 @@ export const getFileContentFromBitbucket = async (url: string, accessToken: stri
         fileContent += `${line.text}\r\n`;
     });
     return fileContent;
+};
+
+const validateUrlIsAuthorized = (url: string) => {
+    const serverList = store.get("BitbucketOnPremServers", []);
+    const isAuthorized = _.some(serverList, server => url.includes(server));
+    if (!isAuthorized) {
+        logger.warn("Got unauthorized url", { url, serverList });
+    }
+
+    return isAuthorized;
 };

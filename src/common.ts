@@ -7,6 +7,7 @@ interface Settings {
   PerforceConnectionString?: string;
   PerforceTimeout?: number;
   PerforceUser?: string;
+  BitbucketOnPremServers?: string[];
 }
 
 interface CanQueryRepoStatus {

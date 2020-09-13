@@ -60,12 +60,14 @@ type Settings {
   PerforceConnectionString: String
   PerforceUser: String
   PerforceTimeout: String
+  BitbucketOnPremServers: [String]
 }
 
 input SettingsInput {
   PerforceConnectionString: String
   PerforceUser: String
   PerforceTimeout: String
+  BitbucketOnPremServers: [String]
 }
 
 type OperationStatus {
