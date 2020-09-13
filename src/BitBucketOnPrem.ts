@@ -21,6 +21,7 @@ export const getFileTreeFromBitbucket =
     if (!validateUrlIsAuthorized(url)) return null;
 
     const fileQueryUrl = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/files?at=${commit}`;
+    logger.debug("Getting files for", {projectKey, repoName, url, commit});
     let isLastPage = false;
     let start = 0;
     let files: string[] = [];
@@ -37,14 +38,17 @@ export const getFileTreeFromBitbucket =
         isLastPage = fileList.isLastPage;
         if (!isLastPage) {
             start = fileList.nextPageStart;
+            logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
         }
     }
+    logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
     return files;
 };
 
 export const getUserFromBitbucket = async (url: string, accessToken: string) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
+    logger.debug("Getting user from url", {url});
     const userQuery = `${url}/rest/api/1.0/users`;
     const res = await fetch(userQuery, {
         headers: {
@@ -52,12 +56,14 @@ export const getUserFromBitbucket = async (url: string, accessToken: string) => 
         }
     });
     const users = await res.json();
+    logger.debug("finished getting users from url", {url, users});
     return users.values[0];
 };
 
 export const getProjectsFromBitbucket = async (url: string, accessToken: string) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
+    logger.debug("Getting projects for user", {url});
     const projectsQuery = `${url}/rest/api/1.0/projects`;
     const res = await fetch(projectsQuery, {
         headers: {
@@ -65,12 +71,14 @@ export const getProjectsFromBitbucket = async (url: string, accessToken: string)
         }
     });
     const projects = await res.json();
+    logger.debug("Finished getting projects for user", {projects});
     return projects.values;
 };
 
 export const getReposForProjectFromBitbucket = async (url: string, accessToken: string, projectKey: string) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
+    logger.debug("Getting repos", { url, projectKey });
     const reposQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos`;
     const res = await fetch(reposQuery, {
         headers: {
@@ -78,12 +86,14 @@ export const getReposForProjectFromBitbucket = async (url: string, accessToken: 
         }
     });
     const repos = await res.json();
+    logger.debug("Finished getting repos", { url, projectKey, repos});
     return repos.values;
 };
 
 export const getCommitsForRepoFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
+    logger.debug("Getting commits for repo", { url, projectKey, repoName });
     const commitsQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/commits`;
     const res = await fetch(commitsQuery, {
         headers: {
@@ -91,12 +101,14 @@ export const getCommitsForRepoFromBitbucket = async (url: string, accessToken: s
         }
     });
     const commits = await res.json();
+    logger.debug("Finished getting commits for repo", { url, projectKey, repoName, commits});
     return commits.values;
 };
 
 export const getBranchesForRepoFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
+    logger.debug("Getting branches for repo", { url, projectKey, repoName });
     const branchesQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/branches`;
     const res = await fetch(branchesQuery, {
         headers: {
@@ -104,6 +116,7 @@ export const getBranchesForRepoFromBitbucket = async (url: string, accessToken: 
         }
     });
     const branches = await res.json();
+    logger.debug("Finished getting branches for repo", { url, projectKey, repoName, branches });
     return branches.values;
 };
 
@@ -111,6 +124,7 @@ export const getFileContentFromBitbucket =
     async (url: string, accessToken: string, projectKey: string, repoName: string, commit: string, path: string) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
+    logger.debug("Getting file content", { url, projectKey, repoName, commit, path });
     const fileQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/browse/${path}?at=${commit}`;
     const res = await fetch(fileQuery, {
         headers: {
@@ -122,6 +136,7 @@ export const getFileContentFromBitbucket =
     _.forEach(file.lines, line => {
         fileContent += `${line.text}\r\n`;
     });
+    logger.debug("Finished getting file content", { url, projectKey, repoName, commit, path });
     return fileContent;
 };
 
