@@ -241,7 +241,7 @@ export const resolvers = {
       } catch (e) {
         getLogger("Perforce").error("Failed to connect to Perforce", { e, settings: args.connectionSettings });
         console.error(`Failed to init perforce manager with port: ${args.connectionSettings}`);
-        return { isSuccess: false, reason: e?.toString() };
+        return { isSuccess: false, reason: e?.toString() || "an unexpected error occurred" };
       }
     },
     async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
