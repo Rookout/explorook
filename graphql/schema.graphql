@@ -72,6 +72,10 @@ input SettingsInput {
   PerforceConnectionString: String
   PerforceUser: String
   PerforceTimeout: String
+  """use this flag to signal that the provided settings should override any
+  global settings provided by the admin.
+  When a user edits his own local settings - set this flag to true
+  When applying the global settings of the organization - set this flag to false"""
   OverrideGlobal: Boolean
 }
 
