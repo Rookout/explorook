@@ -3,9 +3,14 @@ import _ = require("lodash");
 import {posix} from "path";
 import * as path from "path";
 import {
-  BitbucketOnPrem, getBranchesForRepoFromBitbucket, getCommitsForRepoFromBitbucket, getFileContentFromBitbucket,
+  BitbucketOnPrem,
+  BitBucketOnPremInput,
+  getBranchesForRepoFromBitbucket,
+  getCommitsForRepoFromBitbucket,
+  getFileContentFromBitbucket,
   getFileTreeFromBitbucket,
-  getProjectsFromBitbucket, getReposForProjectFromBitbucket,
+  getProjectsFromBitbucket,
+  getReposForProjectFromBitbucket,
   getUserFromBitbucket
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
@@ -372,24 +377,22 @@ export const resolvers = {
       logger.debug("Getting file tree for depot", args);
       return await perforceManager.getDepotFileTree(args.depot, args.labelOrChangelist);
     },
-    BitbucketOnPrem: async (parent: any,
-                            args: { url: string, projectKey: string, repoName: string,
-                              commit: string, branch: string, accessToken: string, filePath: string }):
-        Promise<BitbucketOnPrem> => {
-      return args;
+    BitbucketOnPrem: async (parent: any):
+        Promise<any> => {
+      return {};
     }
   },
   BitbucketOnPrem: {
-    fileTree: async (parent: BitbucketOnPrem): Promise<string[]> =>
-      getFileTreeFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName, parent.commit),
-    user: async (parent: BitbucketOnPrem): Promise<any> => getUserFromBitbucket(parent.url, parent.accessToken),
-    projects: async (parent: BitbucketOnPrem): Promise<any> => getProjectsFromBitbucket(parent.url, parent.accessToken),
-    repos: async (parent: BitbucketOnPrem): Promise<any> => getReposForProjectFromBitbucket(parent.url, parent.accessToken, parent.projectKey),
-    commits: async (parent: BitbucketOnPrem): Promise<any> =>
-        getCommitsForRepoFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName),
-    branches: async (parent: BitbucketOnPrem): Promise<any> =>
-        getBranchesForRepoFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName),
-    file: async (parent: BitbucketOnPrem): Promise<string> =>
-        getFileContentFromBitbucket(parent.url, parent.accessToken, parent.projectKey, parent.repoName, parent.commit, parent.filePath)
+    fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
+      getFileTreeFromBitbucket(args),
+    user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),
+    projects: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getProjectsFromBitbucket(args),
+    repos: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getReposForProjectFromBitbucket(args),
+    commits: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
+        getCommitsForRepoFromBitbucket(args),
+    branches: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
+        getBranchesForRepoFromBitbucket(args),
+    file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
+        getFileContentFromBitbucket(args)
   }
 };

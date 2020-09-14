@@ -7,17 +7,21 @@ const logger = getLogger("bitbucket");
 
 export interface BitbucketOnPrem {
     url: string;
-    projectKey: string;
-    repoName: string;
     accessToken: string;
+    projectKey?: string;
+    repoName?: string;
     commit?: string;
     branch?: string;
     fileTree?: string[];
     filePath?: string;
 }
 
+export interface BitBucketOnPremInput {
+    args: BitbucketOnPrem;
+}
+
 export const getFileTreeFromBitbucket =
-    async (url: string, accessToken: string, projectKey: string, repoName: string, commit: string): Promise<string[]> => {
+    async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     const fileQueryUrl = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/files?at=${commit}`;
@@ -45,7 +49,7 @@ export const getFileTreeFromBitbucket =
     return files;
 };
 
-export const getUserFromBitbucket = async (url: string, accessToken: string) => {
+export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting user from url", {url});
@@ -60,7 +64,7 @@ export const getUserFromBitbucket = async (url: string, accessToken: string) => 
     return users.values[0];
 };
 
-export const getProjectsFromBitbucket = async (url: string, accessToken: string) => {
+export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting projects for user", {url});
@@ -75,7 +79,7 @@ export const getProjectsFromBitbucket = async (url: string, accessToken: string)
     return projects.values;
 };
 
-export const getReposForProjectFromBitbucket = async (url: string, accessToken: string, projectKey: string) => {
+export const getReposForProjectFromBitbucket = async ({url, accessToken, projectKey}: BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting repos", { url, projectKey });
@@ -90,7 +94,7 @@ export const getReposForProjectFromBitbucket = async (url: string, accessToken: 
     return repos.values;
 };
 
-export const getCommitsForRepoFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string) => {
+export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName} : BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting commits for repo", { url, projectKey, repoName });
@@ -105,7 +109,7 @@ export const getCommitsForRepoFromBitbucket = async (url: string, accessToken: s
     return commits.values;
 };
 
-export const getBranchesForRepoFromBitbucket = async (url: string, accessToken: string, projectKey: string, repoName: string) => {
+export const getBranchesForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting branches for repo", { url, projectKey, repoName });
@@ -120,12 +124,11 @@ export const getBranchesForRepoFromBitbucket = async (url: string, accessToken: 
     return branches.values;
 };
 
-export const getFileContentFromBitbucket =
-    async (url: string, accessToken: string, projectKey: string, repoName: string, commit: string, path: string) => {
+export const getFileContentFromBitbucket = async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
-    logger.debug("Getting file content", { url, projectKey, repoName, commit, path });
-    const fileQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/browse/${path}?at=${commit}`;
+    logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
+    const fileQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/browse/${filePath}?at=${commit}`;
     const res = await fetch(fileQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -136,7 +139,7 @@ export const getFileContentFromBitbucket =
     _.forEach(file.lines, line => {
         fileContent += `${line.text}\r\n`;
     });
-    logger.debug("Finished getting file content", { url, projectKey, repoName, commit, path });
+    logger.debug("Finished getting file content", { url, projectKey, repoName, commit, filePath });
     return fileContent;
 };
 
