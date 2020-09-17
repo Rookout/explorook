@@ -3,9 +3,9 @@ import _ = require("lodash");
 import {posix} from "path";
 import * as path from "path";
 import {
-  BitbucketOnPrem,
   BitBucketOnPremInput,
   getBranchesForRepoFromBitbucket,
+  getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
   getFileContentFromBitbucket,
   getFileTreeFromBitbucket,
@@ -390,6 +390,7 @@ export const resolvers = {
     repos: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getReposForProjectFromBitbucket(args),
     commits: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
         getCommitsForRepoFromBitbucket(args),
+    commit: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getCommitDetailsFromBitbucket(args),
     branches: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
         getBranchesForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>

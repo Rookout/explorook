@@ -116,6 +116,7 @@ type BitbucketOnPrem {
   projects(args: BitbucketInput!): [BitbucketProject]
   repos(args: BitbucketInput!): [BitbucketRepo]
   commits(args: BitbucketInput!): [BitbucketCommit]
+  commit(args: BitbucketInput!): BitbucketCommit
   branches(args: BitbucketInput!): [BitbucketBranch]
   file(args: BitbucketInput!): String
 }

@@ -143,6 +143,21 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
     return fileContent;
 };
 
+export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem) => {
+    if (!validateUrlIsAuthorized(url)) return null;
+
+    logger.debug("Getting commit info", { url, projectKey, repoName, commit });
+    const commitQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/commits/${commit}`;
+    const res = await fetch(commitQuery, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+
+    logger.debug("Finished getting commit info", {url, projectKey, repoName, commit, res});
+    return res.json();
+};
+
 const validateUrlIsAuthorized = (url: string) => {
     const serverList = store.get("BitbucketOnPremServers", []);
     const isAuthorized = _.some(serverList, server => url.includes(server));
