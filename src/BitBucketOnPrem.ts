@@ -1,4 +1,5 @@
 import _ = require("lodash");
+import UrlAssembler = require("url-assembler");
 import {getStoreSafe} from "./explorook-store";
 import {getLogger} from "./logger";
 
@@ -24,13 +25,19 @@ export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
     if (!validateUrlIsAuthorized(url)) return null;
 
-    const fileQueryUrl = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/files?at=${commit}`;
+    const fileTreeUrl = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/files`).param({
+        projectKey,
+        repoName
+    }).query({
+        at: commit
+    }).toString();
+
     logger.debug("Getting files for", {projectKey, repoName, url, commit});
     let isLastPage = false;
     let start = 0;
     let files: string[] = [];
     while (!isLastPage) {
-        const res = await fetch(`${fileQueryUrl}&start=${start}`, {
+        const res = await fetch(`${fileTreeUrl}&start=${start}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
@@ -53,7 +60,7 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting user from url", {url});
-    const userQuery = `${url}/rest/api/1.0/users`;
+    const userQuery = UrlAssembler(`${url}/rest/api/1.0/users`).toString();
     const res = await fetch(userQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -68,7 +75,7 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting projects for user", {url});
-    const projectsQuery = `${url}/rest/api/1.0/projects`;
+    const projectsQuery = UrlAssembler(`${url}/rest/api/1.0/projects`).toString();
     const res = await fetch(projectsQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -83,7 +90,9 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting repos", { url, projectKey });
-    const reposQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos`;
+    const reposQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos`).param({
+        projectKey
+    }).toString();
     const res = await fetch(reposQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -94,11 +103,14 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
     return repos.values;
 };
 
-export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName} : BitbucketOnPrem) => {
+export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting commits for repo", { url, projectKey, repoName });
-    const commitsQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/commits`;
+    const commitsQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/commits`).param({
+        projectKey,
+        repoName
+    }).toString();
     const res = await fetch(commitsQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -113,7 +125,10 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting branches for repo", { url, projectKey, repoName });
-    const branchesQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/branches`;
+    const branchesQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/branches`).param({
+        projectKey,
+        repoName
+    }).toString();
     const res = await fetch(branchesQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -128,7 +143,13 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
-    const fileQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/browse/${filePath}?at=${commit}`;
+    const fileQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/:filePath`).param({
+        projectKey,
+        repoName,
+        filePath
+    }).query({
+        at: commit
+    }).toString();
     const res = await fetch(fileQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -147,7 +168,11 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting commit info", { url, projectKey, repoName, commit });
-    const commitQuery = `${url}/rest/api/1.0/projects/${projectKey}/repos/${repoName}/commits/${commit}`;
+    const commitQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/commits/:commit`).param({
+        projectKey,
+        repoName,
+        commit
+    });
     const res = await fetch(commitQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
