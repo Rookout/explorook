@@ -5,8 +5,9 @@ interface OperationStatus {
 
 interface Settings {
   PerforceConnectionString?: string;
-  PerforceTimeout?: number;
+  PerforceTimeout?: string;
   PerforceUser?: string;
+  OverrideGlobal?: boolean;
 }
 
 interface CanQueryRepoStatus {
