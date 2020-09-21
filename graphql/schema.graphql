@@ -43,7 +43,14 @@ type Query {
   getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
   settings: Settings!
   canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
+  testPerforceConnection(connectionSettings: PerforceConnectionSettings!): OperationStatus!
   BitbucketOnPrem: BitbucketOnPrem!
+}
+
+input PerforceConnectionSettings {
+  PerforceConnectionString: String
+  PerforceUser: String
+  PerforceTimeout: String
 }
 
 input BitbucketInput {
@@ -78,6 +85,11 @@ input SettingsInput {
   PerforceUser: String
   PerforceTimeout: String
   BitbucketOnPremServers: [String]
+  """use this flag to signal that the provided settings should override any
+  global settings provided by the admin.
+  When a user edits his own local settings - set this flag to true
+  When applying the global settings of the organization - set this flag to false"""
+  OverrideGlobal: Boolean
 }
 
 type OperationStatus {

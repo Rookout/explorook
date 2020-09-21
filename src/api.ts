@@ -29,7 +29,7 @@ import {
   TMP_DIR_PREFIX
 } from "./git";
 import {getLogger} from "./logger";
-import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
+import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView, changePerforceManagerSingleton} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
@@ -241,7 +241,21 @@ export const resolvers = {
     }
   },
   Query: {
-    async canAuthGitRepos(parent: any, args: { sources: Array<{ repoUrl: string }> }): Promise<CanQueryRepoStatus[]> {
+    async testPerforceConnection(parent: any, args: { connectionSettings: Settings }): Promise<OperationStatus> {
+      try {
+        const isSuccess = changePerforceManagerSingleton({
+          connectionString: args.connectionSettings.PerforceConnectionString,
+          timeout: parseInt(args.connectionSettings.PerforceTimeout || "5000", 10),
+          username: args.connectionSettings.PerforceUser
+        });
+        return { isSuccess, reason: "make sure your configuration is correct" }
+      } catch (e) {
+        getLogger("Perforce").error("Failed to connect to Perforce", { e, settings: args.connectionSettings });
+        console.error(`Failed to init perforce manager with port: ${args.connectionSettings}`);
+        return { isSuccess: false, reason: e?.toString() || "an unexpected error occurred" };
+      }
+    },
+    async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
         const res = await canAuthGitRepo(src.repoUrl);
         return {

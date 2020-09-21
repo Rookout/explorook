@@ -35,12 +35,28 @@ const areOnPremServersValid = (servers: string[]) => {
     }
 };
 
+const overrideGlobalName = (settingKey: string) => `${settingKey}-is-overriding-global`;
+
 export const setSettings = (settings: Settings): Settings => {
-  if (!areOnPremServersValid(settings?.BitbucketOnPremServers)) {
-      leaveBreadcrumb("on prem server parsing", {settings});
-      notify(new Error("Failed to parse some bitbucket on prem servers"));
-      settings = _.omit(settings, "BitbucketOnPremServers");
-  }
-  Object.entries(settings).forEach(([key, val]) => store.set(key, val));
-  return  getSettings();
+    if (!areOnPremServersValid(settings?.BitbucketOnPremServers)) {
+        leaveBreadcrumb("on prem server parsing", {settings});
+        notify(new Error("Failed to parse some bitbucket on prem servers"));
+        settings = _.omit(settings, "BitbucketOnPremServers");
+    }
+
+    if (settings.OverrideGlobal) {
+        Object.entries(settings).forEach(([key, val]) => {
+            store.set(key, val);
+            store.set(overrideGlobalName(key), true);
+        });
+    } else {
+        Object.entries(settings).forEach(([key, val]) => {
+            if (store.get(overrideGlobalName(key), false) || key === "BitbucketOnPremServers") {
+                console.info(`skipping setting ${key}:${val} since it was overriden locally`);
+                return;
+            }
+            store.set(key, val);
+        });
+    }
+    return  getSettings();
 };
