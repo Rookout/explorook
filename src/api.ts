@@ -19,17 +19,15 @@ import {
   canAuthGitRepo,
   checkGitRemote,
   cloneRemoteOriginWithCommit,
-  convertUrlToProtocol,
   getCommitIfRightOrigin,
   getLastCommitDescription as getLastCommitDescription,
   GIT_ROOT,
-  GitProtocols,
   isGitFolderBiggerThanMaxSize as computeGitFoldersSize,
   removeGitReposFromStore,
   TMP_DIR_PREFIX
 } from "./git";
 import {getLogger} from "./logger";
-import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView, changePerforceManagerSingleton} from "./perforceManager";
+import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
@@ -248,7 +246,7 @@ export const resolvers = {
           timeout: parseInt(args.connectionSettings.PerforceTimeout || "5000", 10),
           username: args.connectionSettings.PerforceUser
         });
-        return { isSuccess, reason: "make sure your configuration is correct" }
+        return { isSuccess, reason: "make sure your configuration is correct" };
       } catch (e) {
         getLogger("Perforce").error("Failed to connect to Perforce", { e, settings: args.connectionSettings });
         console.error(`Failed to init perforce manager with port: ${args.connectionSettings}`);

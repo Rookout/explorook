@@ -24,26 +24,9 @@ export const getSettings = (): Settings => {
   return settings as Settings;
 };
 
-const validHttpRegex = /^https?:\/\/(([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|([\d\w\-_]*(\.[\d\w\-_]+)*))(:([0-9]*))?(\/[A-Za-z0-9]*\/?)*$/;
-
-const areOnPremServersValid = (servers: string[]) => {
-    if (!_.isEmpty(servers)) {
-        if (_.some(servers, server => !validHttpRegex.test(server))) {
-            return false;
-        }
-        return true;
-    }
-};
-
 const overrideGlobalName = (settingKey: string) => `${settingKey}-is-overriding-global`;
 
 export const setSettings = (settings: Settings): Settings => {
-    if (!areOnPremServersValid(settings?.BitbucketOnPremServers)) {
-        leaveBreadcrumb("on prem server parsing", {settings});
-        notify(new Error("Failed to parse some bitbucket on prem servers"));
-        settings = _.omit(settings, "BitbucketOnPremServers");
-    }
-
     if (settings.OverrideGlobal) {
         Object.entries(settings).forEach(([key, val]) => {
             store.set(key, val);
@@ -51,7 +34,7 @@ export const setSettings = (settings: Settings): Settings => {
         });
     } else {
         Object.entries(settings).forEach(([key, val]) => {
-            if (store.get(overrideGlobalName(key), false) || key === "BitbucketOnPremServers") {
+            if (store.get(overrideGlobalName(key), false)) {
                 console.info(`skipping setting ${key}:${val} since it was overriden locally`);
                 return;
             }
