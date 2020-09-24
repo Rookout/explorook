@@ -84,6 +84,8 @@ input SettingsInput {
   PerforceConnectionString: String
   PerforceUser: String
   PerforceTimeout: String
+  """We are using the validateBitbucketServerHttps middleware
+  that runs before the request reaches the resolver to make sure  that all urls are valid"""
   BitbucketOnPremServers: [String]
   """use this flag to signal that the provided settings should override any
   global settings provided by the admin.
