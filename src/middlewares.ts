@@ -1,11 +1,11 @@
 import chromeOpn = require("chrome-opn");
-import validateUrl = require("valid-url");
 import { ipcRenderer, shell } from "electron";
 import { RequestHandler } from "express";
 import { GraphQLError } from "graphql";
 import { IMiddlewareFunction } from "graphql-middleware/dist/types";
 import _ = require("lodash");
 import { posix } from "path";
+import validateUrl = require("valid-url");
 import {encryptWithPublicKey} from "./authentication";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
@@ -53,6 +53,17 @@ export const filterDirTraversal: IMiddlewareFunction = (resolve, parent, args: {
   if (isDirTraversal(repo.fullpath, targetPath)) {
     throw new GraphQLError(`directory traversal detected. "${targetPath}" does not start with ${repo.fullpath}`);
   }
+  return resolve(parent, args, context, info);
+};
+
+export const validateBitbucketServerHttps: IMiddlewareFunction = (resolve, parent, args: { settings: Settings }, context, info) => {
+  const { BitbucketOnPremServers } = args?.settings || {};
+  if (!_.isEmpty(BitbucketOnPremServers)) {
+    if (_.some(BitbucketOnPremServers, server => !validateUrl.isWebUri(server))) {
+      throw new GraphQLError("Some of the given bitbucket on prem servers are of invalid format");
+    }
+  }
+
   return resolve(parent, args, context, info);
 };
 

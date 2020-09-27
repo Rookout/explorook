@@ -12,7 +12,8 @@ import {
   configureFirstTimeSettings,
   filterDirTraversal,
   logMiddleware,
-  resolveRepoFromId
+  resolveRepoFromId,
+  validateBitbucketServerHttps
 } from "./middlewares";
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
@@ -58,7 +59,7 @@ export const start = (options: StartOptions): Promise<any> => {
     resolvers,
     typeDefs,
     context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
-    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal]
+    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps]
   });
 
   server.express.use(cors(corsOptions));

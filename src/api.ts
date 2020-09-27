@@ -2,26 +2,35 @@ import fs = require("fs");
 import _ = require("lodash");
 import {posix} from "path";
 import * as path from "path";
+import {
+  BitBucketOnPremInput,
+  getBranchesForRepoFromBitbucket,
+  getCommitDetailsFromBitbucket,
+  getCommitsForRepoFromBitbucket,
+  getFileContentFromBitbucket,
+  getFileTreeFromBitbucket,
+  getProjectsFromBitbucket,
+  getReposForProjectFromBitbucket,
+  getUserFromBitbucket
+} from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify} from "./exceptionManager";
 import {
+  canAuthGitRepo,
   checkGitRemote,
   cloneRemoteOriginWithCommit,
-  convertUrlToProtocol,
   getCommitIfRightOrigin,
   getLastCommitDescription as getLastCommitDescription,
   GIT_ROOT,
-  GitProtocols,
   isGitFolderBiggerThanMaxSize as computeGitFoldersSize,
   removeGitReposFromStore,
-  TMP_DIR_PREFIX,
-  canAuthGitRepo
+  TMP_DIR_PREFIX
 } from "./git";
-import {getPerforceManagerSingleton, IPerforceRepo, IPerforceView, changePerforceManagerSingleton} from "./perforceManager";
+import {getLogger} from "./logger";
+import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
-import {getLogger} from "./logger";
-import { setSettings, getSettings } from "./utils";
+import { getSettings, setSettings } from "./utils";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -44,7 +53,7 @@ export const resolvers = {
   Repository: {
     lastCommitDescription: async (parent: Repository) => {
       const repo = repStore.getRepositories().find((r) => r.id === parent.id);
-      logger.debug("Getting last commit description for repo", repo)
+      logger.debug("Getting last commit description for repo", repo);
       const lastCommit = await getLastCommitDescription(repo);
       if (!lastCommit) {
         logger.error("Last commit not found");
@@ -54,7 +63,7 @@ export const resolvers = {
         notify("no commit message on last commit", {
           metaData: { lastCommit }
         });
-        logger.warn("No commit message on last commit")
+        logger.warn("No commit message on last commit");
       }
       logger.debug("Found last commit", lastCommit);
       return {
@@ -98,7 +107,7 @@ export const resolvers = {
 
       const allSuccess = _.every(success, (s: boolean) => s);
 
-      if(!allSuccess) {
+      if (!allSuccess) {
         logger.error("Failed to create some of the depots");
       }
 
@@ -128,16 +137,16 @@ export const resolvers = {
       });
 
       // Delete the folder if it's too big
-      const sizeResult = await computeGitFoldersSize()
+      const sizeResult = await computeGitFoldersSize();
       if (!_.isEmpty(sizeResult.failedFolders)) {
-        logger.debug("Deleting failed folders", sizeResult.failedFolders)
+        logger.debug("Deleting failed folders", sizeResult.failedFolders);
         _.forEach(sizeResult.failedFolders, folderPath => {
           try {
             folderDelete(folderPath);
-          } catch(err) {
-            logger.error("Failed to delete folder", { folderPath, err })
+          } catch (err) {
+            logger.error("Failed to delete folder", { folderPath, err });
           }
-        })
+        });
       }
       if (sizeResult.sizeOverMaxSize) {
         logger.debug("Removing repos because git folder is too big", subDirs);
@@ -237,7 +246,7 @@ export const resolvers = {
           timeout: parseInt(args.connectionSettings.PerforceTimeout || "5000", 10),
           username: args.connectionSettings.PerforceUser
         });
-        return { isSuccess, reason: 'make sure your configuration is correct' }
+        return { isSuccess, reason: "make sure your configuration is correct" };
       } catch (e) {
         getLogger("Perforce").error("Failed to connect to Perforce", { e, settings: args.connectionSettings });
         console.error(`Failed to init perforce manager with port: ${args.connectionSettings}`);
@@ -246,17 +255,17 @@ export const resolvers = {
     },
     async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
-        const res = await canAuthGitRepo(src.repoUrl)
+        const res = await canAuthGitRepo(src.repoUrl);
         return {
           isSuccess: res.querySuccessful,
           repoUrl: src.repoUrl,
           protocol: res.protocol.toString()
-        }
+        };
       });
       return Promise.all(promises);
     },
     settings(): Settings {
-      return getSettings()
+      return getSettings();
     },
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
@@ -379,6 +388,24 @@ export const resolvers = {
 
       logger.debug("Getting file tree for depot", args);
       return await perforceManager.getDepotFileTree(args.depot, args.labelOrChangelist);
+    },
+    BitbucketOnPrem: async (parent: any):
+        Promise<any> => {
+      return {};
     }
+  },
+  BitbucketOnPrem: {
+    fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
+      getFileTreeFromBitbucket(args),
+    user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),
+    projects: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getProjectsFromBitbucket(args),
+    repos: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getReposForProjectFromBitbucket(args),
+    commits: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
+        getCommitsForRepoFromBitbucket(args),
+    commit: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getCommitDetailsFromBitbucket(args),
+    branches: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
+        getBranchesForRepoFromBitbucket(args),
+    file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
+        getFileContentFromBitbucket(args)
   }
 };

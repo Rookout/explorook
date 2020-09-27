@@ -8,6 +8,7 @@ interface Settings {
   PerforceTimeout?: string;
   PerforceUser?: string;
   OverrideGlobal?: boolean;
+  BitbucketOnPremServers?: string[];
 }
 
 interface CanQueryRepoStatus {
