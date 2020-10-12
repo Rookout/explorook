@@ -26,7 +26,7 @@ export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
     if (!validateUrlIsAuthorized(url)) return null;
 
-    const fileTreeUrl = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/files`).param({
+    const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
         projectKey,
         repoName
     }).query({
@@ -61,7 +61,7 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting user from url", {url});
-    const userQuery = UrlAssembler(`${url}/rest/api/1.0/users`).toString();
+    const userQuery = UrlAssembler(url).template("/rest/api/1.0/users").toString();
     const res = await fetch(userQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -76,7 +76,7 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting projects for user", {url});
-    const projectsQuery = UrlAssembler(`${url}/rest/api/1.0/projects`).toString();
+    const projectsQuery = UrlAssembler(url).template("/rest/api/1.0/projects").toString();
     const res = await fetch(projectsQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
@@ -100,7 +100,7 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting repos", { url, projectKey });
-    const reposQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos`).param({
+    const reposQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos").param({
         projectKey
     }).toString();
     const res = await fetch(reposQuery, {
@@ -117,7 +117,7 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting commits for repo", { url, projectKey, repoName });
-    const commitsQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/commits`).param({
+    const commitsQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/commits").param({
         projectKey,
         repoName
     }).toString();
@@ -135,7 +135,7 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting branches for repo", { url, projectKey, repoName });
-    const branchesQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/branches`).param({
+    const branchesQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/branches").param({
         projectKey,
         repoName
     }).toString();
@@ -153,7 +153,7 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
-    const fileQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/:filePath`).param({
+    const fileQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/:filePath").param({
         projectKey,
         repoName,
         filePath
@@ -178,7 +178,7 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting commit info", { url, projectKey, repoName, commit });
-    const commitQuery = UrlAssembler(`${url}/rest/api/1.0/projects/:projectKey/repos/:repoName/commits/:commit`).param({
+    const commitQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/commits/:commit").param({
         projectKey,
         repoName,
         commit
