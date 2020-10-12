@@ -153,10 +153,9 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
-    const fileQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/:filePath").param({
+    const fileQuery = UrlAssembler(url).template(`/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/${filePath}`).param({
         projectKey,
-        repoName,
-        filePath
+        repoName
     }).query({
         at: commit
     }).toString();
