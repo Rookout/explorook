@@ -145,8 +145,8 @@ type BitbucketUser {
 
 type BitbucketProject {
   key: String!
-  name: String!
-  id: Int!
+  name: String
+  id: Int
 }
 
 type BitbucketRepo {

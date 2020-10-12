@@ -1,5 +1,6 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
+import {notify} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
 import {getLogger} from "./logger";
 
@@ -81,9 +82,18 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
             Authorization: `Bearer ${accessToken}`
         }
     });
-    const projects = await res.json();
+    let projects = []
+    try {
+        projects = await res.json();
+    } catch (e) {
+        logger.error("Failed to parse bitbucket on prem projects", {
+            e,
+            res
+        });
+        notify(e);
+    }
     logger.debug("Finished getting projects for user", {projects});
-    return projects.values;
+    return projects?.values || [];
 };
 
 export const getReposForProjectFromBitbucket = async ({url, accessToken, projectKey}: BitbucketOnPrem) => {
