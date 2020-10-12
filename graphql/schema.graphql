@@ -137,16 +137,16 @@ type BitbucketOnPrem {
 
 type BitbucketUser {
   name: String!
-  emailAddress: String!
-  id: Int!
-  displayName: String!
-  slug: String!
+  emailAddress: String
+  id: Int
+  displayName: String
+  slug: String
 }
 
 type BitbucketProject {
   key: String!
-  name: String!
-  id: Int!
+  name: String
+  id: Int
 }
 
 type BitbucketRepo {
