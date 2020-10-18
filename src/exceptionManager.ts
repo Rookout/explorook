@@ -1,28 +1,32 @@
 import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
 const bugsnag = require("@bugsnag/js");
+const electron = require('electron');
+const app = electron.app || electron.remote.app;
 
 let exceptionManagerInstance: Client;
 
-export const initExceptionManager = (releaseStage: string, appVersion: string, getUserID: () => string) => {
+export const initExceptionManager = (getUserID: () => string) => {
     if (!exceptionManagerInstance) {
-        exceptionManagerInstance = bugsnag({
-            onUncaughtException: (err: any) => {
-              // override default behaviour to not crash
-              // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
-              console.log(err)
-            },
-            apiKey: "6e673fda179162f48a2c6b5d159552d2",
-            appType: "explorook-electron",
-            appVersion,
-            releaseStage,
-            beforeSend: (report: any) => {
-              if (getUserID) {
-                report.updateMetaData("user", {
-                  userID: getUserID()
-                });
-              }
-            }
-        }, null);
+      const releaseStage = app.isPackaged ? 'production' : 'development';
+      exceptionManagerInstance = bugsnag({
+        onUncaughtException: (err: any) => {
+          // override default behaviour to not crash
+          // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
+          console.log(err)
+        },
+        projectRoot: app.getAppPath(),
+        apiKey: "6e673fda179162f48a2c6b5d159552d2",
+        appType: "explorook-electron",
+        appVersion: app.getVersion(),
+        releaseStage,
+        beforeSend: (report: any) => {
+          if (getUserID) {
+            report.updateMetaData("user", {
+              userID: getUserID()
+            });
+          }
+        }
+      }, null);
     }
     return exceptionManagerInstance;
 };
@@ -46,7 +50,6 @@ export class Logger {
     console.warn(message);
   }
   error(message?: any) {
-    exceptionManagerInstance?.notify(message);
     console.error(message);
   }
   debug(message: string) {
