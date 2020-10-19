@@ -1,12 +1,16 @@
 import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
 const bugsnag = require("@bugsnag/js");
 const electron = require('electron');
-const app = electron.app || electron.remote.app;
+let app: Electron.App;
+// check if not running in headless mode (plain nodejs process)
+if (typeof electron !== 'string') {
+  app = electron.app || electron.remote.app;
+}
 
 let exceptionManagerInstance: Client;
 
 export const initExceptionManager = (getUserID: () => string) => {
-    if (!exceptionManagerInstance) {
+    if (!exceptionManagerInstance && app) {
       const releaseStage = app.isPackaged ? 'production' : 'development';
       exceptionManagerInstance = bugsnag({
         onUncaughtException: (err: any) => {
