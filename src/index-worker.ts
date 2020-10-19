@@ -9,7 +9,6 @@ import {getLogger, setLogLevel} from "./logger";
 import {changePerforceManagerSingleton, PerforceConnectionOptions} from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
-import {getStoreSafe} from "./explorook-store";
 
 let mainWindowId = -1;
 
@@ -29,10 +28,7 @@ const isPortInUse = (port: number): Promise<boolean> => new Promise<boolean>((re
 
 ipcRenderer.once("exception-manager-enabled-changed", (e: IpcRendererEvent, enabled: boolean) => {
     if (enabled) {
-        initExceptionManager(
-          remote.process.env.development ? "development" : "production",
-          remote.app.getVersion(),
-          () => ipcRenderer.sendSync("get-user-id"));
+        initExceptionManager(() => ipcRenderer.sendSync("get-user-id"));
     }
 });
 

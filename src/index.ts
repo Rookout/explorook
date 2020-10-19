@@ -147,7 +147,7 @@ function registerIpc() {
   });
   ipcMain.on("signed-eula", (e: IpcMainEvent) => {
     if (dataCollectionEnabled || process.env.development) {
-      initExceptionManager(process.env.development ? "development" : "production", app.getVersion(), () => userId);
+      initExceptionManager(() => userId);
       initAnalytics();
       track("signed-eula");
     }
@@ -222,7 +222,7 @@ function main() {
   dataCollectionEnabled = store.get("sentry-enabled", true);
   signedEula = store.get("has-signed-eula", false);
   if (signedEula && (dataCollectionEnabled || process.env.development)) {
-    initExceptionManager(process.env.development ? "development" : "production", app.getVersion(), () => userId);
+    initExceptionManager(() => userId);
     initAnalytics();
   }
 
@@ -259,6 +259,10 @@ async function update() {
     return;
   }
   console.log("will try to update");
+  autoUpdater.on('error', error => {
+    console.log('gotcha', error)
+    notify(error)
+  })
   let updateInterval: NodeJS.Timer = null;
   autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
     willUpdateOnClose = true;
