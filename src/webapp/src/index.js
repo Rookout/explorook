@@ -6,23 +6,31 @@ import registerServiceWorker from './registerServiceWorker';
 import bugsnag from '@bugsnag/js';
 import { ipcRenderer, remote } from 'electron';
 
+const app = remote.app;
+
 // a request will be emitted from Footer.js
 ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
     if (enabled) {
         console.log('enabling bugsnag on main window');
         bugsnag({
-            apiKey: '6e673fda179162f48a2c6b5d159552d2',
-            appVersion: remote.app.getVersion(),
-            appType: 'explorook-react',
-            releaseStage:  remote.process.env.development ? 'development' : 'production',
-            beforeSend: report => {
-              report.updateMetaData("user", {
-                userID: ipcRenderer.sendSync("get-user-id")
-              });
-            }
+          onUncaughtException: (err) => {
+            // override default behaviour to not crash
+            // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
+            console.log(err)
+          },
+          projectRoot: app.getAppPath(),
+          apiKey: '6e673fda179162f48a2c6b5d159552d2',
+          appType: 'explorook-react',
+          appVersion: app.getVersion(),
+          releaseStage:  app.isPackaged ? 'production' : 'development',
+          beforeSend: report => {
+            report.updateMetaData("user", {
+              userID: ipcRenderer.sendSync("get-user-id")
+            });
+          }
         });
     } else {
-        console.log('bugsnag disabled on main window');
+      console.log('bugsnag disabled on main window');
     }
 });
 
