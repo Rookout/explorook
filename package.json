@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -93,6 +93,7 @@
     "tslint": "^5.10.0",
     "typescript": "^3.5.3",
     "webpack": "4.42.0",
+    "webpack-bugsnag-plugins": "^1.4.3",
     "webpack-cli": "^3.3.6",
     "webpack-node-externals": "^1.7.2"
   },
