@@ -7,7 +7,7 @@ const config = {
   mode: 'production',
   entry: './src/index.ts',
   target: "electron-main",
-  devtool: "inline-source-map",
+  devtool: "source-map",
   node: {
     __dirname: false,
     __filename: false

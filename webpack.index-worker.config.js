@@ -6,7 +6,7 @@ const config = {
   mode: 'development',
   entry: './src/index-worker.ts',
   target: "electron-renderer",
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
   node: {
     __dirname: false,
     __filename: false
