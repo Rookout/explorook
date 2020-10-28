@@ -1,6 +1,7 @@
 import path = require("path");
 import slash = require("slash");
 import { notify } from "./exceptionManager";
+import { ipcRenderer } from 'electron';
 const walk = require("walk");
 
 
@@ -75,10 +76,7 @@ export class IndexWorker {
         stats.forEach((count, ext) => {
             str += `${ext}: ${count}\n`;
         });
-
-        notify(`index limit reached. stats:\n${str}`, {
-            severity: "warning",
-        });
+        ipcRenderer.send("track", "index-limit-reached", { stats: str });
     }
 
     public deleteIndex() {

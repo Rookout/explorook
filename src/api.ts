@@ -178,6 +178,12 @@ export const resolvers = {
         try {
           logger.debug("Cloning repo", repo);
           const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
+          if (!cloneDir) {
+            return {
+              isSuccess: false,
+              reason: "Failed to clone repository"
+            }
+          }
           const didAddRepo = await context.onAddRepoRequest(cloneDir);
           context.updateGitLoadingState(false, repo.repoUrl);
           logger.debug("Finished loading repo", {repo: repo.repoUrl, didAddRepo});
