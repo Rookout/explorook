@@ -170,7 +170,8 @@ const getProtocolFromStore = () => {
 export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
     const canAuthRes = await canAuthGitRepo(repoUrl);
     if (!canAuthRes.querySuccessful) {
-      throw new Error(`UNAUTHORIZED to remote ${repoUrl}`);
+      logger.warn(`UNAUTHORIZED to remote`, { repoUrl, commit });
+      return null;
     }
     repoUrl = convertUrlToProtocol(repoUrl, canAuthRes.protocol);
     logger.debug("Cloning repo", {repoUrl, commit, isDuplicate});
