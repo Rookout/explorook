@@ -128,13 +128,7 @@ export const resolvers = {
     getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
                        context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
         Promise<OperationStatus> => {
-      // If we have a duplicate repo with two commits the actual repo folder is under the first folder.
-      const subDirs = _.map(fs.readdirSync(GIT_ROOT), dir => {
-        if (dir.startsWith(TMP_DIR_PREFIX)) {
-          return _.head(fs.readdirSync(path.join(GIT_ROOT, dir)));
-        }
-        return dir;
-      });
+      const subDirs = fs.readdirSync(GIT_ROOT);
 
       // Delete the folder if it's too big
       const sizeResult = await computeGitFoldersSize();
@@ -160,18 +154,18 @@ export const resolvers = {
         }
       }
 
-      // If we have the same remote origin with two different commits we will create two folders
+      // If we have the same remote origin with two different commits we will take the first one only.
       const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
       logger.debug("Found duplicate repos", duplicates);
-
       let updatedSourcesArray = _.cloneDeep(args.sources);
-
-      _.forEach(duplicates, dup => {
-        const firstSourceToKeep = _.find(updatedSourcesArray, src => src.repoUrl === dup);
-        // @ts-ignore
-        updatedSourcesArray = _.filter(updatedSourcesArray, src => src.repoUrl !== dup);
-        updatedSourcesArray.push(firstSourceToKeep);
-      });
+      if (!_.isEmpty(duplicates)) {
+        _.forEach(duplicates, dup => {
+          const firstSourceToKeep = _.find(updatedSourcesArray, src => src.repoUrl === dup);
+          // @ts-ignore
+          updatedSourcesArray = _.filter(updatedSourcesArray, src => src.repoUrl !== dup);
+          updatedSourcesArray.push(firstSourceToKeep);
+        });
+      }
 
       const addRepoPromises = _.map(updatedSourcesArray, async repo => {
         context.updateGitLoadingState(true, repo.repoUrl);
