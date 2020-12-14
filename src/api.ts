@@ -157,13 +157,7 @@ export const resolvers = {
       // If we have the same remote origin with two different commits we will take the first one only.
       const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
       logger.debug("Found duplicate repos", duplicates);
-      let updatedSourcesArray = _.cloneDeep(args.sources);
-      if (!_.isEmpty(duplicates)) {
-        _.forEach(duplicates, dup => {
-          // @ts-ignore
-          updatedSourcesArray = _.uniqBy(args.sources, src => src.repoUrl)
-        });
-      }
+      const updatedSourcesArray = _.uniqBy(args.sources, src => src.repoUrl);
 
       const addRepoPromises = _.map(updatedSourcesArray, async repo => {
         context.updateGitLoadingState(true, repo.repoUrl);
