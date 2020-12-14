@@ -167,40 +167,36 @@ const getProtocolFromStore = () => {
     return parseInt(protocol, 10);
 };
 
-export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string, isDuplicate: boolean) {
+export async function cloneRemoteOriginWithCommit(repoUrl: string, commit: string) {
     const canAuthRes = await canAuthGitRepo(repoUrl);
     if (!canAuthRes.querySuccessful) {
       logger.warn(`UNAUTHORIZED to remote`, { repoUrl, commit });
       return null;
     }
     repoUrl = convertUrlToProtocol(repoUrl, canAuthRes.protocol);
-    logger.debug("Cloning repo", {repoUrl, commit, isDuplicate});
+    logger.debug("Cloning repo", { repoUrl, commit });
     const protocol = getProtocolFromStore();
     const formattedRepoUri = convertUrlToProtocol(repoUrl, protocol);
     logger.debug("Uri formatted", formattedRepoUri);
 
     // Assuming the last part of the remote origin url is the name of the repo.
     const repoName = parseRepo(formattedRepoUri).project;
-     // If we have two of the same git remote with a different commit we want to create a sub directory.
-    const gitRoot = isDuplicate ? path.join(GIT_ROOT, `${TMP_DIR_PREFIX}${uuidv4()}`) : GIT_ROOT;
-     // Create the sub directory if needed.
-    if (isDuplicate) fs.mkdirSync(gitRoot);
 
      // Getting the full path of the repo, including the repo name.
-    const repoDir = path.join(gitRoot, repoName);
+    const repoDir = path.join(GIT_ROOT, repoName);
 
      // If the folder already exists we don't need to clone, just checkout.
     const doesRepoExist = fs.existsSync(repoDir);
 
     if (doesRepoExist) {
-      logger.debug("fetching latest code", { gitRoot, doesRepoExist });
-      await exec("git fetch", { cwd: repoDir, maxBuffer: TEN_MEGABYTE })
+      logger.debug("fetching latest code", { GIT_ROOT, doesRepoExist });
+      await exec("git fetch", { cwd: repoDir, maxBuffer: TEN_MEGABYTE });
     } else {
-      logger.debug("cloning into", { gitRoot, doesRepoExist });
-      await exec(`git clone ${formattedRepoUri}`, { cwd: gitRoot, maxBuffer: TEN_MEGABYTE })
+      logger.debug("cloning into", { GIT_ROOT, doesRepoExist });
+      await exec(`git clone ${formattedRepoUri}`, { cwd: GIT_ROOT, maxBuffer: TEN_MEGABYTE });
     }
-    logger.debug(`checking out to commit ${commit}`, { commit, gitRoot, doesRepoExist });
-    await exec(`git checkout ${commit}`, { cwd: repoDir, maxBuffer: TEN_MEGABYTE })
+    logger.debug(`checking out to commit ${commit}`, { commit, GIT_ROOT, doesRepoExist });
+    await exec(`git checkout ${commit}`, { cwd: repoDir, maxBuffer: TEN_MEGABYTE });
     return repoDir;
 }
 // 10GB

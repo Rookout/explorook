@@ -164,7 +164,16 @@ export const resolvers = {
       const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
       logger.debug("Found duplicate repos", duplicates);
 
-      const addRepoPromises = _.map(args.sources, async repo => {
+      let updatedSourcesArray = _.cloneDeep(args.sources);
+
+      _.forEach(duplicates, dup => {
+        const firstSourceToKeep = _.find(updatedSourcesArray, src => src.repoUrl === dup);
+        // @ts-ignore
+        updatedSourcesArray = _.filter(updatedSourcesArray, src => src.repoUrl !== dup);
+        updatedSourcesArray.push(firstSourceToKeep);
+      });
+
+      const addRepoPromises = _.map(updatedSourcesArray, async repo => {
         context.updateGitLoadingState(true, repo.repoUrl);
         if (!checkGitRemote(repo.repoUrl)) {
           notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
@@ -177,12 +186,12 @@ export const resolvers = {
         }
         try {
           logger.debug("Cloning repo", repo);
-          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit, _.some(duplicates, d => d === repo.repoUrl));
+          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit);
           if (!cloneDir) {
             return {
               isSuccess: false,
               reason: "Failed to clone repository"
-            }
+            };
           }
           const didAddRepo = await context.onAddRepoRequest(cloneDir);
           context.updateGitLoadingState(false, repo.repoUrl);
