@@ -207,15 +207,7 @@ export async function isGitFolderBiggerThanMaxSize(): Promise<{ sizeOverMaxSize:
     const failedFolders: string[] = [];
     const isDirectory = (source: string) => fs.lstatSync(source).isDirectory();
 
-    const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => {
-        const subdir = path.join(GIT_ROOT, dirName);
-        if (dirName.includes(TMP_DIR_PREFIX)) {
-            const duplicatedRepoDir = _.head(fs.readdirSync(subdir));
-            return path.join(subdir, duplicatedRepoDir);
-        }
-
-        return subdir;
-    });
+    const rootDirContent = _.map(fs.readdirSync(GIT_ROOT), dirName => path.join(GIT_ROOT, dirName));
     logger.debug("Checking root dir size", rootDirContent);
 
     const repoDirs = _.filter(rootDirContent, isDirectory);

@@ -160,10 +160,8 @@ export const resolvers = {
       let updatedSourcesArray = _.cloneDeep(args.sources);
       if (!_.isEmpty(duplicates)) {
         _.forEach(duplicates, dup => {
-          const firstSourceToKeep = _.find(updatedSourcesArray, src => src.repoUrl === dup);
           // @ts-ignore
-          updatedSourcesArray = _.filter(updatedSourcesArray, src => src.repoUrl !== dup);
-          updatedSourcesArray.push(firstSourceToKeep);
+          updatedSourcesArray = _.uniqBy(args.sources, src => src.repoUrl)
         });
       }
 
