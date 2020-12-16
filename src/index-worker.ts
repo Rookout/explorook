@@ -87,6 +87,13 @@ ipcRenderer.on("edit-repo", (e: IpcRendererEvent, args: { id: string, repoName: 
     repStore.update(id, repoName);
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
 });
+ipcRenderer.on("clear-all-repos", (e: IpcRendererEvent) => {
+    const allRepos = _.map(repStore.getRepositories(), "id");
+    _.forEach(allRepos, repo => {
+        repStore.remove(repo);
+    });
+    ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+});
 ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptions: PerforceConnectionOptions) => {
     let isSuccess = false;
     try {

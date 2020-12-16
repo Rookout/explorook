@@ -28,6 +28,10 @@ export const Header = () => {
         ipcRenderer.sendTo(window.indexWorkerId, "set-log-level", isDebug ? "debug" : "error")
         setOpen(false);
     }
+    const clearAllRepos = () => {
+        ipcRenderer.sendTo(window.indexWorkerId, "clear-all-repos");
+        setOpen(false);
+    }
 
     return (
         <div>
@@ -36,6 +40,7 @@ export const Header = () => {
                 <Menu anchorEl={anchorEl} open={open}>
                     <MenuItem key="debug" onClick={startDebug}>Debug</MenuItem>
                     <MenuItem key="log-level" onClick={() => setLogLever(!isLogLevelDebug)}>{isLogLevelDebug ? "Error Logs" : "Debug Logs"}</MenuItem>
+                    <MenuItem key="remove-all-repos" onClick={clearAllRepos}>Clear data</MenuItem>
                     <MenuItem key="close" onClick={() => setOpen(false)}>Close</MenuItem>
                 </Menu>
             </div>
