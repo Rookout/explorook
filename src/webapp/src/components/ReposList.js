@@ -90,7 +90,7 @@ export const ReposList = ({ ...props }) => {
     };
 
     return (
-        <div>
+        <div hidden>
             <div style={{ display: "flex" }}>
                 <p className="gray-shaded">Local Repositories</p>
                 <IconButton variant="fab" aria-label="add" onClick={onAddClicked}>

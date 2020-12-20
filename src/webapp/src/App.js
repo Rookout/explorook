@@ -36,6 +36,8 @@ export const App = ({ ...props }) => {
         <Header />
       </div>
       { hasSignedEula && <EmptyState /> }
+      { hasSignedEula && <ReposList /> }
+      { hasSignedEula && <OnPremConnection /> }
       {!hasSignedEula && (
         <div style={{ overflow: "auto"}}>        
           <div id="content-container">
