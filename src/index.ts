@@ -328,10 +328,10 @@ function startGraphqlServer() {
 
 function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = false) {
   mainWindow = new BrowserWindow({
-    height: 550,
+    height: 320,
     width: 650,
     minWidth: 600,
-    minHeight: 500,
+    minHeight: 320,
     frame: false,
     icon,
     show: !hidden,

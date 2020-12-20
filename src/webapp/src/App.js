@@ -10,6 +10,7 @@ import { EulaModal } from "./components/EulaModal";
 import { ipcRenderer } from "electron";
 import "./App.scss";
 import {OnPremConnection} from "./components/OnPremConnection";
+import { EmptyState } from "./components/EmptyState";
 
 const INITIAL_HAS_SIGNED_EULA = ipcRenderer.sendSync("has-signed-eula");
 
@@ -34,13 +35,14 @@ export const App = ({ ...props }) => {
       <div>
         <Header />
       </div>
-      <div style={{ overflow: "auto"}}>
-        <div id="content-container">
-          { hasSignedEula && <OnPremConnection /> }
-          { hasSignedEula && <ReposList /> }
-          { !hasSignedEula && <EulaModal setSignedEula={setHasSignedEula} {...props} /> }
+      { hasSignedEula && <EmptyState /> }
+      {!hasSignedEula && (
+        <div style={{ overflow: "auto"}}>        
+          <div id="content-container">
+            <EulaModal setSignedEula={setHasSignedEula} {...props} />
+          </div>
         </div>
-      </div>
+      )}
       <div style={{ justifyContent: "flex-end", marginTop: "auto" }}>
         <Footer />
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Close } from "@material-ui/icons";
+import { Close, Remove } from "@material-ui/icons";
 import { remote, ipcRenderer } from "electron";
 import { Menu, MenuItem } from "@material-ui/core";
 import { closeWindow } from "../utils";
@@ -32,6 +32,7 @@ export const Header = () => {
     return (
         <div>
             <div id="close-window-wrapper" onContextMenu={onCloseRightClick}>
+                <Remove id="minimize-window-btn" onClick={closeWindow}/>
                 <Close id="close-window-btn" onClick={closeWindow}/>
                 <Menu anchorEl={anchorEl} open={open}>
                     <MenuItem key="debug" onClick={startDebug}>Debug</MenuItem>
