@@ -87,6 +87,13 @@ ipcRenderer.on("edit-repo", (e: IpcRendererEvent, args: { id: string, repoName: 
     repStore.update(id, repoName);
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
 });
+ipcRenderer.on("clear-all-repos", (e: IpcRendererEvent) => {
+    const allRepos = _.map(repStore.getRepositories(), "id");
+    _.forEach(allRepos, repo => {
+        repStore.remove(repo);
+    });
+    ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+});
 ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptions: PerforceConnectionOptions) => {
     let isSuccess = false;
     try {
@@ -105,7 +112,7 @@ ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptio
 ipcRenderer.on("test-git-connection", async (e: IpcRendererEvent, connectionOptions: GitConnectionOptions) => {
     let isSuccess = false;
     try {
-      isSuccess = !!(await cloneRemoteOriginWithCommit(connectionOptions.connectionString, "master", false));
+      isSuccess = !!(await cloneRemoteOriginWithCommit(connectionOptions.connectionString, "master"));
     } catch (e) {
       notify(e, { metaData: { extra: { message: "Cannot clone remote origin", connectionOptions } } });
       console.error(`Failed to clone git repo ${connectionOptions.connectionString}`, e);
