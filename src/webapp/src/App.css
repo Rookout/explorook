@@ -149,6 +149,10 @@ div, span {
   color: white;
 }
 
+#minimize-window-btn:hover, #close-window-btn:hover {
+  background-color: #c4cfd6;
+}
+
 #close-window-btn {
   color: white;
   margin: 10px;
