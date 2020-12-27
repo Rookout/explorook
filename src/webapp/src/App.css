@@ -149,9 +149,20 @@ div, span {
   color: white;
 }
 
+#minimize-window-btn:hover, #close-window-btn:hover {
+  background-color: #c4cfd6;
+}
+
 #close-window-btn {
   color: white;
   margin: 10px;
+  -webkit-app-region: no-drag;
+}
+
+#minimize-window-btn {
+  color: white;
+  margin: 10px;
+  margin-right: 0px;
   -webkit-app-region: no-drag;
 }
 

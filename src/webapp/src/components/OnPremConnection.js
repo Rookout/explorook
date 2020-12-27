@@ -41,6 +41,7 @@ export const OnPremConnection = () => {
     }, [repoLoadingText, repoLoadingDotCount])
 
     return (
+      <div hidden>
         <OuterExpansionPanel expanded={expanded} setExpanded={setExpanded}>
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon style={{color: "#B6C8D4"}} />} style={{padding:"0"}}>
                 <Title label="On-Prem Source Control"/>
@@ -77,6 +78,7 @@ export const OnPremConnection = () => {
             </InnerExpansionPanel>
                 </div>
             </OnPremExpansionPanelDetails>
-        </OuterExpansionPanel>
+          </OuterExpansionPanel>
+        </div>
         )
 };
