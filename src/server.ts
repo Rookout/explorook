@@ -50,7 +50,7 @@ const corsOptions = {
   origin: corsDomainWhitelist
 };
 
-export const start = (options: StartOptions): Promise<any> => {
+export const start = (options: StartOptions) => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
   const typeDefs = join(__dirname, `../graphql/schema.graphql`);
