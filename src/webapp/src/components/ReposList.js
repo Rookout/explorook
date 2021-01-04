@@ -67,7 +67,8 @@ export const ReposList = ({ ...props }) => {
         if (!filePaths) { // user closed dialog without choosing
             return;
         }
-        filePaths.forEach(folder => {
+        for (let i = 0; i < filePaths.length; i++) {
+            const folder = filePaths[i];
             const repoName = path.basename(folder);
             const newRepo = { repoName, fullpath: folder };
             const shouldWarn = !store.get("non-git-dialog-never-ask-again", false) && await shouldWarnNonGit(folder);
@@ -85,7 +86,7 @@ export const ReposList = ({ ...props }) => {
             if (shouldAdd) {
                 ipcRenderer.sendTo(window.indexWorkerId, "add-repo", newRepo);
             }
-        })
+        }
     };
 
     return (
