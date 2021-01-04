@@ -15,6 +15,10 @@ import {
   resolveRepoFromId,
   validateBitbucketServerHttps
 } from "./middlewares";
+import { ApolloServer, ApolloServerExpressConfig, Config } from 'apollo-server-express'
+import * as express from 'express'
+import { makeExecutableSchema } from 'graphql-tools'
+import { applyMiddleware } from "graphql-middleware";
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
@@ -55,36 +59,41 @@ export const start = (options: StartOptions): Promise<any> => {
     settings.userSite = site;
   };
 
-  const server = new GraphQLServer({
-    resolvers,
-    typeDefs,
-    context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
-    middlewares: [logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps]
-  });
+  const schema = makeExecutableSchema({ typeDefs, resolvers })
+  const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps)
 
-  server.express.use(cors(corsOptions));
-  server.express.use(bodyParser.json());
-  server.express.post("/configure", configureFirstTimeSettings(settings.firstTimeLaunch, startedAt, reconfigure));
+  const app = express()
+  const server = new ApolloServer({
+    context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
+    schema: schemaWithMiddleware,
+    // fix webpack doesn't bundle subscriptions
+    subscriptions: false,
+    //port: settings.port,
+    formatError: (errors: any) => {
+      if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
+        notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+      }
+      return defaultErrorFormatter(errors);
+    }
+  })
+
+  app.use(cors(corsOptions));
+  app.use(bodyParser.json());
+  app.post("/configure", configureFirstTimeSettings(settings.firstTimeLaunch, startedAt, reconfigure));
   // indicates that the authorization v2 feature is available (automatic)
-  server.express.get("/authorize/v2", (req, res) => res.status(200).send("AVAILABLE"));
-  server.express.post("/authorize/v2", authenticateControllerV2(settings));
+  app.get("/authorize/v2", (req, res) => res.status(200).send("AVAILABLE"));
+  app.post("/authorize/v2", authenticateControllerV2(settings));
   // indicates that the authorization feature is available
-  server.express.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
-  server.express.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
+  app.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
+  app.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
 
   if (options.useTokenAuthorization) {
-    server.express.use(authorizationMiddleware(settings.accessToken));
+    app.use(authorizationMiddleware(settings.accessToken));
   }
+
+  server.applyMiddleware({ app });
+
   // tslint:disable-next-line:no-console
-  return server.start({
-      // fix webpack doesn't bundle subscriptions
-      subscriptions: false,
-      port: settings.port,
-      formatError: (errors: any) => {
-    if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
-      notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
-    }
-    return defaultErrorFormatter(errors);
-  }}, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
+  return server.start(, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
 };
 
