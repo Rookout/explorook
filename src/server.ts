@@ -15,10 +15,11 @@ import {
   resolveRepoFromId,
   validateBitbucketServerHttps
 } from "./middlewares";
-import { ApolloServer, ApolloServerExpressConfig, Config } from 'apollo-server-express'
+import { ApolloServer } from 'apollo-server-express'
 import * as express from 'express'
 import { makeExecutableSchema } from 'graphql-tools'
 import { applyMiddleware } from "graphql-middleware";
+import * as http from 'http'
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
@@ -93,7 +94,8 @@ export const start = (options: StartOptions): Promise<any> => {
 
   server.applyMiddleware({ app });
 
-  // tslint:disable-next-line:no-console
-  return server.start(, (opts: { port: number }) => console.log(`Server is running on http://localhost:${opts.port}`));
+  const httpServer = http.createServer(app);
+  httpServer.listen(settings.port)
+  
+  console.log(`Server is running on http://localhost:${settings.port}`);
 };
-
