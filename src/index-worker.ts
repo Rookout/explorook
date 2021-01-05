@@ -63,7 +63,7 @@ ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firs
         }
         const userId: string = ipcRenderer.sendSync("get-user-id");
         const userSite: string = ipcRenderer.sendSync("get-user-site");
-        await graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch,
+        graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch,
             onAddRepoRequest, updateGitLoadingState });
     } catch (err) {
         console.error(err);
