@@ -92,7 +92,7 @@ export const start = (options: StartOptions) => {
     app.use(authorizationMiddleware(settings.accessToken));
   }
 
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, path: '/' });
 
   const httpServer = http.createServer(app);
   httpServer.listen(settings.port)
