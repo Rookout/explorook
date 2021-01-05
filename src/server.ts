@@ -50,7 +50,6 @@ const corsOptions = {
 };
 
 export const start = (options: StartOptions) => {
-  debugger
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
   const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8'});
