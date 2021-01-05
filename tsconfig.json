@@ -11,6 +11,7 @@
     "module": "commonjs",
     "noImplicitAny": true,
     "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
