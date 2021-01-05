@@ -63,12 +63,10 @@ export const start = (options: StartOptions) => {
   const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps)
 
   const app = express()
-  const server = new ApolloServer({
+  const apolloServer = new ApolloServer({
     context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
     schema: schemaWithMiddleware,
-    // fix webpack doesn't bundle subscriptions
     subscriptions: false,
-    //port: settings.port,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
         notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
@@ -91,7 +89,7 @@ export const start = (options: StartOptions) => {
     app.use(authorizationMiddleware(settings.accessToken));
   }
 
-  server.applyMiddleware({ app, path: '/' });
+  apolloServer.applyMiddleware({ app, path: '/' });
 
   const httpServer = http.createServer(app);
   httpServer.listen(settings.port)
