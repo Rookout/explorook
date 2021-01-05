@@ -1,7 +1,5 @@
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
-import { GraphQLServer } from "graphql-yoga";
-import { defaultErrorFormatter } from "graphql-yoga/dist/defaultErrorFormatter";
 import { join } from "path";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
@@ -17,6 +15,7 @@ import {
 } from "./middlewares";
 import { ApolloServer } from 'apollo-server-express'
 import * as express from 'express'
+import { readFileSync } from 'fs'
 import { makeExecutableSchema } from 'graphql-tools'
 import { applyMiddleware } from "graphql-middleware";
 import * as http from 'http'
@@ -51,9 +50,10 @@ const corsOptions = {
 };
 
 export const start = (options: StartOptions) => {
+  debugger
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
-  const typeDefs = join(__dirname, `../graphql/schema.graphql`);
+  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8'});
 
   const reconfigure = (id: string, site: string) => {
     settings.userId = id;
@@ -74,7 +74,7 @@ export const start = (options: StartOptions) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
         notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
       }
-      return defaultErrorFormatter(errors);
+      return errors;
     }
   })
 
