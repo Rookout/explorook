@@ -96,13 +96,6 @@
   resolved "https://registry.yarnpkg.com/@bugsnag/safe-json-stringify/-/safe-json-stringify-4.0.0.tgz#da4d9321524c6a1c33472f7151af7c7a0604cd3d"
   integrity sha512-eb0yG+PNTdpRXIhfEq4IFi2wBfpE1DjrAlkyehinu9RxE1PKteqJioLmfQjvkG3UviGu/k5pcamYMxNuCAMIoQ==
 
-"@codingame/monaco-jsonrpc@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@codingame/monaco-jsonrpc/-/monaco-jsonrpc-0.3.0.tgz#678510879344052b106db9b91548abb9b4d06833"
-  integrity sha512-nX1ILQsFoKpRBjZm+ElvutmqSj2G1Kp6yJxvpoEBy1AUWqEyN4yxFbtm+CTo3to6blQo4PW3pP6hbxhU+MLkyQ==
-  dependencies:
-    vscode-jsonrpc "^6.0.0-next.7"
-
 "@develar/schema-utils@~2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@develar/schema-utils/-/schema-utils-2.1.0.tgz#eceb1695bfbed6f6bb84666d5d3abe5e1fd54e17"
@@ -3463,15 +3456,15 @@ fsevents@^1.2.7:
     nan "^2.12.1"
     node-pre-gyp "^0.12.0"
 
-function-bind@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"
-  integrity sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==
-
 fsevents@~2.1.2:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.1.3.tgz#fb738703ae8d2f9fe900c33836ddebee8b97f23e"
   integrity sha512-Auw9a4AxqWpa9GUfj370BMPzzyncfBABW8Mab7BGWBYDj4Isgq+cDKtx0i6u9jcX9pQDnswsaaOTgTmA5pEjuQ==
+
+function-bind@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"
+  integrity sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==
 
 gauge@~2.7.3:
   version "2.7.4"
@@ -7855,10 +7848,42 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
-vscode-jsonrpc@^6.0.0-next.7:
+vscode-jsonrpc@6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-6.0.0.tgz#108bdb09b4400705176b957ceca9e0880e9b6d4e"
   integrity sha512-wnJA4BnEjOSyFMvjZdpiOwhSq9uDoK8e/kpRJDTaMYzwlkrhG1fwDIZI94CLsLzlCK5cIbMMtFlJlfR57Lavmg==
+
+vscode-jsonrpc@^5.0.0:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-5.0.1.tgz#9bab9c330d89f43fc8c1e8702b5c36e058a01794"
+  integrity sha512-JvONPptw3GAQGXlVV2utDcHx0BiY34FupW/kI6mZ5x06ER5DdPG/tXWMVHjTNULF5uKPOUUD0SaXg5QaubJL0A==
+
+vscode-languageserver-protocol@^3.15.0:
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.16.0.tgz#34135b61a9091db972188a07d337406a3cdbe821"
+  integrity sha512-sdeUoAawceQdgIfTI+sdcwkiK2KU+2cbEYA0agzM2uqaUy2UpnnGHtWTHVEtS0ES4zHU0eMFRGN+oQgDxlD66A==
+  dependencies:
+    vscode-jsonrpc "6.0.0"
+    vscode-languageserver-types "3.16.0"
+
+vscode-languageserver-types@3.16.0:
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.16.0.tgz#ecf393fc121ec6974b2da3efb3155644c514e247"
+  integrity sha512-k8luDIWJWyenLc5ToFQQMaSrqCHiLwyKPHKPQZ5zz21vM+vIVUSvsRpcbiECH4WR88K2XZqc4ScRcZ7nk/jbeA==
+
+vscode-languageserver@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver/-/vscode-languageserver-6.0.0.tgz#4b6fa593422a68bab3c5e92f1d50af3a7cb770f8"
+  integrity sha512-QihKytod/PApM+wU9qmjxjGT+p4vYDJCbMcdwol55QeE80DCMyls6yxJzTn8SNCNpP4JZin8SIZp1zpumfktQg==
+  dependencies:
+    vscode-languageserver-protocol "^3.15.0"
+
+vscode-ws-jsonrpc@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/vscode-ws-jsonrpc/-/vscode-ws-jsonrpc-0.2.0.tgz#5e9c26e10da54a1a235da7d59e74508bbcb8edd9"
+  integrity sha512-NE9HNRgPjCaPyTJvIudcpyIWPImxwRDtuTX16yks7SAiZgSXigxAiZOvSvVBGmD1G/OMfrFo6BblOtjVR9DdVA==
+  dependencies:
+    vscode-jsonrpc "^5.0.0"
 
 walk@^2.3.13:
   version "2.3.13"
@@ -8057,7 +8082,7 @@ write-file-atomic@^3.0.0:
     signal-exit "^3.0.2"
     typedarray-to-buffer "^3.1.5"
 
-ws@^5.2.0:
+ws@^5.0.0, ws@^5.2.0:
   version "5.2.2"
   resolved "https://registry.yarnpkg.com/ws/-/ws-5.2.2.tgz#dffef14866b8e8dc9133582514d1befaf96e980f"
   integrity sha512-jaHFD6PFv6UgoIVda6qZllptQsMlDEJkTQcybzzXDYM1XO9Y8em691FGMPmM46WGyLU4z9KMgQN+qrux/nhlHA==

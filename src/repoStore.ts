@@ -152,6 +152,10 @@ class RepoStore {
     public getRepositories(): Repo[] {
         return this.repos;
     }
+    
+    public getRepoById(id: string): Repo {
+        return _.find(this.repos,repo => { return id === repo.id})
+    }
 }
 
 export const repStore = new RepoStore();
