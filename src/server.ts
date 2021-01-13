@@ -67,6 +67,7 @@ export const start = (options: StartOptions) => {
     context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
     schema: schemaWithMiddleware,
     subscriptions: false,
+    introspection: true,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
         notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
