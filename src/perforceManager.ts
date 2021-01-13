@@ -5,7 +5,6 @@ const path = require("path");
 import * as fs from "fs";
 import _ = require("lodash");
 import {P4} from "p4api";
-import {isNumeric} from "tslint";
 import * as util from "util";
 import {notify} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
@@ -208,8 +207,13 @@ class PerforceManager {
     }
 
     public getCurrentClient(): any {
-      const res = this.p4.cmdSync("client -o");
-      return _.head(res?.stat);
+        try {
+            const res = this.p4.cmdSync("client -o");
+            return _.head(res?.stat);
+        } catch (e) {
+            logger.error("failed to get perforce client", e);
+            return null;
+        }
     }
 
     public async getChangelistForFile(fullPath: string): Promise<string> {
