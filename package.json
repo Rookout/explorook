@@ -101,7 +101,7 @@
     "@bugsnag/js": "6.5.2",
     "@codingame/monaco-jsonrpc": "^0.3.0",
     "@types/valid-url": "^1.0.2",
-    "analytics-node": "^3.4.0-beta.1",
+    "analytics-node": "^3.5.0",
     "apollo-server-core": "^2.19.1",
     "apollo-server-express": "^2.19.1",
     "args-parser": "^1.1.0",
