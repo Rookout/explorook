@@ -8,16 +8,24 @@ import * as rpc from "vscode-ws-jsonrpc";
 import { RequestMessage } from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
-import _ from 'lodash'
 
 console.log("Starting langserver!!!!")
-//const pythonLangServer = server.createServerProcess('python', 'python3', ['-m', 'pyls', '-v']);
 
+// Since we can't know which response is a response to definition,
+// we save up all the messages ids for definitions requests.
+// Since in lsp, a request message and its response has the same message id.
 const definitionsIds = new Set();
 interface CustomResultMessage extends RequestMessage {
     type: 'definition' | 'usages'
 }
 
+// The init request from the frontend indicates on which repo should the langserver run:
+// the uri is sent like this: "file:///<repo_id>", repo_id is the id in repoStore.
+// the repo's fullPath is the one sent to the langserver.
+
+// Every other request to the langserver sends which file is it asking about,
+// the file's uri is sent like this "file://<relative_path_to_file>",
+// the langserver uses fullPath so we use the repoStore to get it.
 export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
     const reader = new rpc.WebSocketMessageReader(socket);
     const writer = new rpc.WebSocketMessageWriter(socket);
@@ -36,20 +44,22 @@ export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
                 
                 const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
                 repo = repStore.getRepoById(repoId)
+
+                // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
+                // to the language server the workspace folder
                 initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repo.fullpath
                 initializeParams.rootPath = repo.fullpath
             }
 
             if (message.method === lsp.DefinitionRequest.type.method && message.id) {
                 definitionsIds.add(message.id)
-                const fileRelativePath = message.params.textDocument.uri.replace('file://', '')
-                    message.params.textDocument.uri = 'file://' + repo.fullpath + fileRelativePath
+
+                message.params.textDocument.uri = message.params.textDocument.uri.replace('file://', 'file://' + repo.fullpath)
             }
 
             if (message.method === lsp.FoldingRangeRequest.type.method ||
                 message.method === lsp.CodeLensRequest.type.method) {
-                    const fileRelativePath = message.params.textDocument.uri.replace('file://', '')
-                    message.params.textDocument.uri = 'file://' + repo.fullpath + fileRelativePath
+                    message.params.textDocument.uri = message.params.textDocument.uri.replace('file://', 'file://' + repo.fullpath)
                 }
         }
 
@@ -63,13 +73,12 @@ export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
         }
 
         if (rpc.isResponseMessage(message)) {
-            _.map(message.result, lsp.DefinitionRequest)
             if (definitionsIds.has(message.id)) {
                 definitionsIds.delete(message.id)
                 const newResponseMessage = message as CustomResultMessage
                 newResponseMessage.type = 'definition'
                 
-                newResponseMessage.
+                message.result = fixDefinitionResultsPath(message.result as Array<any>, repo.fullpath)
 
                 console.log(newResponseMessage)
                 return newResponseMessage
@@ -80,4 +89,15 @@ export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
             
         return message;
     });
+}
+
+// The language server returns the full path of the result,
+// e.g "file:///Users/gilad/dev/python/functions.py" or "file://C://Java/my-project/Functions.java"
+// The repo's fullPath is removed before it is sent to the frontend,
+// e.g, if the repo path is "/Users/gilad/dev/python/" (python example), it will be changed to "file:///functions.py"
+const fixDefinitionResultsPath = (definitionResults: Array<any>, repoFullPath: string) : Array<any> =>  {
+    return definitionResults.map(result => {
+        result.uri = result.uri.replace(repoFullPath, '') 
+        return result
+    })
 }
