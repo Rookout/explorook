@@ -15,9 +15,6 @@ console.log("Starting langserver!!!!")
 // we save up all the messages ids for definitions requests.
 // Since in lsp, a request message and its response has the same message id.
 const definitionsIds = new Set();
-interface CustomResultMessage extends RequestMessage {
-    type: 'definition' | 'usages'
-}
 
 // The init request from the frontend indicates on which repo should the langserver run:
 // the uri is sent like this: "file:///<repo_id>", repo_id is the id in repoStore.
@@ -33,7 +30,10 @@ export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
 
     // start the language server as an external process
     const socketConnection = bridgeServer.createConnection(reader, writer, () => socket.dispose());
-    const serverConnection = bridgeServer.createServerProcess('python','pyls');
+    //const serverConnection = bridgeServer.createServerProcess('python','pyls');
+
+    const args = ['-jar', '/Users/gilad/dev/explorook/java-ls.jar']
+    const serverConnection = bridgeServer.createServerProcess('java', 'java', args)
     
 
     bridgeServer.forward(socketConnection, serverConnection, message => {
@@ -65,26 +65,33 @@ export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
 
         if (rpc.isNotificationMessage(message)) {
             if (message.method === lsp.DidOpenTextDocumentNotification.type.method || 
-                message.method === lsp.DidChangeTextDocumentNotification.type.method) {
+                message.method === lsp.DidCloseTextDocumentNotification.type.method) {
                 
                     const fileRelativePath = message.params.textDocument.uri.replace('file://', '')
                     message.params.textDocument.uri = 'file://' + repo.fullpath + fileRelativePath
             }
+            // DidChange are returning errors because of the mismatched uri, and that's fine.
         }
 
         if (rpc.isResponseMessage(message)) {
             if (definitionsIds.has(message.id)) {
                 definitionsIds.delete(message.id)
-                const newResponseMessage = message as CustomResultMessage
-                newResponseMessage.type = 'definition'
                 
-                message.result = fixDefinitionResultsPath(message.result as Array<any>, repo.fullpath)
-
-                console.log(newResponseMessage)
-                return newResponseMessage
+                if (message?.result){
+                    message.result = fixDefinitionResultsPath(message.result as Array<any>, repo.fullpath)
+                }
+                console.log(message)
+                return message
             }
-        }
 
+            // disabling various requests
+            if ((message?.result as any)?.capabilities) {
+                (message.result as any).capabilities.hoverProvider = false;
+                (message.result as any).capabilities.referencesProvider = false;
+            }
+
+        }
+            
         console.log(message)
             
         return message;
