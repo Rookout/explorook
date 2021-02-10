@@ -1,4 +1,4 @@
-import { Repo, repStore } from './repoStore';
+import { Repo, repStore } from '../repoStore';
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -8,8 +8,15 @@ import * as rpc from "vscode-ws-jsonrpc";
 import { RequestMessage } from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
+import * as cmd from 'child_process'
 
 console.log("Starting langserver!!!!")
+
+export interface langServerStartConfig {
+    LangaugeName: string,
+    langserverCommand: string,
+    langserverCommandArgs: string[]
+}
 
 // Since we can't know which response is a response to definition,
 // we save up all the messages ids for definitions requests.
@@ -18,22 +25,19 @@ const definitionsIds = new Set();
 
 // The init request from the frontend indicates on which repo should the langserver run:
 // the uri is sent like this: "file:///<repo_id>", repo_id is the id in repoStore.
-// the repo's fullPath is the one sent to the langserver.
+// the repo's fullPath is the one sent to the langserver itself.
 
 // Every other request to the langserver sends which file is it asking about,
 // the file's uri is sent like this "file://<relative_path_to_file>",
 // the langserver uses fullPath so we use the repoStore to get it.
-export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
+export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langServerStartConfig) => {
     const reader = new rpc.WebSocketMessageReader(socket);
     const writer = new rpc.WebSocketMessageWriter(socket);
     let repo: Repo = null;
 
-    // start the language server as an external process
-    const socketConnection = bridgeServer.createConnection(reader, writer, () => socket.dispose());
-    //const serverConnection = bridgeServer.createServerProcess('python','pyls');
-
-    const args = ['-jar', '/Users/gilad/dev/explorook/java-ls.jar']
-    const serverConnection = bridgeServer.createServerProcess('java', 'java', args)
+    const langserverProcessName = 'Rookout-' + startConfig.LangaugeName + '-LangServer'
+    const serverConnection = bridgeServer.createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs)
+    const socketConnection = bridgeServer.createConnection(reader, writer, () => {socket.dispose(); serverConnection.dispose()});
     
 
     bridgeServer.forward(socketConnection, serverConnection, message => {
@@ -70,7 +74,11 @@ export const launchPythonLangaugeServer = (socket: rpc.IWebSocket) => {
                     const fileRelativePath = message.params.textDocument.uri.replace('file://', '')
                     message.params.textDocument.uri = 'file://' + repo.fullpath + fileRelativePath
             }
-            // DidChange are returning errors because of the mismatched uri, and that's fine.
+            
+            // The frontend might send didChange requests which are wrong because of monaco in react behavior, so we ignore this kind of request
+            if (message.method === lsp.DidChangeTextDocumentNotification.type.method) {
+                message.method = "rookout-dummy"
+            }
         }
 
         if (rpc.isResponseMessage(message)) {

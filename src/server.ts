@@ -1,4 +1,5 @@
-import { launchPythonLangaugeServer } from './langaugeServer';
+import { launchPythonLangaugeServer } from './langauge-servers/python';
+import { launchJavaLangaugeServer } from './langauge-servers/java';
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import { join } from "path";
@@ -45,9 +46,9 @@ const defaultOptions: StartOptions = {
 };
 
 const corsDomainWhitelist = [
-    /^https:\/\/.*\.rookout.com$/,
-    /^https:\/\/.*\.rookout-dev.com$/,
-    "https://localhost:8080"
+  /^https:\/\/.*\.rookout.com$/,
+  /^https:\/\/.*\.rookout-dev.com$/,
+  "https://localhost:8080"
 ];
 
 const corsOptions = {
@@ -57,7 +58,7 @@ const corsOptions = {
 export const start = (options: StartOptions) => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
-  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8'});
+  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8' });
 
   const reconfigure = (id: string, site: string) => {
     settings.userId = id;
@@ -74,7 +75,7 @@ export const start = (options: StartOptions) => {
     subscriptions: false,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
-        notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+        notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors } });
       }
       return errors;
     }
@@ -97,9 +98,9 @@ export const start = (options: StartOptions) => {
   apolloServer.applyMiddleware({ app, path: '/' });
 
   const httpServer = http.createServer(app).listen(settings.port);
-  
+
   startWebSocketServer(httpServer)
-  
+
   console.log(`Server is running on http://localhost:${settings.port}`);
 };
 
@@ -109,28 +110,43 @@ const startWebSocketServer = (httpServer: net.Server) => {
     perMessageDeflate: false
   });
 
+  // expecting path /langServer/<lang_name>, e.g /langServer/java
   httpServer.on('upgrade', (request: http.IncomingMessage, socket: net.Socket, head: Buffer) => {
     const pathname = request.url ? url.parse(request.url).pathname : undefined;
-    if (pathname === '/langServer') {
+    if (pathname.startsWith('/langServer')) {
+      const langName = pathname.replace('/langServer/', '')
+      const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName)
+
+      if (typeof launchLangServer === 'function') {
         wss.handleUpgrade(request, socket, head, webSocket => {
-            const socket: rpc.IWebSocket = {
-                send: content => webSocket.send(content, error => {
-                    if (error) {
-                        throw error;
-                    }
-                }),
-                onMessage: cb => webSocket.on('message', cb),
-                onError: cb => webSocket.on('error', cb),
-                onClose: cb => webSocket.on('close', cb),
-                dispose: () => webSocket.close()
-            };
-            // launch the server when the web socket is opened
-            if (webSocket.readyState === webSocket.OPEN) {
-              launchPythonLangaugeServer(socket);
-            } else {
-              webSocket.on('open', () => launchPythonLangaugeServer(socket));
-            }
+          const socket: rpc.IWebSocket = {
+            send: content => webSocket.send(content, error => {
+              if (error) {
+                throw error;
+              }
+            }),
+            onMessage: cb => webSocket.on('message', cb),
+            onError: cb => webSocket.on('error', cb),
+            onClose: cb => webSocket.on('close', cb),
+            dispose: () => webSocket.close()
+          };
+          // launch the server when the web socket is opened
+          if (webSocket.readyState === webSocket.OPEN) {
+            launchLangServer(socket);
+          } else {
+            webSocket.on('open', () => launchLangServer(socket));
+          }
         });
+      }
     }
-})
+  })
+}
+
+const getLaunchLanguangeServerFuncByLangName = (langName: string) => {
+  switch (langName.toLowerCase()) {
+    case 'java':
+      return launchJavaLangaugeServer
+    case 'python':
+      return launchPythonLangaugeServer
+  }
 }
