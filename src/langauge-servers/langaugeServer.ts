@@ -18,11 +18,6 @@ export interface langServerStartConfig {
     langserverCommandArgs: string[]
 }
 
-// Since we can't know which response is a response to definition,
-// we save up all the messages ids for definitions requests.
-// Since in lsp, a request message and its response has the same message id.
-const definitionsIds = new Set();
-
 // The init request from the frontend indicates on which repo should the langserver run:
 // the uri is sent like this: "file:///<repo_id>", repo_id is the id in repoStore.
 // the repo's fullPath is the one sent to the langserver itself.
@@ -31,6 +26,12 @@ const definitionsIds = new Set();
 // the file's uri is sent like this "file://<relative_path_to_file>",
 // the langserver uses fullPath so we use the repoStore to get it.
 export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langServerStartConfig) => {
+
+    // Since we can't know which response is a response to definition,
+    // we save up all the messages ids for definitions requests.
+    // Since in lsp, a request message and its response has the same message id.
+    const definitionsIds = new Set();
+
     const reader = new rpc.WebSocketMessageReader(socket);
     const writer = new rpc.WebSocketMessageWriter(socket);
     let repo: Repo = null;

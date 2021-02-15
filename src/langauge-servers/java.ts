@@ -1,10 +1,11 @@
+import { langServerConfigStore, javaLangServerJarLocation } from './configStore';
 import { launchLangaugeServer } from './langaugeServer';
 import * as rpc from "vscode-ws-jsonrpc";
 
 export const launchJavaLangaugeServer = (socket: rpc.IWebSocket) => {
-    const javaLocation = '/Library/Java/JavaVirtualMachines/adoptopenjdk-13.jdk/Contents/Home/bin/java'
-
-    const args = ['-jar', '/Users/gilad/dev/explorook/java-ls.jar']
+    if (langServerConfigStore.doesJavaJarExist() && langServerConfigStore.jdkLocation) {
+        const args = ['-jar', javaLangServerJarLocation]
     
-    launchLangaugeServer(socket, { LangaugeName: 'Java', langserverCommand: javaLocation, langserverCommandArgs: args })
+        launchLangaugeServer(socket, { LangaugeName: 'Java', langserverCommand: langServerConfigStore.jdkLocation, langserverCommandArgs: args })
+    }
 }
