@@ -31,6 +31,7 @@ import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRe
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
+import { remote } from "electron";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -393,6 +394,9 @@ export const resolvers = {
     BitbucketOnPrem: async (parent: any):
         Promise<any> => {
       return {};
+    },
+    getVersion: async (parent: any): Promise<string> => {
+      return remote.app.getVersion()
     }
   },
   BitbucketOnPrem: {
