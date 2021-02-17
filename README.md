@@ -38,9 +38,7 @@ At Rookout we take your source code security very seriously. Rookout will never 
 
 The Rookout Desktop App was designed with security as a foremost concern, its security features are as follows:
 - The App only listens for connections from localhost.
-- The App only allows access to folders you have chosen. Path traversal is disallowed.
-- The App requires authentication using a secure token for accessing the file system.
-- On the first installation, the App will be paired with your Rookout user to allow automatic authentication.
+- The App only allows access from the Rookout app.
 
 [Learn more about our security standards](https://www.rookout.com/solution/source-code-security/)
 
