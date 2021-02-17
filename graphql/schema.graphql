@@ -26,7 +26,7 @@ type CommitDescription {
 }
 
 type Query {
-  getVersion: String!
+  explorookVersion: String!
   dir(repoId: String!, path: String!): [FileInfo]!
   file(repoId: String!, path: String!): String!
   listTree(repoId: String!): [String]!
@@ -46,6 +46,7 @@ type Query {
   canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
   testPerforceConnection(connectionSettings: PerforceConnectionSettings!): OperationStatus!
   BitbucketOnPrem: BitbucketOnPrem!
+  langServerConfig: LangServerConfig!
 }
 
 input PerforceConnectionSettings {
@@ -95,6 +96,15 @@ input SettingsInput {
   OverrideGlobal: Boolean
 }
 
+type LangServerConfig {
+  jdkLocation: String
+  jdkMinimumVersionRequired: String
+}
+
+type LangServerConfigInput {
+  jdkLocation: String
+}
+
 type OperationStatus {
   isSuccess: Boolean!
   reason: String
@@ -113,6 +123,7 @@ type Mutation {
   getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
   changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
   settings(settings: SettingsInput): Settings!
+  langServerConfig(settings: LangServerConfigInput): LangServerConfig!
 }
 
 type PerforceView {

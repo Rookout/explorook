@@ -395,9 +395,9 @@ export const resolvers = {
         Promise<any> => {
       return {};
     },
-    getVersion: async (parent: any): Promise<string> => {
+    explorookVersion: async (parent: any): Promise<string> => {
       return remote.app.getVersion()
-    }
+    },
   },
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>

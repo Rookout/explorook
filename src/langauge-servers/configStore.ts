@@ -37,6 +37,7 @@ class LangServerConfigStore {
         https.get('https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar', (response) => {
 
             if (response.statusCode !== 200){
+                getLogger('langserver').error(JSON.stringify(response))
                 return false
             }
 
