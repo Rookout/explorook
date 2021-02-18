@@ -3,6 +3,7 @@ dist
 .vscode
 .idea
 .eslintcache
+yarn-error.log
 
 release-builds
 installers
