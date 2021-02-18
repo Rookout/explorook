@@ -26,6 +26,7 @@ type CommitDescription {
 }
 
 type Query {
+  appVersion: String!
   dir(repoId: String!, path: String!): [FileInfo]!
   file(repoId: String!, path: String!): String!
   listTree(repoId: String!): [String]!
