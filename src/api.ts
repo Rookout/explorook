@@ -1,7 +1,7 @@
+import { remote } from "electron";
 import fs = require("fs");
 import _ = require("lodash");
 import {posix} from "path";
-import * as path from "path";
 import {
   BitBucketOnPremInput,
   getBranchesForRepoFromBitbucket,
@@ -31,7 +31,6 @@ import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRe
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
-import { remote } from "electron";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -255,7 +254,7 @@ export const resolvers = {
         return { isSuccess: false, reason: e?.toString() || "an unexpected error occurred" };
       }
     },
-    async canAuthGitRepos(parent: any, args: { sources : { repoUrl: string }[] }): Promise<CanQueryRepoStatus[]> {
+    async canAuthGitRepos(parent: any, args: { sources: Array<{ repoUrl: string }> }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
         const res = await canAuthGitRepo(src.repoUrl);
         return {
@@ -396,7 +395,7 @@ export const resolvers = {
       return {};
     },
     appVersion: async (parent: any): Promise<string> => {
-      return remote.app.getVersion()
+      return process.env.development ? require("../package.json").version : remote.app.getVersion();
     }
   },
   BitbucketOnPrem: {
