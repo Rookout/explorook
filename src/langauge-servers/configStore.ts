@@ -1,12 +1,13 @@
 import { getLogger } from './../logger';
-import { findJavaHomes } from './javaUtils';
+import { findJavaHomes, getJavaVersion, JAVA_FILENAME } from './javaUtils';
 import * as fs from 'fs'
 import * as https from 'https'
+import * as path from 'path'
 import Store = require("electron-store");
 import _ = require('lodash')
 
 export const javaLangServerJarLocation = 'Rookout-Java-Language-Server.jar'
-export const minimumJavaRequired = 13
+export const minimumJavaVersionRequired = 13
 
 class LangServerConfigStore {
     private store: Store
@@ -50,17 +51,24 @@ class LangServerConfigStore {
         })
     }
 
-    public findJdkLocation = (location?: string) => {
-        if (location) {
+    public setJdkLocation = (location: string) => {
+        const javaVersion = getJavaVersion(location)
+        if (javaVersion >= minimumJavaVersionRequired) {
             this.jdkLocation = location
-            this.store.set('jdk-bin-location', this.jdkLocation)
+            this.store.set('jdk-bin-location', path.join(this.jdkLocation, "bin", JAVA_FILENAME))
             return
+        } else if (javaVersion){
+            throw new Error("The submitted JRE's version is lower than required JDK " + minimumJavaVersionRequired)
         }
+        else {
+            throw new Error("This location is an invalid JRE location")
+        }
+    }
 
-        debugger
+    private findJdkLocation = () => {
         const jreLocations = findJavaHomes();
 
-        const foundJre = _.find(jreLocations, jre => jre.version >= minimumJavaRequired)
+        const foundJre = _.find(jreLocations, jre => jre.version >= minimumJavaVersionRequired)
 
         if (foundJre) {
             this.jdkLocation = foundJre.location

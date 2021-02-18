@@ -1,3 +1,4 @@
+import { langServerConfigStore, minimumJavaVersionRequired } from './langauge-servers/configStore';
 import fs = require("fs");
 import _ = require("lodash");
 import {posix} from "path";
@@ -238,6 +239,13 @@ export const resolvers = {
           reason: e.message
         };
       }
+    },
+    setLangServerConfig: async (parent: any, args: { config: LangServerConfig}): Promise<LangServerConfig> => {
+      langServerConfigStore.setJdkLocation(args.config.jdkLocation)
+
+      return { 
+        jdkLocation: langServerConfigStore.jdkLocation,
+        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
     }
   },
   Query: {
@@ -398,6 +406,11 @@ export const resolvers = {
     explorookVersion: async (parent: any): Promise<string> => {
       return remote.app.getVersion()
     },
+    langServerConfig: async (parent: any): Promise<LangServerConfig> => {
+      return { 
+        jdkLocation: langServerConfigStore.jdkLocation,
+        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
+    }
   },
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>

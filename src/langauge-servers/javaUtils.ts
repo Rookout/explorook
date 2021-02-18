@@ -8,7 +8,7 @@ import _ = require('lodash')
 const isWindows = process.platform.match('win32')
 const isMac = process.platform.match('darwin')
 const isLinux = process.platform.match('linux')
-const JAVA_FILENAME = 'java' + ((process.platform === 'win32') ? '.exe' : '');
+export const JAVA_FILENAME = 'java' + ((process.platform === 'win32') ? '.exe' : '');
 
 export interface JavaRuntime {
     location: string;
