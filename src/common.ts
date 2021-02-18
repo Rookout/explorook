@@ -18,7 +18,7 @@ interface CanQueryRepoStatus {
   reason?: string;
 }
 
-interface LangServerConfig {
+interface JavaLangServerConfig {
   jdkLocation: string
   jdkMinimumVersionRequired?: string
 }

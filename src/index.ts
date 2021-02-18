@@ -277,7 +277,6 @@ async function update() {
     } catch (error) {
     }
   };
-  updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
   tryUpdate();
 }
 

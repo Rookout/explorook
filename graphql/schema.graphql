@@ -97,12 +97,12 @@ input SettingsInput {
 }
 
 type LangServerConfig {
-  jdkLocation: String
-  jdkMinimumVersionRequired: String
+  java: javaLangServerConfig
 }
 
-type LangServerConfigInput {
+type javaLangServerConfig {
   jdkLocation: String
+  jdkMinimumVersionRequired: String
 }
 
 type OperationStatus {
@@ -123,7 +123,15 @@ type Mutation {
   getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
   changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
   settings(settings: SettingsInput): Settings!
-  setLangServerConfig(config: LangServerConfigInput): LangServerConfig!
+  langServerConfig: LangServerOps!
+}
+
+type LangServerOps {
+  setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus!
+}
+
+input JavaLangServerConfigInput {
+  jdkLocation: String
 }
 
 type PerforceView {

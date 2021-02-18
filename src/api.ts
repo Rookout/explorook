@@ -240,13 +240,6 @@ export const resolvers = {
         };
       }
     },
-    setLangServerConfig: async (parent: any, args: { config: LangServerConfig}): Promise<LangServerConfig> => {
-      langServerConfigStore.setJdkLocation(args.config.jdkLocation)
-
-      return { 
-        jdkLocation: langServerConfigStore.jdkLocation,
-        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
-    }
   },
   Query: {
     async testPerforceConnection(parent: any, args: { connectionSettings: Settings }): Promise<OperationStatus> {
@@ -406,11 +399,7 @@ export const resolvers = {
     explorookVersion: async (parent: any): Promise<string> => {
       return remote.app.getVersion()
     },
-    langServerConfig: async (parent: any): Promise<LangServerConfig> => {
-      return { 
-        jdkLocation: langServerConfigStore.jdkLocation,
-        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
-    }
+    
   },
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
@@ -425,5 +414,25 @@ export const resolvers = {
         getBranchesForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
         getFileContentFromBitbucket(args)
+  },
+  LangServerConfig: {
+    java: async (parent: any): Promise<JavaLangServerConfig> => {
+      return { 
+        jdkLocation: langServerConfigStore.jdkLocation,
+        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
+    }
+  },
+  LangServerOps: {
+    setJavaLangServerConfig: async (parent: any, args: { config: JavaLangServerConfig }): Promise<OperationStatus> => {
+      try{
+        langServerConfigStore.setJdkLocation(args.config.jdkLocation)
+      }catch (e) {
+        logger.error('Failed to setLangServerConfig',e)
+        return { 
+          isSuccess: false,
+          reason: e.message };
+      }
+      return { isSuccess: true }
+    }
   }
 };
