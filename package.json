@@ -129,6 +129,7 @@
     "uuid": "^3.2.1",
     "valid-url": "^1.0.9",
     "vscode-languageserver": "6.0.0",
+    "vscode-languageserver-protocol": "3.15.3",
     "vscode-ws-jsonrpc": "^0.2.0",
     "walk": "^2.3.13",
     "ws": "^5.0.0"
