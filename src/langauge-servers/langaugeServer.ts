@@ -76,7 +76,7 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
                     message.params.textDocument.uri = 'file://' + repo.fullpath + fileRelativePath
             }
             
-            // The frontend might send didChange requests which are wrong because of monaco in react behavior, so we ignore this kind of request
+            // The frontend might send didChange requests which are wrong because of monaco-in-react behavior, so we ignore this kind of request
             if (message.method === lsp.DidChangeTextDocumentNotification.type.method) {
                 message.method = "rookout-dummy"
             }
