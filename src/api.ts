@@ -239,6 +239,10 @@ export const resolvers = {
         };
       }
     },
+    langServerConfig: async (parent: any):
+        Promise<any> => {
+      return {};
+    }
   },
   Query: {
     async testPerforceConnection(parent: any, args: { connectionSettings: Settings }): Promise<OperationStatus> {
@@ -395,6 +399,10 @@ export const resolvers = {
         Promise<any> => {
       return {};
     },
+    langServerConfig: async (parent: any):
+        Promise<any> => {
+      return {};
+    },
     appVersion: async (parent: any): Promise<string> => {
       return process.env.development ? require("../package.json").version : remote.app.getVersion();
     }
@@ -422,9 +430,9 @@ export const resolvers = {
   },
   LangServerOps: {
     setJavaLangServerConfig: async (parent: any, args: { config: JavaLangServerConfig }): Promise<OperationStatus> => {
-      try{
+      try {
         langServerConfigStore.setJdkLocation(args.config.jdkLocation)
-      }catch (e) {
+      } catch (e) {
         logger.error('Failed to setLangServerConfig',e)
         return { 
           isSuccess: false,

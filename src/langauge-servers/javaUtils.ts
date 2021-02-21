@@ -19,7 +19,6 @@ export interface JavaRuntime {
  * return metadata for all installed JDKs.
  */
 export const findJavaHomes = (): JavaRuntime[] => {
-
     const javaBinLocations: JavaRuntime[] = [];
     const jdkSet = new Set<string>();
 
@@ -36,7 +35,7 @@ export const findJavaHomes = (): JavaRuntime[] => {
 
             if (version) {
                 javaBinLocations.push({
-                    location: javaBin,
+                    location: jdkLocation,
                     version
                 });
             } else {
@@ -171,7 +170,12 @@ const checkVersionByCLI = (javaHome: string): number => {
     }
 
     const javaBin = path.join(javaHome, "bin", JAVA_FILENAME);
-    const stdout = cp.execFileSync(javaBin, ["-version"])
+    let stdout = ""
+    try{
+        const stdout = cp.execFileSync(javaBin, ["-version"])
+    } catch (e) {
+        throw new Error("Java home location is invalid");
+    }
 
     const regexp = /version "(.*)"/g;
     const match = regexp.exec(stdout);

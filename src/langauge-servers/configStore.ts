@@ -20,7 +20,7 @@ class LangServerConfigStore {
             this.downloadJavaLangServer()
         }
 
-        this.jdkLocation = this.store.get('jdk-bin-location', '')
+        this.jdkLocation = this.store.get('java-home-location', '')
         if (!this.jdkLocation) {
             this.findJdkLocation()
         }
@@ -55,7 +55,7 @@ class LangServerConfigStore {
         const javaVersion = getJavaVersion(location)
         if (javaVersion >= minimumJavaVersionRequired) {
             this.jdkLocation = location
-            this.store.set('jdk-bin-location', path.join(this.jdkLocation, "bin", JAVA_FILENAME))
+            this.store.set('jdk-home-location', this.jdkLocation)
             return
         } else if (javaVersion){
             throw new Error("The submitted JRE's version is lower than required JDK " + minimumJavaVersionRequired)
@@ -72,7 +72,7 @@ class LangServerConfigStore {
 
         if (foundJre) {
             this.jdkLocation = foundJre.location
-            this.store.set('jdk-bin-location', this.jdkLocation)
+            this.store.set('java-home-location', this.jdkLocation)
         }
     }
 }
