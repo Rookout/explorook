@@ -1,3 +1,4 @@
+import { getLogger } from './logger';
 import { launchPythonLangaugeServer } from './langauge-servers/python';
 import { launchJavaLangaugeServer } from './langauge-servers/java';
 import * as bodyParser from "body-parser";
@@ -22,6 +23,7 @@ import { makeExecutableSchema } from 'graphql-tools'
 import { applyMiddleware } from "graphql-middleware";
 import * as http from 'http'
 import { Server } from 'ws'
+import * as WebSocket from 'ws'
 import * as url from 'url'
 import * as net from 'net'
 import * as rpc from "vscode-ws-jsonrpc";
@@ -112,42 +114,51 @@ const startWebSocketServer = (httpServer: net.Server) => {
   });
 
   // expecting path /langServer/<lang_name>, e.g /langServer/java
-  httpServer.on('upgrade', (request: http.IncomingMessage, socket: net.Socket, head: Buffer) => {
+  httpServer.on('upgrade', (request: http.IncomingMessage, socket: net.Socket, head: Buffer, ...args) => {
     const pathname = request.url ? url.parse(request.url).pathname : undefined;
-    if (pathname.startsWith('/langServer')) {
+
+    wss.handleUpgrade(request, socket, head, webSocket => {
+      if (!pathname.startsWith('/langServer/')) { 
+        return closeWebSocket(webSocket, 'Endpoint isnt supported')
+      }
+
       const langName = pathname.replace('/langServer/', '')
       const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName)
 
-      if (typeof launchLangServer === 'function') {
-        wss.handleUpgrade(request, socket, head, webSocket => {
-          const socket: rpc.IWebSocket = {
-            send: content => webSocket.send(content, error => {
-              if (error) {
-                throw error;
-              }
-            }),
-            onMessage: cb => webSocket.on('message', cb),
-            onError: cb => webSocket.on('error', cb),
-            onClose: cb => webSocket.on('close', cb),
-            dispose: () => webSocket.close()
-          };
-          // launch the server when the web socket is opened
-          if (webSocket.readyState === webSocket.OPEN) {
-            launchLangServer(socket);
-          } else {
-            webSocket.on('open', () => launchLangServer(socket));
-          }
-        });
+      if (!launchLangServer) { 
+        return closeWebSocket(webSocket, 'Bad Language / Language isnt supported')
       }
-    }
+
+      const rpcSocket: rpc.IWebSocket = {
+        send: content => webSocket.send(content, error => {
+          if (error) {
+            throw error;
+          }
+        }),
+        onMessage: cb => webSocket.on('message', cb),
+        onError: cb => webSocket.on('error', cb),
+        onClose: cb => webSocket.on('close', cb),
+        dispose: () => webSocket.close()
+      };
+      // launch the server when the web socket is opened
+      if (webSocket.readyState === webSocket.OPEN) {
+        launchLangServer(rpcSocket);
+      } else {
+        webSocket.on('open', () => launchLangServer(rpcSocket));
+      }
+    });
   })
 }
 
-const getLaunchLanguangeServerFuncByLangName = (langName: string) => {
+const closeWebSocket = (ws: WebSocket, error: string) => {
+  ws.send(error)
+  ws.close(1008)
+}
+
+const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc.IWebSocket) => void) => {
   switch (langName.toLowerCase()) {
     case 'java':
       return launchJavaLangaugeServer
-    case 'python':
-      return launchPythonLangaugeServer
+    // Python exists but should be avilable in this version yet
   }
 }

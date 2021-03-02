@@ -15,7 +15,7 @@ class LangServerConfigStore {
     public jdkLocation: string
 
     constructor() {
-        this.store = new Store({name: "lang-servers-config"})
+        this.store = new Store({name: "explrook"})
         if (!this.doesJavaJarExist()) {
             this.downloadJavaLangServer()
         }
@@ -38,7 +38,7 @@ class LangServerConfigStore {
         https.get('https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar', (response) => {
 
             if (response.statusCode !== 200){
-                getLogger('langserver').error(JSON.stringify(response))
+                getLogger('langserver').error("Failed to download Java Langserver", response)
                 return false
             }
 

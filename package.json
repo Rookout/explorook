@@ -124,6 +124,7 @@
     "parse-repo": "^1.0.4",
     "patch-package": "^6.2.2",
     "postinstall-postinstall": "^2.1.0",
+    "semver": "^7.3.4",
     "slash": "^2.0.0",
     "url-assembler": "^2.1.1",
     "uuid": "^3.2.1",

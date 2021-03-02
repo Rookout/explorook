@@ -3,12 +3,13 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as cp from 'child_process'
 import * as os from 'os'
+import semver = require('semver')
 import _ = require('lodash')
 
 const isWindows = process.platform.match('win32')
 const isMac = process.platform.match('darwin')
 const isLinux = process.platform.match('linux')
-export const JAVA_FILENAME = 'java' + ((process.platform === 'win32') ? '.exe' : '');
+export const JAVA_FILENAME = isWindows ? 'java.exe' : 'java';
 
 export interface JavaRuntime {
     location: string;
@@ -27,7 +28,7 @@ export const findJavaHomes = (): JavaRuntime[] => {
     updateJDKs(jdkSet, fromCommonPlaces());
 
     jdkSet.forEach(jdkLocation => {
-        getLogger('langserver').debug('Java - found location found', { jdkLocation })
+        getLogger('langserver').debug('Java - found candidate jdk location', { jdkLocation })
         const javaBin = path.join(jdkLocation, "bin", JAVA_FILENAME)
 
         if (fs.existsSync(javaBin)){
@@ -50,12 +51,13 @@ const updateJDKs = (set: Set<string>, newJdks: string[]) => {
     newJdks.forEach(jdkLoc => {set.add(jdkLoc); console.log(jdkLoc)})
 }
 
-const getJavaLocationsfromEnv = (name: string): string[] => {
-    if (!process.env[name]) {
+const getJavaLocationsfromEnv = (envVarName: string): string[] => {
+    if (!process.env[envVarName]) {
         return []
     }
 
-    const workspaces = process.env[name].split(path.delimiter);
+    // Expecting the envVar to hold 1 or more 'path/to/jdk/home' s, if more seperated by ';'
+    const workspaces = process.env[envVarName].split(path.delimiter);
     const javaLocations = new Array<string>()
     workspaces.forEach(javaLoc => javaLocations.push(javaLoc))
 
@@ -119,13 +121,7 @@ const fromCommonPlaces = (): string[] => {
 }
 
 
-export const getJavaVersion = (javaPath: string) => {
-    let javaVersion = checkVersionInReleaseFile(javaPath);
-    if (!javaVersion) {
-        javaVersion = checkVersionByCLI(javaPath);
-    }
-    return javaVersion;
-}
+export const getJavaVersion = (javaPath: string) => checkVersionInReleaseFile(javaPath) || checkVersionByCLI(javaPath);
 
 const checkVersionInReleaseFile = (javaPath: string): number => {
     if (!javaPath) {
@@ -154,14 +150,12 @@ const parseMajorVersion = (version: string): number => {
     if (version.startsWith("1.")) {
         version = version.substring(2);
     }
-    // look into the interesting bits now
-    const regexp = /\d+/g;
-    const match = regexp.exec(version);
-    let javaVersion = 0;
-    if (match) {
-        javaVersion = parseInt(match[0]);
+
+    try {
+        return semver.major(version);
+    } catch (e) {
+        return 0;
     }
-    return javaVersion;
 }
 
 const checkVersionByCLI = (javaHome: string): number => {
@@ -172,7 +166,7 @@ const checkVersionByCLI = (javaHome: string): number => {
     const javaBin = path.join(javaHome, "bin", JAVA_FILENAME);
     let stdout = ""
     try{
-        const stdout = cp.execFileSync(javaBin, ["-version"])
+        stdout = cp.execFileSync(javaBin, ["-version"])
     } catch (e) {
         throw new Error("Java home location is invalid");
     }
