@@ -7,6 +7,7 @@ import { Repo, repStore } from '../repoStore';
 import * as rpc from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
+import * as path from 'path'
 export interface langServerStartConfig {
     LangaugeName: string,
     langserverCommand: string,
@@ -18,8 +19,8 @@ export interface langServerStartConfig {
 // the repo's fullPath is the one sent to the langserver itself.
 
 // Every other request to the langserver sends which file is it asking about,
-// the file's uri is sent like this "file://<relative_path_to_file>",
-// the langserver uses fullPath so we use the repoStore to get it.
+// the file's uri is sent like this "file://<relative_path_to_file>".
+// But the langserver uses fullPath so we use the repoStore to get it.
 export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langServerStartConfig) => {
 
     // Since we can't know which response is a response to definition,
@@ -33,82 +34,97 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
 
     const langserverProcessName = 'Rookout-' + startConfig.LangaugeName + '-LangServer'
     const serverConnection = bridgeServer.createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs)
-    const socketConnection = bridgeServer.createConnection(reader, writer, () => {socket.dispose(); serverConnection.dispose()});
-    
+    const socketConnection = bridgeServer.createConnection(reader, writer, () => { socket.dispose(); serverConnection.dispose() });
+
 
     bridgeServer.forward(socketConnection, serverConnection, message => {
         if (rpc.isRequestMessage(message)) {
-            if (message.method === lsp.InitializeRequest.type.method) {
-                const initializeParams = message.params as lsp.InitializeParams;
-                initializeParams.processId = process.pid;
-                
-                const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
-                repo = repStore.getRepoById(repoId)
-
-                // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
-                // to the language server the workspace folder
-                initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repo.fullpath
-                initializeParams.rootPath = repo.fullpath
-            }
-
-            if (message.method === lsp.DefinitionRequest.type.method && message.id) {
-                definitionsIds.add(message.id)
-
-                message.params.textDocument.uri = message.params.textDocument.uri.replace('file://', 'file://' + repo.fullpath)
-            }
-
-            if (message.method === lsp.FoldingRangeRequest.type.method ||
-                message.method === lsp.CodeLensRequest.type.method) {
-                    message.params.textDocument.uri = message.params.textDocument.uri.replace('file://', 'file://' + repo.fullpath)
-                }
+            handleRequestMessage(message)
         }
 
         if (rpc.isNotificationMessage(message)) {
-            if (message.method === lsp.DidOpenTextDocumentNotification.type.method || 
-                message.method === lsp.DidCloseTextDocumentNotification.type.method) {
-                
-                    const fileRelativePath = message.params.textDocument.uri.replace('file://', '')
-                    message.params.textDocument.uri = 'file://' + repo.fullpath + fileRelativePath
-            }
-            
-            // The frontend might send didChange requests which are wrong because of monaco-in-react behavior, so we ignore this kind of request
-            if (message.method === lsp.DidChangeTextDocumentNotification.type.method) {
-                message.method = "rookout-dummy"
-            }
+            handleNotificationMessage(message)
         }
 
         if (rpc.isResponseMessage(message)) {
-            if (definitionsIds.has(message.id)) {
-                definitionsIds.delete(message.id)
-                
-                if (message?.result){
-                    message.result = fixDefinitionResultsPath(message.result as Array<any>, repo.fullpath)
-                }
-                console.log(message)
-                return message
-            }
-
-            // disabling various requests
-            if ((message?.result as any)?.capabilities) {
-                (message.result as any).capabilities.hoverProvider = false;
-                (message.result as any).capabilities.referencesProvider = false;
-            }
-
+            handleResponseMessage(message)
         }
-            
+
         console.log(message)
-            
+
         return message;
     });
+
+    // Request message are client -> server messages where the server needs to response to them
+    const handleRequestMessage = (message: rpc.RequestMessage) => {
+        if (message.method === lsp.InitializeRequest.type.method) {
+            const initializeParams = message.params as lsp.InitializeParams;
+            initializeParams.processId = process.pid;
+
+            const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
+            repo = repStore.getRepoById(repoId)
+
+            // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
+            // to the language server the workspace folder
+            initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repo.fullpath
+            initializeParams.rootPath = repo.fullpath
+        } else if (message.params.textDocument.uri) {
+            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repo)
+        }
+
+        // Mark the go-to-definition requets in order to catch the responses to them
+        if (message.method === lsp.DefinitionRequest.type.method && message.id) {
+            definitionsIds.add(message.id)
+        }
+    }
+
+    // Notification message are client -> server messages where the server DOESNT needs to response to them
+    const handleNotificationMessage = (message: rpc.NotificationMessage) => {
+        if (message.method === lsp.DidOpenTextDocumentNotification.type.method ||
+            message.method === lsp.DidCloseTextDocumentNotification.type.method) {
+
+            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repo)
+        }
+
+        // The frontend might send didChange requests which are wrong because of monaco-in-react behavior, so we ignore this kind of request
+        if (message.method === lsp.DidChangeTextDocumentNotification.type.method) {
+            message.method = "rookout-dummy"
+        }
+    }
+
+    // Reponse message are server -> clienmt messages
+    const handleResponseMessage = (message: rpc.ResponseMessage) => {
+        if (definitionsIds.has(message.id)) {
+            definitionsIds.delete(message.id)
+
+            if (message?.result) {
+                message.result = fixDefinitionResultsPath(message.result as Array<any>, repo.fullpath)
+            }
+
+            return message
+        }
+
+        // disabling capabillities so the client wont send unsupported abilities
+        if ((message?.result as any)?.capabilities) {
+            (message.result as any).capabilities.hoverProvider = false;
+            (message.result as any).capabilities.referencesProvider = false;
+        }
+    }
 }
+
+
 
 // The language server returns the full path of the result,
 // e.g "file:///Users/gilad/dev/python/functions.py" or "file://C://Java/my-project/Functions.java"
 // The repo's fullPath is removed before it is sent to the frontend,
 // e.g, if the repo path is "/Users/gilad/dev/python/" (python example), it will be changed to "file:///functions.py"
-const fixDefinitionResultsPath = (definitionResults: Array<any>, repoFullPath: string) : Array<any> =>  {
+const fixDefinitionResultsPath = (definitionResults: Array<any>, repoFullPath: string): Array<any> => {
     return definitionResults.map(result => {
-        result.uri = result.uri.replace(repoFullPath, '') 
+        result.uri = result.uri.replace(repoFullPath, '')
         return result
     })
+}
+
+const getFileFullPath = (relativePath: string, repo: Repo): string => {
+    return relativePath.replace('file://', 'file://' + repo.fullpath)
 }
