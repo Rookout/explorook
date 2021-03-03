@@ -73,7 +73,7 @@ const fromCommonPlaces = (): string[] => {
         const jvmStore = "/Library/Java/JavaVirtualMachines";
         const subfolder = "Contents/Home";
 
-        const jvms = fs.readdirSync(jvmStore);
+        const jvms = fs.existsSync(jvmStore) ? fs.readdirSync(jvmStore) : [];
         jvms.forEach(jvm => {
             const javaLoc = path.join(jvmStore, jvm, subfolder);
             if (fs.existsSync(javaLoc)) {
@@ -94,7 +94,7 @@ const fromCommonPlaces = (): string[] => {
         ].filter(Boolean) as string[];
         const jvmStores = _.uniq(possibleLocations);
         jvmStores.forEach(jvmStore => {
-            const jvms = fs.readdirSync(jvmStore);
+            const jvms = fs.existsSync(jvmStore) ? fs.readdirSync(jvmStore) : [];
             jvms.forEach(jvm => {
                 const javaLoc = path.join(jvmStore, jvm);
                 if (fs.existsSync(javaLoc)) {
@@ -107,7 +107,7 @@ const fromCommonPlaces = (): string[] => {
     // common place for Linux
     if (isLinux) {
         const jvmStore = "/usr/lib/jvm";
-        const jvms = fs.readdirSync(jvmStore);
+        const jvms = fs.existsSync(jvmStore) ? fs.readdirSync(jvmStore) : [];
 
         jvms.forEach(jvm => {
             const javaLoc = path.join(jvmStore, jvm);

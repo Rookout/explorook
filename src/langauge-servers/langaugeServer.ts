@@ -7,7 +7,6 @@ import { Repo, repStore } from '../repoStore';
 import * as rpc from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
-import * as path from 'path'
 export interface langServerStartConfig {
     LangaugeName: string,
     langserverCommand: string,

@@ -1,6 +1,6 @@
 import { getStoreSafe, IStore } from './../explorook-store';
 import { getLogger } from './../logger';
-import { findJavaHomes, getJavaVersion, JAVA_FILENAME } from './javaUtils';
+import { findJavaHomes, getJavaVersion } from './javaUtils';
 import * as fs from 'fs'
 import * as https from 'https'
 import _ = require('lodash')
