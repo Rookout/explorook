@@ -92,7 +92,7 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
         }
     }
 
-    // Reponse message are server -> clienmt messages
+    // Reponse message are server -> client messages
     const handleResponseMessage = (message: rpc.ResponseMessage) => {
         if (definitionsIds.has(message.id)) {
             definitionsIds.delete(message.id)
@@ -108,10 +108,10 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
         if ((message?.result as any)?.capabilities) {
             (message.result as any).capabilities.hoverProvider = false;
             (message.result as any).capabilities.referencesProvider = false;
+            (message.result as any).capabilities.codeLensProvider = false;
         }
     }
 }
-
 
 
 // The language server returns the full path of the result,

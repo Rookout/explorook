@@ -152,13 +152,13 @@ const startWebSocketServer = (httpServer: net.Server) => {
 
 const closeWebSocket = (ws: WebSocket, error: string) => {
   ws.send(error)
-  ws.close(1008)
+  ws.close()
 }
 
 const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc.IWebSocket) => void) => {
   switch (langName.toLowerCase()) {
     case 'java':
       return launchJavaLangaugeServer
-    // Python exists but should be avilable in this version yet
+    // Python exists but should not be avilable in this version yet
   }
 }

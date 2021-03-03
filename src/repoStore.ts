@@ -1,5 +1,5 @@
+import { IStore, getStoreSafe } from './explorook-store';
 import { ipcRenderer } from "electron";
-import Store = require("electron-store");
 import fs = require("fs");
 import git = require("isomorphic-git");
 import _ = require("lodash");
@@ -7,13 +7,6 @@ import parseRepo = require("parse-repo");
 import { Repository } from "./common/repository";
 import { IndexWorker } from "./fsIndexer";
 import { getRepoId } from "./git";
-import MemStore from "./mem-store";
-
-interface IStore {
-    get(key: any, defaultValue?: string): string;
-    set(key: string, value: string): void;
-}
-
 export class Repo {
     public repoName: string;
     public fullpath: string;
@@ -71,13 +64,7 @@ class RepoStore {
     private repos: Repo[];
 
     constructor() {
-        try {
-            this.store = new Store({ name: "explorook" });
-        } catch (error) { // probably headless mode - defaulting to memory store
-            // tslint:disable-next-line:no-console
-            console.log("couldn't create electron-store. defaulting to memory store (this is normal when running headless mode)");
-            this.store = new MemStore();
-        }
+        this.store = getStoreSafe()
         const models = JSON.parse(this.store.get("repositories", "[]")) as Repository[];
         this.allowIndex = JSON.parse(this.store.get("allow-indexing", "true"));
         this.repos = [];

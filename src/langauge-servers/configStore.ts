@@ -1,21 +1,22 @@
+import { getStoreSafe, IStore } from './../explorook-store';
 import { getLogger } from './../logger';
 import { findJavaHomes, getJavaVersion, JAVA_FILENAME } from './javaUtils';
 import * as fs from 'fs'
 import * as https from 'https'
-import * as path from 'path'
-import Store = require("electron-store");
 import _ = require('lodash')
 
+export const logger = getLogger('langerServer')
+export const JavaLangServerDownloadURL = 'https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar'
 export const javaLangServerJarLocation = 'Rookout-Java-Language-Server.jar'
 export const minimumJavaVersionRequired = 13
 
 class LangServerConfigStore {
-    private store: Store
+    private store: IStore
     public isDownloadingJavaJar: boolean = false
     public jdkLocation: string
 
     constructor() {
-        this.store = new Store({name: "explrook"})
+        this.store = getStoreSafe()
         if (!this.doesJavaJarExist()) {
             this.downloadJavaLangServer()
         }
@@ -34,18 +35,20 @@ class LangServerConfigStore {
     private downloadJavaLangServer = async () => {
         this.isDownloadingJavaJar = true
 
+        logger.debug('downloading Java LS from ' + JavaLangServerDownloadURL)
+
         const file = fs.createWriteStream(javaLangServerJarLocation);
-        https.get('https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar', (response) => {
+        https.get(JavaLangServerDownloadURL, (response) => {
 
             if (response.statusCode !== 200){
-                getLogger('langserver').error("Failed to download Java Langserver", response)
+                logger.error("Failed to download Java Langserver", response)
                 return false
             }
 
             response.pipe(file);
             file.on('finish', () => file.close())
             this.isDownloadingJavaJar = false
-            getLogger('langserver').debug('Java - Langserver downloaded successfully')
+            logger.debug('Java - Langserver downloaded successfully')
             
             return true
         })

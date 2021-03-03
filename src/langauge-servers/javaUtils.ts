@@ -6,6 +6,7 @@ import * as os from 'os'
 import semver = require('semver')
 import _ = require('lodash')
 
+const logger = getLogger('langserver')
 const isWindows = process.platform.match('win32')
 const isMac = process.platform.match('darwin')
 const isLinux = process.platform.match('linux')
@@ -28,7 +29,7 @@ export const findJavaHomes = (): JavaRuntime[] => {
     updateJDKs(jdkSet, fromCommonPlaces());
 
     jdkSet.forEach(jdkLocation => {
-        getLogger('langserver').debug('Java - found candidate jdk location', { jdkLocation })
+        logger.debug('Java - found candidate jdk location', { jdkLocation })
         const javaBin = path.join(jdkLocation, "bin", JAVA_FILENAME)
 
         if (fs.existsSync(javaBin)){
@@ -40,7 +41,7 @@ export const findJavaHomes = (): JavaRuntime[] => {
                     version
                 });
             } else {
-                getLogger("langserver").warn("Java - no java exec was found")
+                logger.warn("Java - no java exec was found")
             }
         }
     })
@@ -154,6 +155,7 @@ const parseMajorVersion = (version: string): number => {
     try {
         return semver.major(version);
     } catch (e) {
+        logger.error('version cannot be parsed', { version })
         return 0;
     }
 }

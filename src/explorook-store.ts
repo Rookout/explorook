@@ -1,6 +1,11 @@
 import Store = require("electron-store");
 import MemStore from "./mem-store";
 
+export interface IStore {
+    get(key: any, defaultValue?: any): string;
+    set(key: string, value: any): void;
+}
+
 export class ExplorookStore extends Store {
     constructor(name: string = "explorook") {
         super({
@@ -21,7 +26,7 @@ export class ExplorookStore extends Store {
     }
 }
 
-export const getStoreSafe = () => {
+export const getStoreSafe = () : IStore => {
     try {
         return new Store({ name: "explorook", watch: true });
     } catch (error) { // probably headless mode - defaulting to memory store
