@@ -263,7 +263,7 @@ async function update() {
     console.log('gotcha', error)
     notify(error)
   })
-  let updateInterval: NodeJS.Timer = null;
+  let updateInterval: ReturnType<typeof setInterval> = null;
   autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
     willUpdateOnClose = true;
     if (updateInterval) {
