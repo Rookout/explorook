@@ -1,3 +1,4 @@
+import { launchJavaLangaugeServer } from './langauge-servers/java';
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import { join } from "path";
@@ -19,6 +20,11 @@ import { readFileSync } from 'fs'
 import { makeExecutableSchema } from 'graphql-tools'
 import { applyMiddleware } from "graphql-middleware";
 import * as http from 'http'
+import { Server } from 'ws'
+import * as WebSocket from 'ws'
+import * as url from 'url'
+import * as net from 'net'
+import * as rpc from "vscode-ws-jsonrpc";
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
@@ -40,9 +46,9 @@ const defaultOptions: StartOptions = {
 };
 
 const corsDomainWhitelist = [
-    /^https:\/\/.*\.rookout.com$/,
-    /^https:\/\/.*\.rookout-dev.com$/,
-    "https://localhost:8080"
+  /^https:\/\/.*\.rookout.com$/,
+  /^https:\/\/.*\.rookout-dev.com$/,
+  "https://localhost:8080"
 ];
 
 const corsOptions = {
@@ -52,7 +58,7 @@ const corsOptions = {
 export const start = (options: StartOptions) => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
-  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8'});
+  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8' });
 
   const reconfigure = (id: string, site: string) => {
     settings.userId = id;
@@ -70,7 +76,7 @@ export const start = (options: StartOptions) => {
     introspection: true,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
-        notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors }} );
+        notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors } });
       }
       return errors;
     }
@@ -92,8 +98,65 @@ export const start = (options: StartOptions) => {
 
   apolloServer.applyMiddleware({ app, path: '/' });
 
-  const httpServer = http.createServer(app);
-  httpServer.listen(settings.port)
-  
+  const httpServer = http.createServer(app).listen(settings.port);
+
+  startWebSocketServer(httpServer)
+
   console.log(`Server is running on http://localhost:${settings.port}`);
 };
+
+const startWebSocketServer = (httpServer: net.Server) => {
+  const wss = new Server({
+    noServer: true,
+    perMessageDeflate: false
+  });
+
+  // expecting path /langServer/<lang_name>, e.g /langServer/java
+  httpServer.on('upgrade', (request: http.IncomingMessage, socket: net.Socket, head: Buffer, ...args) => {
+    const pathname = request.url ? url.parse(request.url).pathname : undefined;
+
+    wss.handleUpgrade(request, socket, head, webSocket => {
+      if (!pathname.startsWith('/langServer/')) { 
+        return closeWebSocket(webSocket, 'Endpoint isnt supported')
+      }
+
+      const langName = pathname.replace('/langServer/', '')
+      const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName)
+
+      if (!launchLangServer) { 
+        return closeWebSocket(webSocket, 'Bad Language / Language isnt supported')
+      }
+
+      const rpcSocket: rpc.IWebSocket = {
+        send: content => webSocket.send(content, error => {
+          if (error) {
+            throw error;
+          }
+        }),
+        onMessage: cb => webSocket.on('message', cb),
+        onError: cb => webSocket.on('error', cb),
+        onClose: cb => webSocket.on('close', cb),
+        dispose: () => webSocket.close()
+      };
+      // launch the server when the web socket is opened
+      if (webSocket.readyState === webSocket.OPEN) {
+        launchLangServer(rpcSocket);
+      } else {
+        webSocket.on('open', () => launchLangServer(rpcSocket));
+      }
+    });
+  })
+}
+
+const closeWebSocket = (ws: WebSocket, error: string) => {
+  ws.send(error)
+  ws.close()
+}
+
+const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc.IWebSocket) => void) => {
+  switch (langName.toLowerCase()) {
+    case 'java':
+      return launchJavaLangaugeServer
+    // Python exists but should not be avilable in this version yet
+  }
+}

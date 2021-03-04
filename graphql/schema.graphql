@@ -46,6 +46,7 @@ type Query {
   canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
   testPerforceConnection(connectionSettings: PerforceConnectionSettings!): OperationStatus!
   BitbucketOnPrem: BitbucketOnPrem!
+  langServerConfig: LangServerConfig!
 }
 
 input PerforceConnectionSettings {
@@ -95,6 +96,15 @@ input SettingsInput {
   OverrideGlobal: Boolean
 }
 
+type LangServerConfig {
+  java: javaLangServerConfig
+}
+
+type javaLangServerConfig {
+  jdkLocation: String
+  jdkMinimumVersionRequired: String
+}
+
 type OperationStatus {
   isSuccess: Boolean!
   reason: String
@@ -113,6 +123,15 @@ type Mutation {
   getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
   changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
   settings(settings: SettingsInput): Settings!
+  langServerConfig: LangServerOps!
+}
+
+type LangServerOps {
+  setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus!
+}
+
+input JavaLangServerConfigInput {
+  jdkLocation: String
 }
 
 type PerforceView {

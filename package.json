@@ -99,7 +99,6 @@
   },
   "dependencies": {
     "@bugsnag/js": "6.5.2",
-    "@codingame/monaco-jsonrpc": "^0.3.0",
     "@types/valid-url": "^1.0.2",
     "analytics-node": "^3.5.0",
     "apollo-server-core": "^2.19.1",
@@ -125,11 +124,16 @@
     "parse-repo": "^1.0.4",
     "patch-package": "^6.2.2",
     "postinstall-postinstall": "^2.1.0",
+    "semver": "^7.3.4",
     "slash": "^2.0.0",
     "url-assembler": "^2.1.1",
     "uuid": "^3.2.1",
     "valid-url": "^1.0.9",
-    "walk": "^2.3.13"
+    "vscode-languageserver": "6.0.0",
+    "vscode-languageserver-protocol": "3.15.3",
+    "vscode-ws-jsonrpc": "^0.2.0",
+    "walk": "^2.3.13",
+    "ws": "^5.0.0"
   },
   "resolutions": {
     "@playlyfe/gql/lodash": "^4.17.15",

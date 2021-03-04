@@ -1,3 +1,4 @@
+import { langServerConfigStore, minimumJavaVersionRequired } from './langauge-servers/configStore';
 import { remote } from "electron";
 import fs = require("fs");
 import _ = require("lodash");
@@ -237,6 +238,10 @@ export const resolvers = {
           reason: e.message
         };
       }
+    },
+    langServerConfig: async (parent: any):
+        Promise<any> => {
+      return {};
     }
   },
   Query: {
@@ -394,6 +399,10 @@ export const resolvers = {
         Promise<any> => {
       return {};
     },
+    langServerConfig: async (parent: any):
+        Promise<any> => {
+      return {};
+    },
     appVersion: async (parent: any): Promise<string> => {
       return process.env.development ? require("../package.json").version : remote.app.getVersion();
     }
@@ -411,5 +420,25 @@ export const resolvers = {
         getBranchesForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
         getFileContentFromBitbucket(args)
+  },
+  LangServerConfig: {
+    java: async (parent: any): Promise<JavaLangServerConfig> => {
+      return { 
+        jdkLocation: langServerConfigStore.jdkLocation,
+        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
+    }
+  },
+  LangServerOps: {
+    setJavaLangServerConfig: async (parent: any, args: { config: JavaLangServerConfig }): Promise<OperationStatus> => {
+      try {
+        langServerConfigStore.setJdkLocation(args.config.jdkLocation)
+      } catch (e) {
+        logger.error('Failed to setLangServerConfig',e)
+        return { 
+          isSuccess: false,
+          reason: e.message };
+      }
+      return { isSuccess: true }
+    }
   }
 };

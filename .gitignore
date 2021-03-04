@@ -2,6 +2,8 @@ node_modules
 dist
 .vscode
 .idea
+.eslintcache
+yarn-error.log
 
 release-builds
 installers
@@ -10,3 +12,5 @@ analyze/
 
 *.p12
 src/test.js
+
+Rookout-Java-Language-Server.jar
