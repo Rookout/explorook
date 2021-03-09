@@ -49,6 +49,12 @@ const onAddRepoRequest = async (fullpath: string, id?: string) => {
     return true;
 };
 
+const onRemoveRepoRequest = async (repId: string) => {
+  repStore.remove(repId);
+  ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
+  return true;
+};
+
 const updateGitLoadingState = (isLoading: boolean, repo: string) => {
     ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", { isLoading, repo });
 };
@@ -64,7 +70,7 @@ ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firs
         const userId: string = ipcRenderer.sendSync("get-user-id");
         const userSite: string = ipcRenderer.sendSync("get-user-site");
         graphQlServer.start({ userId, userSite, accessToken: token, port, firstTimeLaunch,
-            onAddRepoRequest, updateGitLoadingState });
+            onAddRepoRequest, updateGitLoadingState, onRemoveRepoRequest });
     } catch (err) {
         console.error(err);
         notify("Failed to start local server", { metaData: { err }});

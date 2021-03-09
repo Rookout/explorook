@@ -1,4 +1,3 @@
-import { langServerConfigStore, minimumJavaVersionRequired } from './langauge-servers/configStore';
 import { remote } from "electron";
 import fs = require("fs");
 import _ = require("lodash");
@@ -27,10 +26,11 @@ import {
   removeGitReposFromStore,
   TMP_DIR_PREFIX
 } from "./git";
+import { langServerConfigStore, minimumJavaVersionRequired } from "./langauge-servers/configStore";
 import {getLogger} from "./logger";
 import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
-import {loadingStateUpdateHandler, onAddRepoRequestHandler} from "./server";
+import {loadingStateUpdateHandler, onAddRepoRequestHandler, onRemoveRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
 const folderDelete = require("folder-delete");
 
@@ -81,6 +81,20 @@ export const resolvers = {
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       logger.debug("Adding repo", args.fullpath);
       return context.onAddRepoRequest(args.fullpath);
+    },
+    removeRepository: async (parent: any, args: {repoId: string}, context: {
+      onAddRepoRequest: onAddRepoRequestHandler, onRemoveRepoRequest: onRemoveRepoRequestHandler }
+      ): Promise<boolean> => {
+      try {
+        await context.onRemoveRepoRequest(args.repoId);
+      } catch (e) {
+        logger.error("failed to remove repo", {
+          e,
+          repoId: args.repoId
+        });
+        return false;
+      }
+      return true;
     },
     changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }):
         Promise<OperationStatus> => {
@@ -423,22 +437,22 @@ export const resolvers = {
   },
   LangServerConfig: {
     java: async (parent: any): Promise<JavaLangServerConfig> => {
-      return { 
+      return {
         jdkLocation: langServerConfigStore.jdkLocation,
-        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() }
+        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() };
     }
   },
   LangServerOps: {
     setJavaLangServerConfig: async (parent: any, args: { config: JavaLangServerConfig }): Promise<OperationStatus> => {
       try {
-        langServerConfigStore.setJdkLocation(args.config.jdkLocation)
+        langServerConfigStore.setJdkLocation(args.config.jdkLocation);
       } catch (e) {
-        logger.error('Failed to setLangServerConfig',e)
-        return { 
+        logger.error("Failed to setLangServerConfig", e);
+        return {
           isSuccess: false,
           reason: e.message };
       }
-      return { isSuccess: true }
+      return { isSuccess: true };
     }
   }
 };
