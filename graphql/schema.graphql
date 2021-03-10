@@ -117,6 +117,7 @@ input GitSource {
 
 type Mutation {
   addRepository(fullpath: String): Boolean
+  removeRepository(repoId: String!): Boolean
   changePerforceViews(views: [String]!): OperationStatus!
   switchPerforceChangelist(changelistId: String!): OperationStatus!
   getGitRepo(sources: [GitSource]!): OperationStatus!

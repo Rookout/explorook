@@ -40,4 +40,8 @@ process.on("unhandledRejection", (error) => {
     console.error("unhandled rejection thrown", error);
 });
 
-graphQlServer.start({ useTokenAuthorization: !!args.token, port: args.p || args.port || "", accessToken: args.token || "" });
+graphQlServer.start({
+    useTokenAuthorization: !!args.token,
+    port: args.p || args.port || "",
+    accessToken: args.token || ""
+});

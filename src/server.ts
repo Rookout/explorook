@@ -1,9 +1,20 @@
-import { launchJavaLangaugeServer } from './langauge-servers/java';
+import { ApolloServer } from "apollo-server-express";
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
+import * as express from "express";
+import { readFileSync } from "fs";
+import { applyMiddleware } from "graphql-middleware";
+import { makeExecutableSchema } from "graphql-tools";
+import * as http from "http";
+import * as net from "net";
 import { join } from "path";
+import * as url from "url";
+import * as rpc from "vscode-ws-jsonrpc";
+import { Server } from "ws";
+import * as WebSocket from "ws";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
+import { launchJavaLangaugeServer } from "./langauge-servers/java";
 import {
   authenticateController,
   authenticateControllerV2,
@@ -14,19 +25,10 @@ import {
   resolveRepoFromId,
   validateBitbucketServerHttps
 } from "./middlewares";
-import { ApolloServer } from 'apollo-server-express'
-import * as express from 'express'
-import { readFileSync } from 'fs'
-import { makeExecutableSchema } from 'graphql-tools'
-import { applyMiddleware } from "graphql-middleware";
-import * as http from 'http'
-import { Server } from 'ws'
-import * as WebSocket from 'ws'
-import * as url from 'url'
-import * as net from 'net'
-import * as rpc from "vscode-ws-jsonrpc";
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
+
+export type onRemoveRepoRequestHandler = (repId: string) => Promise<boolean>;
 
 export type loadingStateUpdateHandler = (isLoading: boolean, repo: string) => void;
 
@@ -37,6 +39,7 @@ export interface StartOptions {
   port?: number;
   firstTimeLaunch?: boolean;
   onAddRepoRequest?: onAddRepoRequestHandler;
+  onRemoveRepoRequest?: onRemoveRepoRequestHandler;
   useTokenAuthorization?: boolean;
   updateGitLoadingState?: loadingStateUpdateHandler;
 }
@@ -58,19 +61,23 @@ const corsOptions = {
 export const start = (options: StartOptions) => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
-  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: 'utf8' });
+  const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: "utf8" });
 
   const reconfigure = (id: string, site: string) => {
     settings.userId = id;
     settings.userSite = site;
   };
 
-  const schema = makeExecutableSchema({ typeDefs, resolvers })
-  const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps)
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
+  const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps);
 
-  const app = express()
+  const app = express();
   const apolloServer = new ApolloServer({
-    context: () => ({ onAddRepoRequest: settings.onAddRepoRequest, updateGitLoadingState: settings.updateGitLoadingState }),
+    context: () => ({
+      onAddRepoRequest: settings.onAddRepoRequest,
+      onRemoveRepoRequest: settings.onRemoveRepoRequest,
+      updateGitLoadingState: settings.updateGitLoadingState
+    }),
     schema: schemaWithMiddleware,
     subscriptions: false,
     introspection: true,
@@ -80,7 +87,7 @@ export const start = (options: StartOptions) => {
       }
       return errors;
     }
-  })
+  });
 
   app.use(cors(corsOptions));
   app.use(bodyParser.json());
@@ -96,11 +103,11 @@ export const start = (options: StartOptions) => {
     app.use(authorizationMiddleware(settings.accessToken));
   }
 
-  apolloServer.applyMiddleware({ app, path: '/' });
+  apolloServer.applyMiddleware({ app, path: "/" });
 
   const httpServer = http.createServer(app).listen(settings.port);
 
-  startWebSocketServer(httpServer)
+  startWebSocketServer(httpServer);
 
   console.log(`Server is running on http://localhost:${settings.port}`);
 };
@@ -112,19 +119,19 @@ const startWebSocketServer = (httpServer: net.Server) => {
   });
 
   // expecting path /langServer/<lang_name>, e.g /langServer/java
-  httpServer.on('upgrade', (request: http.IncomingMessage, socket: net.Socket, head: Buffer, ...args) => {
+  httpServer.on("upgrade", (request: http.IncomingMessage, socket: net.Socket, head: Buffer, ...args) => {
     const pathname = request.url ? url.parse(request.url).pathname : undefined;
 
     wss.handleUpgrade(request, socket, head, webSocket => {
-      if (!pathname.startsWith('/langServer/')) { 
-        return closeWebSocket(webSocket, 'Endpoint isnt supported')
+      if (!pathname.startsWith("/langServer/")) {
+        return closeWebSocket(webSocket, "Endpoint isnt supported");
       }
 
-      const langName = pathname.replace('/langServer/', '')
-      const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName)
+      const langName = pathname.replace("/langServer/", "");
+      const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName);
 
-      if (!launchLangServer) { 
-        return closeWebSocket(webSocket, 'Bad Language / Language isnt supported')
+      if (!launchLangServer) {
+        return closeWebSocket(webSocket, "Bad Language / Language isnt supported");
       }
 
       const rpcSocket: rpc.IWebSocket = {
@@ -133,30 +140,30 @@ const startWebSocketServer = (httpServer: net.Server) => {
             throw error;
           }
         }),
-        onMessage: cb => webSocket.on('message', cb),
-        onError: cb => webSocket.on('error', cb),
-        onClose: cb => webSocket.on('close', cb),
+        onMessage: cb => webSocket.on("message", cb),
+        onError: cb => webSocket.on("error", cb),
+        onClose: cb => webSocket.on("close", cb),
         dispose: () => webSocket.close()
       };
       // launch the server when the web socket is opened
       if (webSocket.readyState === webSocket.OPEN) {
         launchLangServer(rpcSocket);
       } else {
-        webSocket.on('open', () => launchLangServer(rpcSocket));
+        webSocket.on("open", () => launchLangServer(rpcSocket));
       }
     });
-  })
-}
+  });
+};
 
 const closeWebSocket = (ws: WebSocket, error: string) => {
-  ws.send(error)
-  ws.close()
-}
+  ws.send(error);
+  ws.close();
+};
 
 const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc.IWebSocket) => void) => {
   switch (langName.toLowerCase()) {
-    case 'java':
-      return launchJavaLangaugeServer
+    case "java":
+      return launchJavaLangaugeServer;
     // Python exists but should not be avilable in this version yet
   }
-}
+};
