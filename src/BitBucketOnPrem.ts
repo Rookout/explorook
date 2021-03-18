@@ -158,25 +158,31 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
     let fileContent = "";
 
     while (!isLastPage) {
-        const fileQuery = UrlAssembler(url).template(`/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/${filePath}`).param({
-            projectKey,
-            repoName
-        }).query({
-            at: commit,
-            start: currentLine
-        }).toString();
-        const res = await fetch(fileQuery, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
-        });
-        const file = await res.json();
-        _.forEach(file.lines, line => {
-            fileContent += `${line.text}\r\n`;
-        });
+        try {
+            const fileQuery = UrlAssembler(url).template(`/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/${filePath}`).param({
+                projectKey,
+                repoName
+            }).query({
+                at: commit,
+                start: currentLine
+            }).toString();
+            const res = await fetch(fileQuery, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const file = await res.json();
+            _.forEach(file.lines, line => {
+                fileContent += `${line.text}\r\n`;
+            });
 
-        currentLine += file.size;
-        isLastPage = file.isLastPage;
+            currentLine += file.size;
+            isLastPage = file.isLastPage;
+        } catch (e) {
+            logger.error("Failed to query file content", { url, projectKey, repoName, commit, filePath, e });
+            isLastPage = true;
+            fileContent = "";
+        }
     }
 
     logger.debug("Finished getting file content", { url, projectKey, repoName, commit, filePath });
