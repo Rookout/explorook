@@ -82,7 +82,7 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
             Authorization: `Bearer ${accessToken}`
         }
     });
-    let projects = []
+    let projects = [];
     try {
         projects = await res.json();
     } catch (e) {
@@ -153,22 +153,32 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
     if (!validateUrlIsAuthorized(url)) return null;
 
     logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
-    const fileQuery = UrlAssembler(url).template(`/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/${filePath}`).param({
-        projectKey,
-        repoName
-    }).query({
-        at: commit
-    }).toString();
-    const res = await fetch(fileQuery, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
-    });
-    const file = await res.json();
+    let isLastPage = false;
+    let currentLine = 0;
     let fileContent = "";
-    _.forEach(file.lines, line => {
-        fileContent += `${line.text}\r\n`;
-    });
+
+    while (!isLastPage) {
+        const fileQuery = UrlAssembler(url).template(`/rest/api/1.0/projects/:projectKey/repos/:repoName/browse/${filePath}`).param({
+            projectKey,
+            repoName
+        }).query({
+            at: commit,
+            start: currentLine
+        }).toString();
+        const res = await fetch(fileQuery, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const file = await res.json();
+        _.forEach(file.lines, line => {
+            fileContent += `${line.text}\r\n`;
+        });
+
+        currentLine += file.size;
+        isLastPage = file.isLastPage;
+    }
+
     logger.debug("Finished getting file content", { url, projectKey, repoName, commit, filePath });
     return fileContent;
 };
