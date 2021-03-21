@@ -153,7 +153,14 @@ const parseMajorVersion = (version: string): number => {
     }
 
     try {
-        return semver.major(version);
+        // Using this instead of semver because Java is NOT semantic versioned, e.g '8.0_202' is a valid java version but it is not semantic
+        const regexp = /\d+/g;
+        const match = regexp.exec(version);
+        let javaVersion = 0;
+        if (match) {
+            javaVersion = parseInt(match[0]);
+        }
+        return javaVersion;
     } catch (e) {
         logger.error('version cannot be parsed', { version })
         return 0;
