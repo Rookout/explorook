@@ -1,15 +1,13 @@
-import { getLibraryFolder } from './../utils';
 import { getStoreSafe, IStore } from './../explorook-store';
 import { getLogger } from './../logger';
 import { findJavaHomes, getJavaVersion } from './javaUtils';
 import * as fs from 'fs'
 import * as https from 'https'
-import * as path from 'path'
 import _ = require('lodash')
 
-export const logger = getLogger('langServer')
+export const logger = getLogger('langerServer')
 export const JavaLangServerDownloadURL = 'https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar'
-export const javaLangServerJarLocation = path.join(getLibraryFolder(), 'languageServers', 'java', 'Rookout-Java-Language-Server.jar')
+export const javaLangServerJarLocation = 'Rookout-Java-Language-Server.jar'
 export const minimumJavaVersionRequired = 13
 
 class LangServerConfigStore {
@@ -30,19 +28,14 @@ class LangServerConfigStore {
     }
 
     public doesJavaJarExist(): boolean {
-        try {
-            return fs.existsSync(javaLangServerJarLocation)
-        } catch (e) {
-            logger.error(e)
-            return false
-        }
+        return fs.existsSync(javaLangServerJarLocation)
     }
 
     // Java ls is about 2.1MB, so expecting a very quick download time
     private downloadJavaLangServer = async () => {
         this.isDownloadingJavaJar = true
 
-        logger.info('downloading Java LS from ' + JavaLangServerDownloadURL)
+        logger.debug('downloading Java LS from ' + JavaLangServerDownloadURL)
 
         const file = fs.createWriteStream(javaLangServerJarLocation);
         https.get(JavaLangServerDownloadURL, (response) => {
@@ -55,7 +48,7 @@ class LangServerConfigStore {
             response.pipe(file);
             file.on('finish', () => file.close())
             this.isDownloadingJavaJar = false
-            logger.info('Java - Langserver downloaded successfully')
+            logger.debug('Java - Langserver downloaded successfully')
             
             return true
         })
