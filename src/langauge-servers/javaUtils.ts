@@ -3,7 +3,6 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as cp from 'child_process'
 import * as os from 'os'
-import semver = require('semver')
 import _ = require('lodash')
 
 const logger = getLogger('langserver')
