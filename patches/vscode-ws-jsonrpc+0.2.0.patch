@@ -1,0 +1,33 @@
+diff --git a/node_modules/vscode-ws-jsonrpc/lib/server/connection.d.ts b/node_modules/vscode-ws-jsonrpc/lib/server/connection.d.ts
+index d3d76ea..6a68f2f 100644
+--- a/node_modules/vscode-ws-jsonrpc/lib/server/connection.d.ts
++++ b/node_modules/vscode-ws-jsonrpc/lib/server/connection.d.ts
+@@ -1,5 +1,5 @@
+ import { MessageReader, MessageWriter, Disposable, Message } from 'vscode-jsonrpc';
+-export declare function forward(clientConnection: IConnection, serverConnection: IConnection, map?: (message: Message) => Message): void;
++export declare function forward(clientConnection: IConnection, serverConnection: IConnection, map?: (message: Message) => (Message | Promise<Message>)): void;
+ export interface IConnection extends Disposable {
+     readonly reader: MessageReader;
+     readonly writer: MessageWriter;
+diff --git a/node_modules/vscode-ws-jsonrpc/lib/server/connection.js b/node_modules/vscode-ws-jsonrpc/lib/server/connection.js
+index 518327d..c059f9b 100644
+--- a/node_modules/vscode-ws-jsonrpc/lib/server/connection.js
++++ b/node_modules/vscode-ws-jsonrpc/lib/server/connection.js
+@@ -19,8 +19,15 @@ function createConnection(reader, writer, onDispose, extensions = {}) {
+     writer.onClose(() => disposeOnClose.dispose());
+     return Object.assign({ reader, writer,
+         forward(to, map = (message) => message) {
+-            reader.listen(input => {
+-                const output = map(input);
++            reader.listen(async input => {
++                let output;
++                try {
++                  output = await map(input);
++                } catch (error) {
++                  console.error(error);
++                  disposeOnClose.dispose()
++                  return;
++                }
+                 to.writer.write(output);
+             });
+         },

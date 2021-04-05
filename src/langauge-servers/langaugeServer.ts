@@ -7,6 +7,14 @@ import { Repo, repStore } from '../repoStore';
 import * as rpc from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
+import * as fs from 'fs';
+const http = require("isomorphic-git/http/web");
+import { findRoot, clone, checkout } from 'isomorphic-git';
+import * as igit from 'isomorphic-git';
+import * as path from 'path'
+import parseRepo = require("parse-repo");
+import _ = require('lodash');
+import { GIT_ROOT } from '../git';
 export interface langServerStartConfig {
     LangaugeName: string,
     langserverCommand: string,
@@ -29,24 +37,24 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
 
     const reader = new rpc.WebSocketMessageReader(socket);
     const writer = new rpc.WebSocketMessageWriter(socket);
-    let repo: Repo = null;
+    let repoFullpath: string = null;
 
     const langserverProcessName = 'Rookout-' + startConfig.LangaugeName + '-LangServer'
     const serverConnection = bridgeServer.createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs)
     const socketConnection = bridgeServer.createConnection(reader, writer, () => { socket.dispose(); serverConnection.dispose() });
 
 
-    bridgeServer.forward(socketConnection, serverConnection, message => {
+    bridgeServer.forward(socketConnection, serverConnection, async message => {
         if (rpc.isRequestMessage(message)) {
-            handleRequestMessage(message)
+            await handleRequestMessage(message)
         }
 
         if (rpc.isNotificationMessage(message)) {
-            handleNotificationMessage(message)
+            await handleNotificationMessage(message)
         }
 
         if (rpc.isResponseMessage(message)) {
-            handleResponseMessage(message)
+            await handleResponseMessage(message)
         }
 
         console.log(message)
@@ -55,20 +63,60 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
     });
 
     // Request message are client -> server messages where the server needs to response to them
-    const handleRequestMessage = (message: rpc.RequestMessage) => {
+    const handleRequestMessage = async (message: rpc.RequestMessage) => {
         if (message.method === lsp.InitializeRequest.type.method) {
             const initializeParams = message.params as lsp.InitializeParams;
             initializeParams.processId = process.pid;
+            const initParams: LangServerInitParams = initializeParams.initializationOptions;
 
-            const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
-            repo = repStore.getRepoById(repoId)
+            // check if JSON
+            if (initParams) {
+              const { gitURL , gitCommit, username, password } = initParams;
+              if (initParams.isGitRepo) {
+                const dirents = fs.readdirSync(GIT_ROOT, { withFileTypes: true });
+                for (const dirent of dirents) {
+                  if (!dirent.isDirectory()) {
+                    continue;
+                  }
+                  const gitPath = path.join(GIT_ROOT, dirent.name);
+                  const rootGit = await findRoot({ fs, filepath: gitPath });
+                  const remotes = await igit.listRemotes({ fs, dir: rootGit });
+                  const wantedRemoteParsed = parseRepo(gitURL);
+                  if (!_.find(remotes, r => {
+                    const localRemoteParsed = parseRepo(r.url);
+                    return wantedRemoteParsed.project === localRemoteParsed.project &&
+                    wantedRemoteParsed.host === localRemoteParsed.host &&
+                    wantedRemoteParsed.owner === localRemoteParsed.owner
+                  })) {
+                    continue;
+                  }
+                  const gitLog = await igit.log({ fs, dir: rootGit });
+                  const gitCurrentBranch = await igit.currentBranch({ fs, dir: rootGit });
+                  if (_.first(gitLog)?.oid === gitCommit || gitCurrentBranch === gitCommit) {
+                    repoFullpath = gitPath;
+                  } else {
+                    await igit.checkout({ fs, dir: rootGit, force: true, ref: gitCommit });
+                    repoFullpath = gitPath;
+                  }
+                  break;
+                }
+                if (!repoFullpath) {
+                  const { project } = parseRepo(gitURL);
+                  await clone({ fs: require('fs'), http, dir: path.join(GIT_ROOT, project), url: gitURL, onAuth: () => ({ username, password }), depth: 1, ref: gitCommit, singleBranch: true });
+                }
+              }
+            } else {
+              const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
+              const repo = repStore.getRepoById(repoId.replace('file:///', ''))
+              repoFullpath = repo.fullpath;
+            }
 
             // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
             // to the language server the workspace folder
-            initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repo.fullpath
-            initializeParams.rootPath = repo.fullpath
-        } else if (message.params.textDocument.uri) {
-            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repo)
+            initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repoFullpath
+            initializeParams.rootPath = repoFullpath
+        } else if (message?.params?.textDocument?.uri) {
+            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath)
         }
 
         // Mark the go-to-definition requets in order to catch the responses to them
@@ -82,7 +130,7 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
         if (message.method === lsp.DidOpenTextDocumentNotification.type.method ||
             message.method === lsp.DidCloseTextDocumentNotification.type.method) {
 
-            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repo)
+            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath)
         }
 
         // The frontend might send didChange requests which are wrong because of monaco-in-react behavior, so we ignore this kind of request
@@ -97,7 +145,7 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
             definitionsIds.delete(message.id)
 
             if (message?.result) {
-                message.result = fixDefinitionResultsPath(message.result as Array<any>, repo.fullpath)
+                message.result = fixDefinitionResultsPath(message.result as Array<any>, repoFullpath)
             }
 
             return message
@@ -124,6 +172,6 @@ const fixDefinitionResultsPath = (definitionResults: Array<any>, repoFullPath: s
     })
 }
 
-const getFileFullPath = (relativePath: string, repo: Repo): string => {
-    return relativePath.replace('file://', 'file://' + repo.fullpath)
+const getFileFullPath = (relativePath: string, repoFullpath: string): string => {
+    return relativePath.replace('file://', 'file://' + repoFullpath)
 }

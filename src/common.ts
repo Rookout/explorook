@@ -22,3 +22,11 @@ interface JavaLangServerConfig {
   jdkLocation: string
   jdkMinimumVersionRequired?: string
 }
+
+interface LangServerInitParams {
+  isGitRepo: boolean;
+  gitURL?: string;
+  gitCommit?: string;
+  username?: string;
+  password?: string;
+}
