@@ -15,6 +15,7 @@ import * as path from 'path'
 import parseRepo = require("parse-repo");
 import _ = require('lodash');
 import { GIT_ROOT } from '../git';
+import { syncGitRepository } from './git-handler';
 export interface langServerStartConfig {
     LangaugeName: string,
     langserverCommand: string,
@@ -69,42 +70,8 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
             initializeParams.processId = process.pid;
             const initParams: LangServerInitParams = initializeParams.initializationOptions;
 
-            // check if JSON
             if (initParams) {
-              const { gitURL , gitCommit, username, password } = initParams;
-              if (initParams.isGitRepo) {
-                const dirents = fs.readdirSync(GIT_ROOT, { withFileTypes: true });
-                for (const dirent of dirents) {
-                  if (!dirent.isDirectory()) {
-                    continue;
-                  }
-                  const gitPath = path.join(GIT_ROOT, dirent.name);
-                  const rootGit = await findRoot({ fs, filepath: gitPath });
-                  const remotes = await igit.listRemotes({ fs, dir: rootGit });
-                  const wantedRemoteParsed = parseRepo(gitURL);
-                  if (!_.find(remotes, r => {
-                    const localRemoteParsed = parseRepo(r.url);
-                    return wantedRemoteParsed.project === localRemoteParsed.project &&
-                    wantedRemoteParsed.host === localRemoteParsed.host &&
-                    wantedRemoteParsed.owner === localRemoteParsed.owner
-                  })) {
-                    continue;
-                  }
-                  const gitLog = await igit.log({ fs, dir: rootGit });
-                  const gitCurrentBranch = await igit.currentBranch({ fs, dir: rootGit });
-                  if (_.first(gitLog)?.oid === gitCommit || gitCurrentBranch === gitCommit) {
-                    repoFullpath = gitPath;
-                  } else {
-                    await igit.checkout({ fs, dir: rootGit, force: true, ref: gitCommit });
-                    repoFullpath = gitPath;
-                  }
-                  break;
-                }
-                if (!repoFullpath) {
-                  const { project } = parseRepo(gitURL);
-                  await clone({ fs: require('fs'), http, dir: path.join(GIT_ROOT, project), url: gitURL, onAuth: () => ({ username, password }), depth: 1, ref: gitCommit, singleBranch: true });
-                }
-              }
+              repoFullpath = await syncGitRepository(initParams);
             } else {
               const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
               const repo = repStore.getRepoById(repoId.replace('file:///', ''))
