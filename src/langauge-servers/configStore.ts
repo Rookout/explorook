@@ -8,8 +8,10 @@ import * as path from 'path'
 import _ = require('lodash')
 
 export const logger = getLogger('langServer')
-export const JavaLangServerDownloadURL = 'https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar'
-export const javaLangServerJarLocation = path.join(getLibraryFolder(), 'languageServers', 'java', 'Rookout-Java-Language-Server.jar')
+const langServerExecFolder = path.join(getLibraryFolder(), 'languageServers')
+
+const JavaLangServerDownloadURL = 'https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar'
+export const javaLangServerJarLocation = path.join(langServerExecFolder, 'Rookout-Java-Language-Server.jar')
 export const minimumJavaVersionRequired = 13
 
 class LangServerConfigStore {
@@ -19,6 +21,8 @@ class LangServerConfigStore {
 
     constructor() {
         this.store = getStoreSafe()
+        this.ensureLangServerExecFolderExists()
+
         if (!this.doesJavaJarExist()) {
             this.downloadJavaLangServer()
         }
@@ -30,11 +34,14 @@ class LangServerConfigStore {
     }
 
     public doesJavaJarExist(): boolean {
-        try {
-            return fs.existsSync(javaLangServerJarLocation)
-        } catch (e) {
-            logger.error(e)
-            return false
+        return fs.existsSync(javaLangServerJarLocation)
+    }
+
+    // Since we use fs.createWriteStream() in order to write the downloaded langserver file, it will not
+    // not create the directories on its own.
+    private ensureLangServerExecFolderExists = () => {
+        if (!fs.existsSync(langServerExecFolder)) {
+            fs.mkdirSync(langServerExecFolder, { recursive: true })
         }
     }
 
