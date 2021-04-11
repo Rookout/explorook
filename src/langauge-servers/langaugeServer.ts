@@ -68,6 +68,9 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
         if (message.method === lsp.InitializeRequest.type.method) {
             const initializeParams = message.params as lsp.InitializeParams;
             initializeParams.processId = process.pid;
+            
+            // init params are costum params we use, in order to pass git repo creds when users want to use langserver with remote git repository.
+            // when init params aren't sent from the frontend, it means they use local files.
             const initParams: LangServerInitParams = initializeParams.initializationOptions;
 
             if (initParams) {
