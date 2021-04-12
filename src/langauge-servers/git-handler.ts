@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 const http = require("isomorphic-git/http/web");
-import { findRoot, clone, checkout } from 'isomorphic-git';
 import * as igit from 'isomorphic-git';
 import * as path from 'path'
 import parseRepo = require("parse-repo");
@@ -18,7 +17,7 @@ const getLocalGitRepositoryPathOrNull = async (gitURL : string): Promise<string 
         continue;
       }
       const gitPath = path.join(GIT_ROOT, dirent.name);
-      const rootGit = await findRoot({ fs, filepath: gitPath });
+      const rootGit = await igit.findRoot({ fs, filepath: gitPath });
       const remotes = await igit.listRemotes({ fs, dir: rootGit });
       if (!_.find(remotes, r => {
         const localRemoteParsed = parseRepo(r.url);
@@ -40,7 +39,8 @@ const cloneRepo = async (gitURL: string, gitCommitOrBranch: string, username: st
   // TODO make sure no concurrent operations
   const { project } = parseRepo(gitURL);
   const outDir = path.join(GIT_ROOT, project);
-  await clone({ fs: require('fs'), http, dir: outDir, url: gitURL, onAuth: () => ({ username, password }), depth: 1, ref: gitCommitOrBranch, singleBranch: true });
+  await igit.clone({ fs: require('fs'), http, dir: outDir, url: gitURL, onAuth: () => ({ username, password }), depth: 1, ref: gitCommitOrBranch, singleBranch: true });
+  logger.info('Cloned repo succesfully to ' + outDir);
   return outDir;
 }
 
@@ -58,8 +58,24 @@ export const syncGitRepository = async (initParams: LangServerInitParams): Promi
   }
   const gitDirOrNull = await getLocalGitRepositoryPathOrNull(gitURL);
   if (!gitDirOrNull) {
-    return await cloneRepo(gitURL, gitCommit, username, password);
+    logger.info('No cloned repo was found from ' + gitURL + ' , cloning...');
+
+    try {
+      return await cloneRepo(gitURL, gitCommit, username, password);
+    } catch (e) {
+      logger.error('Failed to clone git repo', { e, gitURL, gitCommit });
+      throw e;
+    }
   }
-  await syncGitCommit(gitDirOrNull, gitCommit, username, password);
-  return gitDirOrNull;
+  
+  logger.info('For ' + gitURL +', Cloned Repo was found in ' + gitDirOrNull)
+  logger.info('Syncing commit / branch: ' + gitCommit)
+
+  try {
+    await syncGitCommit(gitDirOrNull, gitCommit, username, password);
+    return gitDirOrNull;
+  } catch (e) {
+    logger.error('Failed to checkout to commit / branch', { e, gitURL, gitCommit, repoLocation: gitDirOrNull })
+    throw e;
+  }
 }
