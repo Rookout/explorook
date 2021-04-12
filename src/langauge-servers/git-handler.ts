@@ -21,9 +21,9 @@ const getLocalGitRepositoryPathOrNull = async (gitURL : string): Promise<string 
       const remotes = await igit.listRemotes({ fs, dir: rootGit });
       if (!_.find(remotes, r => {
         const localRemoteParsed = parseRepo(r.url);
-        return wantedRemoteParsed.project === localRemoteParsed.project &&
-        wantedRemoteParsed.host === localRemoteParsed.host &&
-        wantedRemoteParsed.owner === localRemoteParsed.owner
+        return wantedRemoteParsed.project?.toLowerCase() === localRemoteParsed.project?.toLowerCase() &&
+        wantedRemoteParsed.host?.toLowerCase() === localRemoteParsed.host?.toLowerCase() &&
+        wantedRemoteParsed.owner?.toLowerCase() === localRemoteParsed.owner?.toLowerCase()
       })) {
         continue;
       }
