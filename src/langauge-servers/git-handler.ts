@@ -29,7 +29,7 @@ const getLocalGitRepositoryPathOrNull = async (gitURL : string): Promise<string 
       }
       return rootGit;
     } catch (error) {
-      logger.error(`Failed to check git dir`, { error, dirent, gitURL })
+      logger.error(`Failed to check git dir`, { error, dirent, gitURL });
     }
   }
   return null;

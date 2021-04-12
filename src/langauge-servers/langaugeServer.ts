@@ -1,4 +1,4 @@
-import { Repo, repStore } from '../repoStore';
+import { repStore } from '../repoStore';
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -7,14 +7,8 @@ import { Repo, repStore } from '../repoStore';
 import * as rpc from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
-import * as fs from 'fs';
-const http = require("isomorphic-git/http/web");
-import { findRoot, clone, checkout } from 'isomorphic-git';
-import * as igit from 'isomorphic-git';
-import * as path from 'path'
 import parseRepo = require("parse-repo");
 import _ = require('lodash');
-import { GIT_ROOT } from '../git';
 import { syncGitRepository } from './git-handler';
 export interface langServerStartConfig {
     LangaugeName: string,
