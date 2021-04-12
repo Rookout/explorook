@@ -312,7 +312,7 @@ function createWindows() {
   // we don't want to open a window on machine startup (only tray pops)
   // const startOptions = app.getLoginItemSettings();
   // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
-  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true } });
+  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true, enableRemoteModule: true } });
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
     createMainWindow(indexWorker, !firstTimeLaunch);
   });
@@ -335,7 +335,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     frame: false,
     icon,
     show: !hidden,
-    webPreferences: { nodeIntegration: true }
+    webPreferences: { nodeIntegration: true, enableRemoteModule: true }
   });
   if (signedEula) {
     startGraphqlServer();
