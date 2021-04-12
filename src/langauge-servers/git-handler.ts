@@ -44,9 +44,10 @@ const cloneRepo = async (gitURL: string, gitCommitOrBranch: string, username: st
   return outDir;
 }
 
+// TODO: make sure with branch name like `master` that it always fetches the newest code from remote.
 const syncGitCommit = async (rootGit: string, gitCommit: string, username: string, password: string): Promise<void> => {
-  await igit.fetch({ fs: require('fs'), http, dir: rootGit, onAuth: () => ({ username, password }), depth: 1, ref: gitCommit, singleBranch: true, relative: true });
-  await igit.checkout({ fs, dir: rootGit, force: true, ref: gitCommit });
+  const fetchRes = await igit.fetch({ fs: require('fs'), http, dir: rootGit, onAuth: () => ({ username, password }), depth: 1, ref: gitCommit, singleBranch: true, relative: true });
+  await igit.checkout({ fs, dir: rootGit, force: true, ref: fetchRes.fetchHead || gitCommit });
 }
 
 export const syncGitRepository = async (initParams: LangServerInitParams): Promise<string> => {
