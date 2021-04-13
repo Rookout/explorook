@@ -1,10 +1,10 @@
+// set flag
+process.env.headless_mode = "true";
+
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
 // headless mode lets you run Explorook server without GUI
-
-// set flag
-process.env.headless_mode = "true";
 
 const args = require("args-parser")(process.argv);
 
