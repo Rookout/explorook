@@ -75,6 +75,8 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
               repoFullpath = repo.fullpath;
             }
 
+            repoFullpath = encodeURI(repoFullpath);
+            
             // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
             // to the language server the workspace folder
             initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repoFullpath
