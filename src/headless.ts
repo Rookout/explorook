@@ -3,6 +3,9 @@ import * as graphQlServer from "./server";
 
 // headless mode lets you run Explorook server without GUI
 
+// set flag
+process.env.headless_mode = "true";
+
 const args = require("args-parser")(process.argv);
 
 if (args.help || !args.repo) {
