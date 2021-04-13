@@ -1,3 +1,6 @@
+// set flag
+process.env.headless_mode = "true";
+
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
