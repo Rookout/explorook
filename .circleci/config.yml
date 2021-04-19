@@ -30,8 +30,6 @@ jobs:
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             # download custom jsign to sign PE
             curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
-            # install yarn
-            npm install yarn@1.17.3
             # install electron main window dependencies
             yarn
             # build typescript code
