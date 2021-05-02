@@ -6,7 +6,7 @@ import * as os from 'os'
 import _ = require('lodash')
 
 const logger = getLogger('langserver')
-const isWindows = process.platform.match('win32')
+export const isWindows = process.platform.match('win32')
 const isMac = process.platform.match('darwin')
 const isLinux = process.platform.match('linux')
 export const JAVA_FILENAME = isWindows ? 'java.exe' : 'java';

@@ -1,3 +1,4 @@
+import { isWindows } from './javaUtils';
 import { repStore } from '../repoStore';
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
@@ -76,6 +77,9 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
             }
 
             repoFullpath = encodeURI(repoFullpath);
+            if (isWindows) {
+                repoFullpath = repoFullpath.replace('%5C', '\\');
+            }
             
             // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
             // to the language server the workspace folder
