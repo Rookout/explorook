@@ -44,7 +44,11 @@ export const getFileTreeFromBitbucket =
             }
         });
         const fileList: any = await res.json();
-        files = [...files, ...fileList.values];
+        if (Array.isArray(fileList.values)) {
+            files = [...files, ...fileList.values];
+        } else {
+            logger.error("Bitbucket OnPrem files tree request returned an unexpected value", { res });
+        }
 
         // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
         isLastPage = fileList.isLastPage;
