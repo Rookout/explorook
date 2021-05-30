@@ -48,6 +48,7 @@ export const getFileTreeFromBitbucket =
             files = [...files, ...fileList.values];
         } else {
             logger.error("Bitbucket OnPrem files tree request returned an unexpected value", { res, fileList });
+            return [];
         }
 
         // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
