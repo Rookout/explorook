@@ -47,6 +47,7 @@ export const getFileTreeFromBitbucket =
         if (Array.isArray(fileList.values)) {
             files = [...files, ...fileList.values];
         } else {
+            notify("Bitbucket OnPrem files tree request returned an unexpected value", { metaData: { resStatus: res.status, fileList } });
             logger.error("Bitbucket OnPrem files tree request returned an unexpected value", { res, fileList });
             return [];
         }
