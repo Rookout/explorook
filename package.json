@@ -132,7 +132,7 @@
     "vscode-languageserver-protocol": "3.15.3",
     "vscode-ws-jsonrpc": "^0.2.0",
     "walk": "^2.3.13",
-    "ws": "^5.0.0"
+    "ws": "^7.4.6"
   },
   "resolutions": {
     "@playlyfe/gql/lodash": "^4.17.15",
