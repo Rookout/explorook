@@ -7,6 +7,7 @@ import parseRepo = require("parse-repo");
 import { Repository } from "./common/repository";
 import { IndexWorker } from "./fsIndexer";
 import { getRepoId } from "./git";
+import {logger} from "./langauge-servers/configStore";
 export class Repo {
     public repoName: string;
     public fullpath: string;
@@ -97,7 +98,7 @@ class RepoStore {
             }
             fs.statSync(repo.fullpath);
         } catch (e) {
-            throw new Error(`Failed to stats repository (${repo.fullpath}) error: ` + e.stack);
+            logger.error("Failed to stats repository", { error: e, path: repo.fullpath });
         }
         if (!repo.id) {
             repo.id = await getRepoId(repo, this.getRepositories().map((r) => r.id));
@@ -139,7 +140,7 @@ class RepoStore {
     public getRepositories(): Repo[] {
         return this.repos;
     }
-    
+
     public getRepoById(id: string): Repo {
         return _.find(this.repos,repo => { return id === repo.id})
     }
