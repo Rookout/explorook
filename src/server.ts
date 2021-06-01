@@ -6,12 +6,10 @@ import { readFileSync } from "fs";
 import { applyMiddleware } from "graphql-middleware";
 import { makeExecutableSchema } from "graphql-tools";
 import * as http from "http";
-import * as net from "net";
 import { join } from "path";
 import * as url from "url";
 import * as rpc from "vscode-ws-jsonrpc";
-import { Server } from "ws";
-import * as WebSocket from "ws";
+import * as WebSocket from "websocket";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
 import { launchJavaLangaugeServer } from "./langauge-servers/java";
@@ -25,6 +23,8 @@ import {
   resolveRepoFromId,
   validateBitbucketServerHttps
 } from "./middlewares";
+
+const WebSocketServer = require("websocket").server;
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
@@ -105,57 +105,54 @@ export const start = (options: StartOptions) => {
 
   apolloServer.applyMiddleware({ app, path: "/" });
 
-  const httpServer = http.createServer(app).listen(settings.port);
+  const httpServer = http.createServer(app);
+  httpServer.listen(settings.port);
 
   startWebSocketServer(httpServer);
 
   console.log(`Server is running on http://localhost:${settings.port}`);
 };
 
-const startWebSocketServer = (httpServer: net.Server) => {
-  const wss = new Server({
-    noServer: true,
-    perMessageDeflate: false
+const startWebSocketServer = (httpServer: http.Server) => {
+  const wss = new WebSocketServer({
+    httpServer,
+    autoAcceptConnections: false
   });
 
-  // expecting path /langServer/<lang_name>, e.g /langServer/java
-  httpServer.on("upgrade", (request: http.IncomingMessage, socket: net.Socket, head: Buffer, ...args) => {
-    const pathname = request.url ? url.parse(request.url).pathname : undefined;
+  wss.on("request", (request: WebSocket.request) => {
+    const pathname = request.resourceURL.href ? url.parse(request.resourceURL.href).pathname : undefined;
+    if (!pathname.startsWith("/langServer/")) {
+      request.reject();
+      return;
+    }
 
-    wss.handleUpgrade(request, socket, head, webSocket => {
-      if (!pathname.startsWith("/langServer/")) {
-        return closeWebSocket(webSocket, "Endpoint isnt supported");
-      }
+    const connection = request.accept(null, request.origin);
+    const langName = pathname.replace("/langServer/", "");
+    const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName);
 
-      const langName = pathname.replace("/langServer/", "");
-      const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName);
+    if (!launchLangServer) {
+      return closeWebSocket(connection, "Bad Language / Language isnt supported");
+    }
 
-      if (!launchLangServer) {
-        return closeWebSocket(webSocket, "Bad Language / Language isnt supported");
-      }
+    const rpcSocket: rpc.IWebSocket = {
+      send: content => connection.send(content, error => {
+        if (error) {
+          throw error;
+        }
+      }),
+      onMessage: cb => connection.on("message", cb),
+      onError: cb => connection.on("error", cb),
+      onClose: cb => connection.on("close", cb),
+      dispose: () => connection.close()
+    };
 
-      const rpcSocket: rpc.IWebSocket = {
-        send: content => webSocket.send(content, error => {
-          if (error) {
-            throw error;
-          }
-        }),
-        onMessage: cb => webSocket.on("message", cb),
-        onError: cb => webSocket.on("error", cb),
-        onClose: cb => webSocket.on("close", cb),
-        dispose: () => webSocket.close()
-      };
-      // launch the server when the web socket is opened
-      if (webSocket.readyState === webSocket.OPEN) {
-        launchLangServer(rpcSocket);
-      } else {
-        webSocket.on("open", () => launchLangServer(rpcSocket));
-      }
-    });
+    if (connection.connected) {
+      launchLangServer(rpcSocket);
+    }
   });
 };
 
-const closeWebSocket = (ws: WebSocket, error: string) => {
+const closeWebSocket = (ws: WebSocket.connection, error: string) => {
   ws.send(error);
   ws.close();
 };
