@@ -25,7 +25,7 @@ import {
   validateBitbucketServerHttps
 } from "./middlewares";
 
-const WebSocketServer = window ? window.require("ws").Server : require("ws").Server;
+const WebSocketServer = typeof window !== "undefined" ? window.require("ws").Server : require("ws").Server;
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
