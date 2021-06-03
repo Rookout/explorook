@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -132,7 +132,7 @@
     "vscode-languageserver-protocol": "3.15.3",
     "vscode-ws-jsonrpc": "^0.2.0",
     "walk": "^2.3.13",
-    "ws": "^7.4.6"
+    "ws": "^5.0.0"
   },
   "resolutions": {
     "@playlyfe/gql/lodash": "^4.17.15",
