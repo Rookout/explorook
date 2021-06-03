@@ -10,6 +10,7 @@ import * as net from "net";
 import { join } from "path";
 import * as url from "url";
 import * as rpc from "vscode-ws-jsonrpc";
+import { Server } from "ws";
 import * as WebSocket from "ws";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
@@ -24,8 +25,6 @@ import {
   resolveRepoFromId,
   validateBitbucketServerHttps
 } from "./middlewares";
-
-const WebSocketServer = typeof window !== "undefined" ? window.require("ws").Server : require("ws").Server;
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
@@ -114,7 +113,7 @@ export const start = (options: StartOptions) => {
 };
 
 const startWebSocketServer = (httpServer: net.Server) => {
-  const wss = new WebSocketServer({
+  const wss = new Server({
     noServer: true,
     perMessageDeflate: false
   });
@@ -123,7 +122,7 @@ const startWebSocketServer = (httpServer: net.Server) => {
   httpServer.on("upgrade", (request: http.IncomingMessage, socket: net.Socket, head: Buffer, ...args) => {
     const pathname = request.url ? url.parse(request.url).pathname : undefined;
 
-    wss.handleUpgrade(request, socket, head, (webSocket: WebSocket) => {
+    wss.handleUpgrade(request, socket, head, webSocket => {
       if (!pathname.startsWith("/langServer/")) {
         return closeWebSocket(webSocket, "Endpoint isnt supported");
       }
