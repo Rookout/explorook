@@ -12,8 +12,8 @@ const loggers: { [key: string]: Logger } = {};
 const store = getStoreSafe();
 let logLevel = store.get(LOG_LEVEL_KEY, null);
 if (!logLevel) {
-    store.set(LOG_LEVEL_KEY, "error");
-    logLevel = "error";
+    store.set(LOG_LEVEL_KEY, "debug");
+    logLevel = "debug";
 }
 
 log4js.configure({

@@ -98,7 +98,7 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
         });
         notify(e);
     }
-    logger.debug("Finished getting projects for user", {projects});
+    logger.debug("Finished getting projects for user. Result:\n", JSON.stringify(projects));
     return projects?.values || [];
 };
 
@@ -115,7 +115,7 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
         }
     });
     const repos = await res.json();
-    logger.debug("Finished getting repos", { url, projectKey, repos});
+    logger.debug("Finished getting repos", { url, projectKey, repos: JSON.stringify(repos)});
     return repos.values;
 };
 
@@ -133,7 +133,7 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
         }
     });
     const commits = await res.json();
-    logger.debug("Finished getting commits for repo", { url, projectKey, repoName, commits});
+    logger.debug("Finished getting commits for repo", { url, projectKey, repoName, commits: JSON.stringify(commits)});
     return commits.values;
 };
 
@@ -151,7 +151,7 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
         }
     });
     const branches = await res.json();
-    logger.debug("Finished getting branches for repo", { url, projectKey, repoName, branches });
+    logger.debug("Finished getting branches for repo", { url, projectKey, repoName, branches: JSON.stringify(branches) });
     return branches.values;
 };
 
