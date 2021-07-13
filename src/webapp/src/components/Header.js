@@ -23,7 +23,7 @@ export const Header = () => {
     };
 
     const store = new Store({ name: "explorook" });
-    const isLogLevelDebug = store.get("logLevel", "error") === "debug";
+    const isLogLevelDebug = store.get("logLevel", "debug") === "debug";
     const setLogLever = isDebug => {
         ipcRenderer.sendTo(window.indexWorkerId, "set-log-level", isDebug ? "debug" : "error")
         setOpen(false);
