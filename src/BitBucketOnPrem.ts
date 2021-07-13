@@ -22,6 +22,19 @@ export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
 
+// fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
+// Otherwise we get inconsistent results from bitbucket API with different tokens
+const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
+    requestInit = requestInit || {};
+    if (!requestInit?.cache) {
+        requestInit.cache = 'no-store'
+    }
+    if (!requestInit?.credentials) {
+        requestInit.credentials = 'omit';
+    }
+    return fetch(requestInfo, requestInit);
+}
+
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
     if (!validateUrlIsAuthorized(url)) return null;
@@ -38,7 +51,7 @@ export const getFileTreeFromBitbucket =
     let start = 0;
     let files: string[] = [];
     while (!isLastPage) {
-        const res = await fetch(`${fileTreeUrl}&start=${start}`, {
+        const res = await fetchNoCache(`${fileTreeUrl}&start=${start}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
@@ -68,7 +81,7 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
 
     logger.debug("Getting user from url", {url});
     const userQuery = UrlAssembler(url).template("/rest/api/1.0/users").toString();
-    const res = await fetch(userQuery, {
+    const res = await fetchNoCache(userQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
@@ -83,7 +96,7 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
 
     logger.debug("Getting projects for user", {url});
     const projectsQuery = UrlAssembler(url).template("/rest/api/1.0/projects").toString();
-    const res = await fetch(projectsQuery, {
+    const res = await fetchNoCache(projectsQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
@@ -109,7 +122,7 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
     const reposQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos").param({
         projectKey
     }).toString();
-    const res = await fetch(reposQuery, {
+    const res = await fetchNoCache(reposQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
@@ -127,7 +140,7 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
         projectKey,
         repoName
     }).toString();
-    const res = await fetch(commitsQuery, {
+    const res = await fetchNoCache(commitsQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
@@ -145,7 +158,7 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
         projectKey,
         repoName
     }).toString();
-    const res = await fetch(branchesQuery, {
+    const res = await fetchNoCache(branchesQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
@@ -172,7 +185,7 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
                 at: commit,
                 start: currentLine
             }).toString();
-            const res = await fetch(fileQuery, {
+            const res = await fetchNoCache(fileQuery, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -204,7 +217,7 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
         repoName,
         commit
     });
-    const res = await fetch(commitQuery, {
+    const res = await fetchNoCache(commitQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
