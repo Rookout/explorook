@@ -89,6 +89,7 @@
     "electron-builder-lib": "^20.15.3",
     "electron-notarize": "^0.2.1",
     "graphql-middleware": "^3.0.2",
+    "node-fetch": "^2.6.1",
     "ts-loader": "^6.0.4",
     "tslint": "^5.10.0",
     "typescript": "^3.5.3",

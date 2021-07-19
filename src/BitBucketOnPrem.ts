@@ -6,6 +6,8 @@ import {getLogger} from "./logger";
 
 const store = getStoreSafe();
 const logger = getLogger("bitbucket");
+const isNode = () => !(typeof window !== "undefined" && window !== null);
+const fetch = isNode() ? require('node-fetch') : window.fetch;
 
 export interface BitbucketOnPrem {
     url: string;
