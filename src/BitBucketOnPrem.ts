@@ -34,7 +34,7 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     if (!requestInit?.credentials) {
         requestInit.credentials = 'omit';
     }
-    return fetch(requestInfo, requestInit);
+    return fetch(requestInfo.toString().replace('scm/', ''), requestInit);
 }
 
 export const getFileTreeFromBitbucket =
