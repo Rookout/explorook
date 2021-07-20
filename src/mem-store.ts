@@ -1,5 +1,4 @@
 import { getLogger } from "./logger";
-const logger = getLogger('store')
 
 // memory store used instead of electron-store when running in headless mode (electron-store doesn't work outside electron)
 const singleStore = new Map<string,string>();
@@ -16,7 +15,7 @@ export default class MemStore {
         return defaultValue;
     }
     public set(key: string, value: string) {
-        logger.info(`setting store key ${key}: ${value}`);
+        console.info(`setting store key ${key}: ${value}`);
         this.store.set(key, value);
     }
 
