@@ -1,9 +1,7 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
 import {notify} from "./exceptionManager";
-import {getStoreSafe} from "./explorook-store";
 import {getLogger} from "./logger";
-import validateUrl = require("valid-url");
 
 const logger = getLogger("bitbucket");
 const isNode = () => !(typeof window !== "undefined" && window !== null);
