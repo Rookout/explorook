@@ -116,6 +116,7 @@
     "folder-delete": "^1.0.4",
     "git-url-parse": "^11.1.2",
     "graphql": "^15.4.0",
+    "graphql-constraint-directive": "1.4.1",
     "is-git-url": "^1.0.0",
     "isomorphic-git": "^1.4.0",
     "lodash": "^4.17.21",

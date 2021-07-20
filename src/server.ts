@@ -23,8 +23,8 @@ import {
   filterDirTraversal,
   logMiddleware,
   resolveRepoFromId,
-  validateBitbucketServerHttps
 } from "./middlewares";
+const ConstraintDirective = require('graphql-constraint-directive')
 
 export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise<boolean>;
 
@@ -68,8 +68,10 @@ export const start = (options: StartOptions) => {
     settings.userSite = site;
   };
 
-  const schema = makeExecutableSchema({ typeDefs, resolvers });
-  const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal, validateBitbucketServerHttps);
+  const schema = makeExecutableSchema({ typeDefs, resolvers, schemaDirectives: {
+    constraint: ConstraintDirective
+  } });
+  const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal);
 
   const app = express();
   const apolloServer = new ApolloServer({

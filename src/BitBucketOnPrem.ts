@@ -3,8 +3,8 @@ import UrlAssembler = require("url-assembler");
 import {notify} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
 import {getLogger} from "./logger";
+import validateUrl = require("valid-url");
 
-const store = getStoreSafe();
 const logger = getLogger("bitbucket");
 const isNode = () => !(typeof window !== "undefined" && window !== null);
 const fetch = isNode() ? require('node-fetch') : window.fetch;
@@ -39,8 +39,6 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
 
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
         projectKey,
         repoName
@@ -79,8 +77,6 @@ export const getFileTreeFromBitbucket =
 };
 
 export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting user from url", {url});
     const userQuery = UrlAssembler(url).template("/rest/api/1.0/users").toString();
     const res = await fetchNoCache(userQuery, {
@@ -94,8 +90,6 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
 };
 
 export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting projects for user", {url});
     const projectsQuery = UrlAssembler(url).template("/rest/api/1.0/projects").toString();
     const res = await fetchNoCache(projectsQuery, {
@@ -118,8 +112,6 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
 };
 
 export const getReposForProjectFromBitbucket = async ({url, accessToken, projectKey}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting repos", { url, projectKey });
     const reposQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos").param({
         projectKey
@@ -135,8 +127,6 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
 };
 
 export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting commits for repo", { url, projectKey, repoName });
     const commitsQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/commits").param({
         projectKey,
@@ -153,8 +143,6 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
 };
 
 export const getBranchesForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting branches for repo", { url, projectKey, repoName });
     const branchesQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/branches").param({
         projectKey,
@@ -171,8 +159,6 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
 };
 
 export const getFileContentFromBitbucket = async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
     let isLastPage = false;
     let currentLine = 0;
@@ -211,8 +197,6 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
 };
 
 export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem) => {
-    if (!validateUrlIsAuthorized(url)) return null;
-
     logger.debug("Getting commit info", { url, projectKey, repoName, commit });
     const commitQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/commits/:commit").param({
         projectKey,
@@ -227,14 +211,4 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
 
     logger.debug("Finished getting commit info", {url, projectKey, repoName, commit, res});
     return res.json();
-};
-
-const validateUrlIsAuthorized = (url: string) => {
-    const serverList = store.get("BitbucketOnPremServers", []);
-    const isAuthorized = _.some(serverList, server => url.includes(server));
-    if (!isAuthorized) {
-        logger.warn("Got unauthorized url", { url, serverList });
-    }
-
-    return isAuthorized;
 };
