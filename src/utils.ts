@@ -30,6 +30,7 @@ export const setSettings = (settings: Settings): Settings => {
     if (settings.OverrideGlobal) {
         Object.entries(settings).forEach(([key, val]) => {
             store.set(key, val);
+            console.log(`setting store key ${key}: true`)
             store.set(overrideGlobalName(key), true);
         });
     } else {
@@ -38,6 +39,7 @@ export const setSettings = (settings: Settings): Settings => {
                 console.info(`skipping setting ${key}:${val} since it was overriden locally`);
                 return;
             }
+            console.log(`setting store key ${key}: ${val}`)
             store.set(key, val);
         });
     }
