@@ -138,6 +138,7 @@
   },
   "resolutions": {
     "@playlyfe/gql/lodash": "^4.17.15",
-    "graphql-tools": "4.0.7"
+    "graphql-tools": "4.0.7",
+    "graphql-constraint-directive/validator": "^13.6.0"
   }
 }
