@@ -56,7 +56,7 @@ input PerforceConnectionSettings {
 }
 
 input BitbucketInput {
-  url: String! @constraint(format: "uri")
+  url: String!
   accessToken: String!
   projectKey: String
   repoName: String
@@ -188,21 +188,3 @@ type BitbucketBranch {
   latestCommit: String!
   isDefault: Boolean!
 }
-
-directive @constraint(
-    # String constraints
-    minLength: Int
-    maxLength: Int
-    startsWith: String
-    endsWith: String
-    notContains: String
-    pattern: String
-    format: String
-
-    # Number constraints
-    min: Int
-    max: Int
-    exclusiveMin: Int
-    exclusiveMax: Int
-    multipleOf: Int
-  ) on INPUT_FIELD_DEFINITION
