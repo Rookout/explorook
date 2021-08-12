@@ -84,7 +84,7 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
     });
     const users = await res.json();
     logger.debug("finished getting users from url", {url, users});
-    return users.values[0];
+    return users?.values?.[0];
 };
 
 export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
