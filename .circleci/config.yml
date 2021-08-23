@@ -83,12 +83,11 @@ jobs:
             # wine is required to sign windows executables
             brew install --cask xquartz
             brew install --cask wine-stable
-            brew install python@3.7
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
             unzip /Users/distiller/google-cloud-sdk.zip
-            python -V
-            bash google-cloud-sdk/install.sh --usage-reporting=false --install-python=false --path-update=true --bash-completion=true --rc-path=/Users/distiller/.bashrc
+            ls /Users/distiller/
+            bash google-cloud-sdk/install.sh --usage-reporting=false --install-python=true --path-update=true --bash-completion=true --rc-path=/Users/distiller/.bashrc
             source ~/.bashr
             echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
             export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json`
