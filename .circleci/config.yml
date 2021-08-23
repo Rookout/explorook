@@ -4,6 +4,10 @@ references:
     filters:
       branches:
         only: master
+  nir_test: &nir_test
+    filters:
+      branches:
+        only: fixing_publish_ci
 
 jobs:
   publish:
@@ -19,7 +23,6 @@ jobs:
             # wine is required to sign windows executables
             brew install --cask xquartz
             brew install --cask wine-stable
-            brew install python@3.7
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
             unzip /Users/distiller/google-cloud-sdk.zip
@@ -67,6 +70,32 @@ jobs:
           name: Generate release notes
           command: |
             export EXPLOROOK_VERSION=$(node -e 'console.log(require("./package").version)') && curl -X POST https://github-enforcer.rookout.com/release -H "Content-Type: application/json" -H "X-Enforcer-Signature: $ENFORCER_SECRET" -d '{"repository":{"full_name":"Rookout/explorook"},"data":{"inner_version":"v'$EXPLOROOK_VERSION'","version_to_publish":"'$EXPLOROOK_VERSION'","component":"explorook","released_by":"CircleCI"}}'
+  nir-test:
+    macos:
+      xcode: "12.4.0"
+    steps:
+      - checkout
+      - restore_cache:
+          key: homebrew-cache-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Build and Publish
+          command: |
+            # wine is required to sign windows executables
+            brew install --cask xquartz
+            brew install --cask wine-stable
+            brew install python@3.7
+            # install gcloud sdk
+            curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
+            unzip /Users/distiller/google-cloud-sdk.zip
+            bash google-cloud-sdk/install.sh --usage-reporting=false --path-update=true --bash-completion=true --rc-path=/Users/distiller/.bashrc
+            source ~/.bashrc
+            # Save gcloud credentials service account and authenticate
+            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json`
+      - save_cache:
+          key: homebrew-cache-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - /usr/local/Homebrew
 workflows:
   version: 2
   publish-pipeline:
@@ -80,3 +109,8 @@ workflows:
       - publish_release_notes:
           requires:
             - publish
+  nir-test-workflow:
+    jobs:
+      - nir-test:
+          requires:
+          <<: *nir_test
