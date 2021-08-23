@@ -7,7 +7,7 @@ references:
   nir_test: &nir_test
     filters:
       branches:
-        only: fixing_publish_ci
+        only: fixing-publish-ci
 
 jobs:
   publish:
