@@ -85,7 +85,7 @@ jobs:
             brew install --cask wine-stable
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
-            cd /Users/distiller
+            # cd /Users/distiller
             unzip /Users/distiller/google-cloud-sdk.zip
             bash google-cloud-sdk/install.sh --rc-path=/Users/distiller/.bashrc --quiet
             source ~/.bashrc
