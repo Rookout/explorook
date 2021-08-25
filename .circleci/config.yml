@@ -85,10 +85,10 @@ jobs:
             brew install --cask wine-stable
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
-            # cd /Users/distiller
             unzip /Users/distiller/google-cloud-sdk.zip
             bash google-cloud-sdk/install.sh --rc-path=/Users/distiller/.bashrc --usage-reporting=false --path-update=true --bash-completion=true --install-python=true
             source ~/.bashrc
+            # Save gcloud credentials service account and authenticate
             echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
             export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
       - save_cache:
