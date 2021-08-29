@@ -1,4 +1,5 @@
 import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
+import {getStoreSafe} from "./explorook-store";
 const bugsnag = require("@bugsnag/js");
 const electron = require('electron');
 let app: Electron.App;
@@ -8,6 +9,8 @@ if (typeof electron !== 'string') {
 }
 
 let exceptionManagerInstance: Client;
+
+const store = getStoreSafe();
 
 export const initExceptionManager = (getUserID: () => string) => {
     if (!exceptionManagerInstance && app) {
@@ -28,6 +31,10 @@ export const initExceptionManager = (getUserID: () => string) => {
             report.updateMetaData("user", {
               userID: getUserID()
             });
+          }
+          const userEmail = store.get(USER_EMAIL_KEY, null);
+          if (userEmail) {
+            report.updateMetaData("user", { userEmail });
           }
         }
       }, null);
