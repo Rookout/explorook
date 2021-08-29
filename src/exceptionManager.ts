@@ -42,7 +42,7 @@ export const initExceptionManager = (getUserID: () => string) => {
     return exceptionManagerInstance;
 };
 
-export const USER_EMAIL_KEY = "userEmailKey"
+export const USER_EMAIL_KEY = "userEmailKey";
 
 export const notify = (error: NotifiableError, opts?: INotifyOpts) => {
     exceptionManagerInstance?.notify(error, opts);
