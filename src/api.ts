@@ -14,7 +14,7 @@ import {
   getUserFromBitbucket
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
-import {notify} from "./exceptionManager";
+import {notify, USER_EMAIL_KEY} from "./exceptionManager";
 import {
   canAuthGitRepo,
   checkGitRemote,
@@ -32,6 +32,7 @@ import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRe
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler, onRemoveRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
+import {getStoreSafe} from "./explorook-store";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -42,6 +43,7 @@ const join = posix.join;
 const GRAPHQL_INT_MAX = 2147483647;
 
 const logger = getLogger("api");
+const store = getStoreSafe();
 
 interface FileInfo {
   path: string;
@@ -77,6 +79,12 @@ export const resolvers = {
   Mutation: {
     settings: (parent: any, args: { settings: Settings }): Settings => {
       return setSettings(args.settings);
+    },
+    userEmail: (parent: any, args: { userEmail: string }): boolean => {
+      if (!store.get(USER_EMAIL_KEY, null)) {
+        store.set(USER_EMAIL_KEY, args.userEmail);
+      }
+      return true;
     },
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
       logger.debug("Adding repo", args.fullpath);

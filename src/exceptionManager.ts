@@ -35,13 +35,15 @@ export const initExceptionManager = (getUserID: () => string) => {
     return exceptionManagerInstance;
 };
 
+export const USER_EMAIL_KEY = "userEmailKey"
+
 export const notify = (error: NotifiableError, opts?: INotifyOpts) => {
     exceptionManagerInstance?.notify(error, opts);
 };
 
 export const leaveBreadcrumb = (name: string, metaData?: any, type?: string, timestamp?: string) => {
-  exceptionManagerInstance?.leaveBreadcrumb(name, metaData, type, timestamp)
-}
+  exceptionManagerInstance?.leaveBreadcrumb(name, metaData, type, timestamp);
+};
 
 export class Logger {
 
