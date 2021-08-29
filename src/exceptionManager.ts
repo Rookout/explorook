@@ -19,7 +19,7 @@ export const initExceptionManager = (getUserID: () => string) => {
         onUncaughtException: (err: any) => {
           // override default behaviour to not crash
           // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
-          console.log(err)
+          console.log(err);
         },
         projectRoot: app.getAppPath(),
         apiKey: "6e673fda179162f48a2c6b5d159552d2",
