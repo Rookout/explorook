@@ -122,6 +122,7 @@ type Mutation {
   getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
   changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
   settings(settings: SettingsInput): Settings!
+  userEmail(userEmail: String): Boolean
   langServerConfig: LangServerOps!
 }
 
