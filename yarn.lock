@@ -4698,10 +4698,10 @@ isomorphic-fetch@^2.1.1:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
 
-isomorphic-git@^1.4.0:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/isomorphic-git/-/isomorphic-git-1.8.1.tgz#352ff9a7e0deee0fe34e1618e4d811c3ebeda6d5"
-  integrity sha512-4xs3yzHrEGAWdlWbO/iAc7SbIvWopSydPe1gUfwgpzGeU+ofs1JbvuOzCBIkHec0r3pWZv/u8NL808Rq7xTa7Q==
+isomorphic-git@1.8.2:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/isomorphic-git/-/isomorphic-git-1.8.2.tgz#a246068c7d8edb5618a1b9f9304118b231cb46f7"
+  integrity sha512-wp3on2Kks1sE/tLUmGLPV7EEAj+JRK8WoL2ZSfJHVQfWzRqMRv96bqzDjyYpC6COGKlDQnhTNCucRf83S3cuMw==
   dependencies:
     async-lock "^1.1.0"
     clean-git-ref "^2.0.1"
