@@ -81,9 +81,7 @@ export const resolvers = {
       return setSettings(args.settings);
     },
     userEmail: (parent: any, args: { userEmail: string }): boolean => {
-      if (!store.get(USER_EMAIL_KEY, null)) {
-        store.set(USER_EMAIL_KEY, args.userEmail);
-      }
+      store.set(USER_EMAIL_KEY, args.userEmail);
       return true;
     },
     addRepository: async (parent: any, args: { fullpath: string }, context: { onAddRepoRequest: onAddRepoRequestHandler }): Promise<boolean> => {
