@@ -3,6 +3,7 @@ import MemStore from "./mem-store";
 
 export interface IStore {
     get(key: any, defaultValue?: any): string;
+    delete(key: any): void;
     set(key: string, value: any): void;
 }
 
@@ -26,7 +27,7 @@ export class ExplorookStore extends Store {
     }
 }
 
-export const getStoreSafe = () : IStore => {
+export const getStoreSafe = (): IStore => {
     try {
         return new Store({ name: "explorook", watch: true });
     } catch (error) { // probably headless mode - defaulting to memory store
