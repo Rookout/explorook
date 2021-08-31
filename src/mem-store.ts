@@ -1,5 +1,5 @@
 // memory store used instead of electron-store when running in headless mode (electron-store doesn't work outside electron)
-const singleStore = new Map<string,string>();
+const singleStore = new Map<string, string>();
 export default class MemStore {
     public store: Map<string, string>;
     constructor() {
@@ -14,6 +14,10 @@ export default class MemStore {
     }
     public set(key: string, value: string) {
         this.store.set(key, value);
+    }
+
+    public delete(key: string) {
+        this.store.delete(key);
     }
 
     public onDidChange(key: string, callback: (newValue?: string, oldValue?: string) => void): () => null {
