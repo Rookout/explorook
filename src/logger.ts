@@ -20,10 +20,7 @@ const getLogFileLocation = () => path.join(getLibraryFolder(), "rookout.log");
 
 log4js.configure({
     appenders: {
-        perforce: {type: "file", filename: getLogFileLocation()},
-        git: {type: "file", filename: getLogFileLocation()},
-        api: {type: "file", filename: getLogFileLocation()},
-        langserver: {type: "file", filename: getLogFileLocation()},
+        file: {type: "file", filename: getLogFileLocation()},
         "logs-container": {
             type: "./logsContainerAppender",
             layout: {
@@ -32,7 +29,9 @@ log4js.configure({
             }
         }
     },
-    categories: {default: {appenders: ["perforce", "git", "api", "langserver"], level: logLevel}}
+    categories: {
+        default: {appenders: ["file", "logs-container"], level: logLevel},
+    }
 });
 
 export const setLogLevel = (newLogLevel: string) => {

@@ -432,11 +432,12 @@ export const resolvers = {
       return {};
     },
     appVersion: async (parent: any): Promise<string> => {
+      logger.info("test");
       return process.env.development ? require("../package.json").version : remote.app.getVersion();
     },
-    recentLogs: (parent: any): Log[] => {
-      return [];
-    }
+    // recentLogs: (parent: any): Log[] => {
+    //   return [];
+    // }
   },
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
