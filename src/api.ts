@@ -52,12 +52,6 @@ interface FileInfo {
   size: number;
 }
 
-interface Log {
-  level: string;
-  time: string;
-  message: string;
-}
-
 export const resolvers = {
   Repository: {
     lastCommitDescription: async (parent: Repository) => {
@@ -440,7 +434,7 @@ export const resolvers = {
     appVersion: async (parent: any): Promise<string> => {
       return process.env.development ? require("../package.json").version : remote.app.getVersion();
     },
-    recentLogs: async (parent: any): Promise<any> => {
+    recentLogs: (parent: any): Log[] => {
       return [];
     }
   },
