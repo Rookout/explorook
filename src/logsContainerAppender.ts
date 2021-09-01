@@ -16,7 +16,7 @@ function logsContainerAppender() {
     };
 }
 
-function configure(config: any, layouts: any) {
+function configure() {
     return logsContainerAppender();
 }
 

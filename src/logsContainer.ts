@@ -2,7 +2,7 @@ import LogData from "./logData";
 
 export default class LogsContainer {
     public static getLogs() {
-        return LogsContainer.logs;
+        return LogsContainer.logs || [];
     }
 
     public static pushLog(log: LogData) {
@@ -13,5 +13,5 @@ export default class LogsContainer {
         LogsContainer.logs = [];
     }
 
-    private static logs: LogData[];
+    private static logs: LogData[] = [];
 }

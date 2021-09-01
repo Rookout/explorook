@@ -434,7 +434,6 @@ export const resolvers = {
       return {};
     },
     appVersion: async (parent: any): Promise<string> => {
-      logger.error("test", { error: { nir: "yarden" } });
       return process.env.development ? require("../package.json").version : remote.app.getVersion();
     },
     recentLogs: (parent: any): Log[] => {
