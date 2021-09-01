@@ -17,18 +17,13 @@ if (!logLevel) {
 }
 
 const getLogFileLocation = () => path.join(getLibraryFolder(), "rookout.log");
-
-const appender = require("./logsContainerAppender");
+const customAppender = require("./logsContainerAppender");
 
 log4js.configure({
     appenders: {
         file: {type: "file", filename: getLogFileLocation()},
         "logs-container": {
-            type: appender,
-            layout: {
-                type: "pattern",
-                pattern: "[%d] [%p] [%m%n]"
-            }
+            type: customAppender,
         }
     },
     categories: {

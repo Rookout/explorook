@@ -15,6 +15,7 @@ import {
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
+import {getStoreSafe} from "./explorook-store";
 import {
   canAuthGitRepo,
   checkGitRemote,
@@ -27,12 +28,13 @@ import {
   TMP_DIR_PREFIX
 } from "./git";
 import { langServerConfigStore, minimumJavaVersionRequired } from "./langauge-servers/configStore";
+import Log from "./logData";
 import {getLogger} from "./logger";
+import LogsContainer from "./logsContainer";
 import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler, onRemoveRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
-import {getStoreSafe} from "./explorook-store";
 const folderDelete = require("folder-delete");
 
 // using posix api makes paths consistent across different platforms
@@ -432,12 +434,14 @@ export const resolvers = {
       return {};
     },
     appVersion: async (parent: any): Promise<string> => {
-      logger.info("test");
+      logger.error("test", { error: { nir: "yarden" } });
       return process.env.development ? require("../package.json").version : remote.app.getVersion();
     },
-    // recentLogs: (parent: any): Log[] => {
-    //   return [];
-    // }
+    recentLogs: (parent: any): Log[] => {
+      const recentLogs = LogsContainer.getLogs();
+      LogsContainer.cleanLogs();
+      return recentLogs;
+    }
   },
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>

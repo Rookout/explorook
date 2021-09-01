@@ -1,25 +1,17 @@
-interface Log {
-    level: string;
-    time: number;
-    message: string;
-}
+import LogData from "./logData";
 
-class LogsContainer {
-    private logs: Log[];
-
-    constructor() {
-        this.logs = [];
+export default class LogsContainer {
+    public static getLogs() {
+        return LogsContainer.logs;
     }
 
-    public getLogs() {
-        return this.logs;
+    public static pushLog(log: LogData) {
+        LogsContainer.logs.push(log);
     }
 
-    public pushLog(log: Log) {
-        this.logs.push(log);
+    public static cleanLogs() {
+        LogsContainer.logs = [];
     }
 
-    public cleanLogs() {
-        this.logs = [];
-    }
+    private static logs: LogData[];
 }
