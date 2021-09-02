@@ -1,6 +1,4 @@
-import _ = require("lodash");
 import * as path from "path";
-import {leaveBreadcrumb, notify} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
 
 const store = getStoreSafe();

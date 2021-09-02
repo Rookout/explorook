@@ -47,6 +47,7 @@ type Query {
   testPerforceConnection(connectionSettings: PerforceConnectionSettings!): OperationStatus!
   BitbucketOnPrem: BitbucketOnPrem!
   langServerConfig: LangServerConfig!
+  recentLogs: [Log]!
 }
 
 input PerforceConnectionSettings {
@@ -188,4 +189,10 @@ type BitbucketBranch {
   displayId: String!
   latestCommit: String!
   isDefault: Boolean!
+}
+
+type Log {
+  level: String!
+  time: String!
+  message: String!
 }
