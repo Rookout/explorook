@@ -87,7 +87,7 @@
     "electron": "^11.0.0",
     "electron-builder": "^22.10.5",
     "electron-builder-lib": "^20.15.3",
-    "electron-notarize": "^0.2.1",
+    "electron-notarize": "^1.1.0",
     "graphql-middleware": "^3.0.2",
     "node-fetch": "^2.6.1",
     "ts-loader": "^6.0.4",
