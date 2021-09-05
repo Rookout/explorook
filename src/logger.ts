@@ -16,14 +16,19 @@ if (!logLevel) {
     logLevel = "debug";
 }
 
+const getLogFileLocation = () => path.join(getLibraryFolder(), "rookout.log");
+const customAppender = require("./logsContainerAppender");
+
 log4js.configure({
     appenders: {
-            perforce: {type: "file", filename: path.join(getLibraryFolder(), "rookout.log")},
-            git: {type: "file", filename: path.join(getLibraryFolder(), "rookout.log")},
-            api: {type: "file", filename: path.join(getLibraryFolder(), "rookout.log")},
-            langserver: {type: "file", filename: path.join(getLibraryFolder(), "rookout.log")}
-        },
-    categories: {default: {appenders: ["perforce", "git", "api", "langserver"], level: logLevel}}
+        file: {type: "file", filename: getLogFileLocation()},
+        "logs-container": {
+            type: customAppender,
+        }
+    },
+    categories: {
+        default: {appenders: ["file", "logs-container"], level: logLevel},
+    }
 });
 
 export const setLogLevel = (newLogLevel: string) => {
