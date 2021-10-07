@@ -34,7 +34,7 @@ jobs:
             #IdenTrust Commercial Root CA 1
             curl -L https://www.identrust.com/node/1330 -o IdenTrustCommercialRootCA.p7b
             #convert to pem
-            openssl pkcs7 -in ~/Downloads/IdenTrustCommercialRootCA.p7b -inform DER -print_certs -out cert.pem            
+            openssl pkcs7 -in IdenTrustCommercialRootCA.p7b -inform DER -print_certs -out cert.pem            
             ###
             # download custom jsign to sign PE
             curl --cacert cert.pem fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
