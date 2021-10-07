@@ -28,6 +28,11 @@ jobs:
             echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
             export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            ### temp-fix - REVERT ONCE POSSIBLE ###
+            # manually fetch updated certificate bundle from cURL project
+            curl -k https://curl.se/ca/cacert.pem -o ~/.cacert.pem # -k means skip ssl validation since it is a chicken-and-egg situation
+            export CURL_CA_BUNDLE=~/.cacert.pem
+            ###
             # download custom jsign to sign PE
             curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install electron main window dependencies
