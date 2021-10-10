@@ -37,7 +37,7 @@ jobs:
             openssl pkcs7 -in IdenTrustCommercialRootCA.p7b -inform DER -print_certs -out cert.pem            
             ###
             # download custom jsign to sign PE
-            curl --cacert cert.pem fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
+            curl --cacert cert.pem -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install electron main window dependencies
             yarn
             # build typescript code
