@@ -28,8 +28,16 @@ jobs:
             echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
             export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
             gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            ### temp-fix - REVERT ONCE POSSIBLE ###
+            # manually fetch updated IdenTrustCommercialRootCA (temp fix)
+            # see https://www.identrust.com/support/downloads
+            #IdenTrust Commercial Root CA 1
+            curl -L https://www.identrust.com/node/1330 -o IdenTrustCommercialRootCA.p7b
+            #convert to pem
+            openssl pkcs7 -in IdenTrustCommercialRootCA.p7b -inform DER -print_certs -out cert.pem            
+            ###
             # download custom jsign to sign PE
-            curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
+            curl --cacert cert.pem fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install electron main window dependencies
             yarn
             # build typescript code
