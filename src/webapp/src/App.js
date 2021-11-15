@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import 'typeface-roboto/index.css'
-// import 'material-design-icons/iconfont/material-icons.css'
-import './App.css'
+import { ipcRenderer } from 'electron'
 import { Header } from './components/Header'
 import Footer from './components/Footer'
-import { Token } from './components/Token'
-import { ReposList } from './components/ReposList'
 import { EulaModal } from './components/EulaModal'
-import { ipcRenderer } from 'electron'
-import { OnPremConnection } from './components/OnPremConnection'
 import { EmptyState } from './components/EmptyState'
+import 'typeface-roboto/index.css'
+import './App.css'
 
 const INITIAL_HAS_SIGNED_EULA = ipcRenderer.sendSync('has-signed-eula')
 
@@ -37,8 +33,6 @@ export const App = ({ ...props }) => {
         <Header />
       </div>
       {hasSignedEula && <EmptyState />}
-      {hasSignedEula && <ReposList />}
-      {hasSignedEula && <OnPremConnection />}
       {!hasSignedEula && (
         <div style={{ overflow: 'auto' }}>
           <div id='content-container'>
