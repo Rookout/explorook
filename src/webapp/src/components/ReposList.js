@@ -64,7 +64,7 @@ export const ReposList = () => {
         !store.get('non-git-dialog-never-ask-again', false) &&
         (await shouldWarnNonGit(folder))
       let shouldAdd = true
-      if (true) {
+      if (shouldWarn) {
         shouldAdd = await new Promise((resolve) => {
           postDialog = (doAdd) => {
             resolve(doAdd)
