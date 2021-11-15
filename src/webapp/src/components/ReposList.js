@@ -10,7 +10,7 @@ const dialog = remote.dialog
 
 const store = new Store({ name: 'explorook' })
 
-let postDialog = () => {}
+let postDialog = () => { }
 
 export const ReposList = () => {
   const [confirmOpen, setConfirmOpen] = useState(false)

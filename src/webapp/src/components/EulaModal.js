@@ -56,7 +56,7 @@ const EulaModalComponent = ({ setSignedEula, ...props }) => {
       aria-labelledby='simple-modal-title'
       aria-describedby='simple-modal-description'
       open
-      onClose={() => {}}
+      onClose={() => { }}
     >
       <div className='eula-modal'>
         <h1 className='headline'>Software-as-a-Service Agreement</h1>
