@@ -22,7 +22,7 @@
 
 Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on our [website](https://www.rookout.com) or our [docs pages](https://docs.rookout.com)).
 
-The Rookout desktop app allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
+The Rookout desktop app ("explorook") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
 
 <p align="center">
   <img src="https://github.com/Rookout/explorook/blob/master/assets/animated-gif.gif" alt="Rookout Desktop App" width="840">
