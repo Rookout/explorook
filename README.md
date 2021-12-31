@@ -42,6 +42,11 @@ The Rookout Desktop App was designed with security as a foremost concern, its se
 
 [Learn more about our security standards](https://www.rookout.com/solution/source-code-security/)
 
+## Installation
+
+The desktop app can be installed from within the Rookout web UI, such as when initially selecting a project and indicating use of local code. A link is offered to download the app (which will be customized to your operating system, and which will offer the latest available installer for the Rookout Desktop App). Here's a brief video of that workflow:
+https://youtu.be/watch?v=mkMpzQPNcsI
+
 ## Contributing
 
 There are many ways in which you can participate in the project, for example:
