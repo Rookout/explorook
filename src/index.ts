@@ -11,13 +11,16 @@ import {
   Tray
 } from "electron";
 import * as log from "electron-log";
-import { autoUpdater, UpdateInfo } from "electron-updater";
+import {autoUpdater, UpdateCheckResult, UpdateInfo} from "electron-updater";
 import fs = require("fs");
 import { userInfo } from "os";
 import * as path from "path";
 import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
+import fetch from "node-fetch";
+import * as os from "os";
+const YAML = require("yaml");
 import { initExceptionManager, notify, Logger } from "./exceptionManager";
 
 autoUpdater.logger = new Logger();
@@ -258,11 +261,14 @@ async function update() {
     console.log("detected read-only volume - auto update disabled");
     return;
   }
-  console.log("will try to update");
-  autoUpdater.on('error', error => {
-    console.log('gotcha', error)
-    notify(error)
-  })
+  autoUpdater.on('error',  async (error) => {
+    try {
+      indexWorker.webContents.postMessage("upgrade-version-failed", {downloadUrl: await getLatestVersionLink()});
+      notify(error);
+    } catch (err) {
+      console.trace(`autoUpdater error: ${err}`);
+    }
+  });
   let updateInterval: ReturnType<typeof setInterval> = null;
   autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
     willUpdateOnClose = true;
@@ -279,6 +285,27 @@ async function update() {
   };
   updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
   tryUpdate();
+}
+
+async function getLatestVersionLink() {
+  const LATEST_VERSION_URL = "https://api.github.com/repos/Rookout/explorook/releases/latest";
+  const VERSION_REQUEST_HEADER = {headers: {"Content-Type": "application/json"}};
+  const verNum = (await (await fetch(LATEST_VERSION_URL, VERSION_REQUEST_HEADER)).json()).name;
+  return await getPlatformDownloadLink(verNum);
+}
+
+async function getPlatformDownloadLink(verNum: string) {
+  const opSys = os.platform() === "darwin" ? "latest-mac.yml" : os.platform() === "linux" ? "latest-linux.yml" : "latest.yml";
+  const fileExt = os.platform() === "darwin" ? "dmg" : os.platform() === "linux" ? "AppImage" : "exe";
+  const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${opSys}`;
+  const availableVersions = (await (await fetch(versionUrl)).text());
+  const fileNames = YAML.parse(availableVersions).files.map((file: { url: string, sha512: string, size: number }) => file.url);
+  const fileLink = fileNames.find((fileName: string) => fileName.includes(fileExt));
+  return `https://get.rookout.com/explorook/${getOsName()}/${fileLink}`;
+}
+
+function getOsName() {
+  return os.platform() === "darwin" ? "mac" : os.platform() === "linux" ? "linux" : "windows";
 }
 
 function displayWindowHiddenNotification() {
@@ -407,7 +434,11 @@ function openTray() {
 
 // trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
 process.on("uncaughtException", (err: Error) => {
-  notify(err);
+  try {
+    notify(err);
+  } catch (err) {
+    console.trace(`uncaughtException hook: ${err}`);
+  }
 });
 
 // This method will be called when Electron has finished
