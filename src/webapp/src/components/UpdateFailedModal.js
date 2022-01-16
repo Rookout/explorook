@@ -20,6 +20,7 @@ export const UpdateFailedModal = () => {
             }
             if (timeDiff() >= TWO_DAYS) {
                 onPopDialogRequested();
+                setUpdateTimer(new Date());
             }
         }
         ipcRenderer.on("pop-failed-upgrade", init);
