@@ -11,7 +11,7 @@ import {
   Tray
 } from "electron";
 import * as log from "electron-log";
-import {autoUpdater, UpdateCheckResult, UpdateInfo} from "electron-updater";
+import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
 import { userInfo } from "os";
 import * as path from "path";
