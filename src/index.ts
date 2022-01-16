@@ -35,6 +35,11 @@ const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_b
 const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
 const SETTINGS_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_settings_white_18dp.png");
 const TEN_MINUTES = 1000 * 60 * 10;
+const updateParamMap = new Map<string, {ymlFile: string, fileExt: string, osName: string}>([
+                    ["win32", {ymlFile: "latest.yml", fileExt: "exe", osName: "windows"}],
+                    ["darwin", {ymlFile: "latest-mac.yml", fileExt: "dmg", osName: "mac"}],
+                    ["linux", {ymlFile: "latest-linux.yml", fileExt: "AppImage", osName: "linux"}],
+]);
 
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
@@ -289,23 +294,19 @@ async function update() {
 
 async function getLatestVersionLink() {
   const LATEST_VERSION_URL = "https://api.github.com/repos/Rookout/explorook/releases/latest";
-  const VERSION_REQUEST_HEADER = {headers: {"Content-Type": "application/json"}};
-  const verNum = (await (await fetch(LATEST_VERSION_URL, VERSION_REQUEST_HEADER)).json()).name;
+  const response = await fetch(LATEST_VERSION_URL);
+  const verNum = (await response.json()).name;
   return await getPlatformDownloadLink(verNum);
 }
 
 async function getPlatformDownloadLink(verNum: string) {
-  const opSys = os.platform() === "darwin" ? "latest-mac.yml" : os.platform() === "linux" ? "latest-linux.yml" : "latest.yml";
-  const fileExt = os.platform() === "darwin" ? "dmg" : os.platform() === "linux" ? "AppImage" : "exe";
-  const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${opSys}`;
-  const availableVersions = (await (await fetch(versionUrl)).text());
+  const { ymlFile, fileExt, osName } = updateParamMap.get(os.platform());
+  const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${ymlFile}`;
+  const response = await fetch(versionUrl);
+  const availableVersions = await response.text();
   const fileNames = YAML.parse(availableVersions).files.map((file: { url: string, sha512: string, size: number }) => file.url);
   const fileLink = fileNames.find((fileName: string) => fileName.includes(fileExt));
-  return `https://get.rookout.com/explorook/${getOsName()}/${fileLink}`;
-}
-
-function getOsName() {
-  return os.platform() === "darwin" ? "mac" : os.platform() === "linux" ? "linux" : "windows";
+  return `https://get.rookout.com/explorook/${osName}/${fileLink}`;
 }
 
 function displayWindowHiddenNotification() {
