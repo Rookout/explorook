@@ -11,13 +11,16 @@ import {
   Tray
 } from "electron";
 import * as log from "electron-log";
-import { autoUpdater, UpdateInfo } from "electron-updater";
+import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
 import { userInfo } from "os";
 import * as path from "path";
 import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
+import fetch from "node-fetch";
+import * as os from "os";
+const YAML = require("yaml");
 import { initExceptionManager, notify, Logger } from "./exceptionManager";
 
 autoUpdater.logger = new Logger();
@@ -32,6 +35,11 @@ const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_b
 const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
 const SETTINGS_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_settings_white_18dp.png");
 const TEN_MINUTES = 1000 * 60 * 10;
+const updateParamMap = new Map<string, {ymlFile: string, fileExt: string, osName: string}>([
+                    ["win32", {ymlFile: "latest.yml", fileExt: "exe", osName: "windows"}],
+                    ["darwin", {ymlFile: "latest-mac.yml", fileExt: "dmg", osName: "mac"}],
+                    ["linux", {ymlFile: "latest-linux.yml", fileExt: "AppImage", osName: "linux"}],
+]);
 
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
@@ -258,11 +266,14 @@ async function update() {
     console.log("detected read-only volume - auto update disabled");
     return;
   }
-  console.log("will try to update");
-  autoUpdater.on('error', error => {
-    console.log('gotcha', error)
-    notify(error)
-  })
+  autoUpdater.on('error',  async (error) => {
+    try {
+      indexWorker.webContents.postMessage("upgrade-version-failed", {downloadUrl: await getLatestVersionLink()});
+      notify(error);
+    } catch (err) {
+      console.trace(`autoUpdater error: ${err}`);
+    }
+  });
   let updateInterval: ReturnType<typeof setInterval> = null;
   autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
     willUpdateOnClose = true;
@@ -279,6 +290,23 @@ async function update() {
   };
   updateInterval = setInterval(() => tryUpdate(), TEN_MINUTES);
   tryUpdate();
+}
+
+async function getLatestVersionLink() {
+  const LATEST_VERSION_URL = "https://api.github.com/repos/Rookout/explorook/releases/latest";
+  const response = await fetch(LATEST_VERSION_URL);
+  const verNum = (await response.json()).name;
+  return await getPlatformDownloadLink(verNum);
+}
+
+async function getPlatformDownloadLink(verNum: string) {
+  const { ymlFile, fileExt, osName } = updateParamMap.get(os.platform());
+  const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${ymlFile}`;
+  const response = await fetch(versionUrl);
+  const availableVersions = await response.text();
+  const fileNames = YAML.parse(availableVersions).files.map((file: { url: string, sha512: string, size: number }) => file.url);
+  const fileLink = fileNames.find((fileName: string) => fileName.includes(fileExt));
+  return `https://get.rookout.com/explorook/${osName}/${fileLink}`;
 }
 
 function displayWindowHiddenNotification() {
@@ -407,7 +435,11 @@ function openTray() {
 
 // trying to workaround this bug: https://github.com/electron-userland/electron-builder/issues/2451
 process.on("uncaughtException", (err: Error) => {
-  notify(err);
+  try {
+    notify(err);
+  } catch (err) {
+    console.trace(`uncaughtException hook: ${err}`);
+  }
 });
 
 // This method will be called when Electron has finished

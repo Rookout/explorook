@@ -12,6 +12,10 @@ let exceptionManagerInstance: Client;
 
 const store = getStoreSafe();
 
+const ignoredErrors = new Set<string>(["ENOENT", "ENOTDIR", "ENOTEMPTY",
+                                              "ENOTFOUND", "ETIMEDOUT", "EACCES", "ECONNRESET"]);
+Object.freeze(ignoredErrors); // prevents anyone from changing the object
+
 export const initExceptionManager = (getUserID: () => string) => {
     if (!exceptionManagerInstance && app) {
       const releaseStage = app.isPackaged ? 'production' : 'development';
@@ -45,6 +49,11 @@ export const initExceptionManager = (getUserID: () => string) => {
 export const USER_EMAIL_KEY = "userEmailKey";
 
 export const notify = (error: NotifiableError, opts?: INotifyOpts) => {
+    // get the error code if exists. If no code exists then notify
+    const errorCode = error?.code;
+    if (errorCode && ignoredErrors.has(errorCode)) {
+      return;
+    }
     exceptionManagerInstance?.notify(error, opts);
 };
 
@@ -54,19 +63,22 @@ export const leaveBreadcrumb = (name: string, metaData?: any, type?: string, tim
 
 export class Logger {
 
-  info(message?: any) {
+  public info(message?: any) {
     exceptionManagerInstance?.leaveBreadcrumb("log", { message }, "info");
     console.info(message);
   }
-  warn(message?: any) {
+  public warn(message?: any) {
     exceptionManagerInstance?.leaveBreadcrumb("log", { message }, "warn");
     console.warn(message);
   }
-  error(message?: any) {
+  public error(message?: any) {
     console.error(message);
   }
-  debug(message: string) {
+  public debug(message: string) {
     // ignore
+  }
+  public trace(msg?: string | Error) {
+    console.trace(msg || "");
   }
 }
 
