@@ -1,11 +1,11 @@
-import { ipcRenderer, IpcRendererEvent, remote } from "electron";
+import { ipcRenderer, IpcRendererEvent } from "electron";
 import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
 import {cloneRemoteOriginWithCommit, GitConnectionOptions} from "./git";
-import {getLogger, setLogLevel} from "./logger";
+import {setLogLevel} from "./logger";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
