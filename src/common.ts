@@ -4,9 +4,6 @@ interface OperationStatus {
 }
 
 interface Settings {
-  PerforceConnectionString?: string;
-  PerforceTimeout?: string;
-  PerforceUser?: string;
   OverrideGlobal?: boolean;
   BitbucketOnPremServers?: string[];
 }

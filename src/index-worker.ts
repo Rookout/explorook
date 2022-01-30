@@ -6,7 +6,6 @@ import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
 import {cloneRemoteOriginWithCommit, GitConnectionOptions} from "./git";
 import {getLogger, setLogLevel} from "./logger";
-import {changePerforceManagerSingleton, PerforceConnectionOptions} from "./perforceManager";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
 
@@ -99,20 +98,6 @@ ipcRenderer.on("clear-all-repos", (e: IpcRendererEvent) => {
         repStore.remove(repo);
     });
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
-});
-ipcRenderer.on("test-perforce-connection", (e: IpcRendererEvent, connectionOptions: PerforceConnectionOptions) => {
-    let isSuccess = false;
-    try {
-      isSuccess = changePerforceManagerSingleton(connectionOptions);
-    } catch (e) {
-        if (e.message?.code === "ENOENT") {
-            ipcRenderer.send("no-p4-found");
-        }
-        getLogger("Perforce").error("Failed to init Perforce manager", e);
-        console.error(`Failed to init perforce manager with port: ${connectionOptions}`);
-    }
-
-    ipcRenderer.sendTo(mainWindowId, "test-perforce-connection-result", isSuccess);
 });
 
 ipcRenderer.on("test-git-connection", async (e: IpcRendererEvent, connectionOptions: GitConnectionOptions) => {

@@ -144,11 +144,6 @@ div, span {
   border-radius: 100px;
 }
 
-#perforce-connection-input {
-  width: 80%;
-  color: white;
-}
-
 #minimize-window-btn:hover, #close-window-btn:hover {
   background-color: #c4cfd6;
 }

@@ -31,7 +31,6 @@ import { langServerConfigStore, minimumJavaVersionRequired } from "./langauge-se
 import Log from "./logData";
 import {getLogger} from "./logger";
 import LogsContainer from "./logsContainer";
-import {changePerforceManagerSingleton, getPerforceManagerSingleton, IPerforceRepo, IPerforceView} from "./perforceManager";
 import {Repo, repStore} from "./repoStore";
 import {loadingStateUpdateHandler, onAddRepoRequestHandler, onRemoveRepoRequestHandler} from "./server";
 import { getSettings, setSettings } from "./utils";
@@ -112,50 +111,6 @@ export const resolvers = {
       }
       return true;
     },
-    changePerforceViews: async (parent: any, args: {views: string[]}, context: { onAddRepoRequest: onAddRepoRequestHandler }):
-        Promise<OperationStatus> => {
-      const perforceManager = getPerforceManagerSingleton();
-
-      if (!perforceManager) {
-        logger.error("Failed to get Perforce manager instance", args.views);
-        return { isSuccess: false, reason: "Perforce client not initialized" };
-      }
-
-      const newRepos = await perforceManager.changeViews(args.views);
-      if (_.isEmpty(newRepos) && !_.isEmpty(args.views)) {
-        logger.error("No depots with given input found", args.views);
-        return { isSuccess: false, reason: "No depots with those names exist" };
-      }
-
-      const addRepoPromises = [] as Array<Promise<boolean>>;
-
-      _.forEach(newRepos, (repo: IPerforceRepo) => {
-        logger.debug("Adding repo", repo);
-        addRepoPromises.push(context.onAddRepoRequest(repo.fullPath, repo.id));
-      });
-
-      const success = await Promise.all(addRepoPromises);
-
-      const allSuccess = _.every(success, (s: boolean) => s);
-
-      if (!allSuccess) {
-        logger.error("Failed to create some of the depots");
-      }
-
-      return {
-        isSuccess: allSuccess,
-        reason: !allSuccess ? "Failed to create some of the repos in Explorook" : undefined
-      };
-    },
-    switchPerforceChangelist: async (parent: any, args: {changelistId: string}): Promise<OperationStatus> => {
-      const perforceManager = getPerforceManagerSingleton();
-      if (!perforceManager) {
-        logger.error("Failed to get Perforce manager instance");
-        return { isSuccess: false, reason: "Perforce not initialized"};
-      }
-      logger.debug("Changing perforce to", args.changelistId);
-      return await perforceManager.switchChangelist(args.changelistId);
-    },
     getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
                        context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
         Promise<OperationStatus> => {
@@ -234,61 +189,12 @@ export const resolvers = {
       logger.debug("Finished cloning git repos", res);
       return _.find(res, r => !r.isSuccess) || { isSuccess: true };
     },
-    getFileFromPerforce: async (parent: any, args: { depotFilePath: string, labelOrChangelist: string }): Promise<string> => {
-      const perforceManager = getPerforceManagerSingleton();
-      if (!perforceManager) {
-        logger.error("Could not get Perforce manager instace");
-        return "";
-      }
-
-      logger.debug("Getting file from Perforce", args);
-      return await perforceManager.getSpecificFile(args.depotFilePath, args.labelOrChangelist, true);
-    },
-    changePerforceViewsV2: async (parent: any, args: {views: string[], shouldSync: boolean}): Promise<OperationStatus> => {
-      const perforceManager = getPerforceManagerSingleton();
-      if (!perforceManager) {
-        logger.error("Could not get Perforce manager instace");
-        return {
-          isSuccess: false,
-          reason: "Perforce client not initialized"
-        };
-      }
-
-      try {
-        const result = await perforceManager.changeViews(args.views, args.shouldSync);
-        logger.debug("Changed views for Perforce", {result});
-        return {
-          isSuccess: !_.isEmpty(result)
-        };
-      } catch (e) {
-        notify(e);
-        logger.error("Failed to change views for Perforce", e);
-        return {
-          isSuccess: false,
-          reason: e.message
-        };
-      }
-    },
     langServerConfig: async (parent: any):
         Promise<any> => {
       return {};
     }
   },
   Query: {
-    async testPerforceConnection(parent: any, args: { connectionSettings: Settings }): Promise<OperationStatus> {
-      try {
-        const isSuccess = changePerforceManagerSingleton({
-          connectionString: args.connectionSettings.PerforceConnectionString,
-          timeout: parseInt(args.connectionSettings.PerforceTimeout || "5000", 10),
-          username: args.connectionSettings.PerforceUser
-        });
-        return { isSuccess, reason: "make sure your configuration is correct" };
-      } catch (e) {
-        getLogger("Perforce").error("Failed to connect to Perforce", { e, settings: args.connectionSettings });
-        console.error(`Failed to init perforce manager with port: ${args.connectionSettings}`);
-        return { isSuccess: false, reason: e?.toString() || "an unexpected error occurred" };
-      }
-    },
     async canAuthGitRepos(parent: any, args: { sources: Array<{ repoUrl: string }> }): Promise<CanQueryRepoStatus[]> {
       const promises = _.map(args.sources, async src => {
         const res = await canAuthGitRepo(src.repoUrl);
@@ -378,52 +284,15 @@ export const resolvers = {
       args.repo.reIndex();
       return true;
     },
-    getAllPerforceViews: async (): Promise<IPerforceView[]> => {
-      const perforceManager = getPerforceManagerSingleton();
-      return perforceManager ? perforceManager.getAllViews() : [];
-    },
-    getPerforceChangelistForFile: async (parent: any, args: {repo: Repository, path: string}): Promise<string> => {
-      const perforceManager = getPerforceManagerSingleton();
-      const { path, repo } = args;
-      const fileFullpath = join(repo.fullpath, path);
-
-      if (!perforceManager) {
-        logger.error("Could not get Perforce manager instace");
-        return null;
-      }
-
-      logger.debug("Getting changelist for file", args);
-      return perforceManager.getChangelistForFile(fileFullpath);
-    },
     getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
       logger.debug("Getting commit ID for file", args);
       const {provider, repo, path, remoteOrigin} = args;
       switch (provider) {
         case "git":
           return getCommitIfRightOrigin(repo, remoteOrigin);
-        case "perforce":
-          const perforceManager = getPerforceManagerSingleton();
-          const filePath = join(repo.fullpath, path);
-          const isSameDepot = await perforceManager?.isSameRemoteOrigin(filePath, remoteOrigin);
-          if (!isSameDepot) {
-            logger.warn("This is not the depot you're looking for", args);
-            return null;
-          }
-
-          return await perforceManager.getChangelistForFile(filePath);
         default:
           throw new Error(`Unreachable code - got unknown source provider: ${provider}`);
       }
-    },
-    getFilesTreeFromPerforce: async (parent: any, args: { depot: string, labelOrChangelist: string}): Promise<[string]> => {
-      const perforceManager = getPerforceManagerSingleton();
-      if (!perforceManager) {
-        logger.error("Could not get Perforce manager instace");
-        return null;
-      }
-
-      logger.debug("Getting file tree for depot", args);
-      return await perforceManager.getDepotFileTree(args.depot, args.labelOrChangelist);
     },
     BitbucketOnPrem: async (parent: any):
         Promise<any> => {
