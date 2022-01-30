@@ -286,7 +286,7 @@ export const resolvers = {
     },
     getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
       logger.debug("Getting commit ID for file", args);
-      const {provider, repo, path, remoteOrigin} = args;
+      const {provider, repo, remoteOrigin} = args;
       switch (provider) {
         case "git":
           return getCommitIfRightOrigin(repo, remoteOrigin);
