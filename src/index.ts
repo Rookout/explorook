@@ -171,9 +171,6 @@ function registerIpc() {
       al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
     }
   });
-  ipcMain.on("no-p4-found", (e: IpcMainEvent) => {
-    displayNotification("Perforce P4 not found", "Make sure the Perforce P4 CLI tool is installed and configured correctly");
-  });
 }
 
 function track(eventName: string, props: any = null, callback: () => void = null) {

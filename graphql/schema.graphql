@@ -33,27 +33,17 @@ type Query {
   listRepos: [Repository!]!
   refreshIndex(repoId: String!): Boolean
   repository(repoId: String!): Repository!
-  getAllPerforceViews: [PerforceView]
-  getPerforceChangelistForFile(repoId: String!, path: String!): String
   getCommitIdForFile(
     provider: OnPremSourceProvider!
     remoteOrigin: String
     repoId: String!
     path: String!
   ): String
-  getFilesTreeFromPerforce(depot: String!, labelOrChangelist: String!): [String]!
   settings: Settings!
   canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
-  testPerforceConnection(connectionSettings: PerforceConnectionSettings!): OperationStatus!
   BitbucketOnPrem: BitbucketOnPrem!
   langServerConfig: LangServerConfig!
   recentLogs: [Log]!
-}
-
-input PerforceConnectionSettings {
-  PerforceConnectionString: String
-  PerforceUser: String
-  PerforceTimeout: String
 }
 
 input BitbucketInput {
@@ -77,16 +67,10 @@ type CanAuthGitRepoResponse {
 }
 
 type Settings {
-  PerforceConnectionString: String
-  PerforceUser: String
-  PerforceTimeout: String
   BitbucketOnPremServers: [String]
 }
 
 input SettingsInput {
-  PerforceConnectionString: String
-  PerforceUser: String
-  PerforceTimeout: String
   BitbucketOnPremServers: [String] @deprecated(reason: "there is no need to pre-configure valid URLs")
   """use this flag to signal that the provided settings should override any
   global settings provided by the admin.
@@ -117,11 +101,7 @@ input GitSource {
 type Mutation {
   addRepository(fullpath: String): Boolean
   removeRepository(repoId: String!): Boolean
-  changePerforceViews(views: [String]!): OperationStatus!
-  switchPerforceChangelist(changelistId: String!): OperationStatus!
   getGitRepo(sources: [GitSource]!): OperationStatus!
-  getFileFromPerforce(depotFilePath: String!, labelOrChangelist: String!): String!
-  changePerforceViewsV2(views: [String]!, shouldSync: Boolean!): OperationStatus!
   settings(settings: SettingsInput): Settings!
   userEmail(userEmail: String): Boolean
   langServerConfig: LangServerOps!
@@ -135,14 +115,8 @@ input JavaLangServerConfigInput {
   jdkLocation: String
 }
 
-type PerforceView {
-  name: String!
-  map: String!
-}
-
 enum OnPremSourceProvider {
   git
-  perforce
 }
 
 type BitbucketOnPrem {

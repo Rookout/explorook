@@ -15,10 +15,9 @@ export const getLibraryFolder = () => {
 };
 
 export const getSettings = (): Settings => {
-  const settings: any = {};
-  ["PerforceConnectionString", "PerforceTimeout", "PerforceUser", "BitbucketOnPremServers"].forEach(key => {
-      settings[key] = store.get(key, undefined);
-  });
+  const settings: any = {
+      BitbucketOnPremServers: store.get("BitbucketOnPremServers", undefined)
+  };
   return settings as Settings;
 };
 
