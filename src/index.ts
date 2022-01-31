@@ -69,7 +69,7 @@ function getAppIcon() {
 
 function getTrayIcon() {
   if (process.platform.match("darwin")) {
-    return nativeTheme.shouldUseDarkColors ? "mac/explorook_white_tray@21x21.png" : "mac/explorook_tray@21x21.png";
+    return "mac/explorook_tray_Template.png"
   }
   return getAppIcon();
 }
