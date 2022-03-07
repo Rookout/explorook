@@ -265,8 +265,12 @@ async function update() {
   }
   autoUpdater.on('error',  async (error) => {
     try {
-      indexWorker.webContents.postMessage("upgrade-version-failed", {downloadUrl: await getLatestVersionLink()});
-      notify(error);
+      // Make sure that GitHub is not available before showing the error message
+      const gitHubRes = await fetch("https://github.com/");
+      if (!gitHubRes.ok) {
+        indexWorker.webContents.postMessage("upgrade-version-failed", {downloadUrl: await getLatestVersionLink()});
+        notify(error);
+      }
     } catch (err) {
       console.trace(`autoUpdater error: ${err}`);
     }
