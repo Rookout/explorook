@@ -267,7 +267,7 @@ async function update() {
     try {
       // Make sure that GitHub is not available before showing the error message
       const gitHubRes = await fetch("https://github.com/");
-      if (!gitHubRes.ok) {
+      if (gitHubRes.ok) {
         indexWorker.webContents.postMessage("upgrade-version-failed", {downloadUrl: await getLatestVersionLink()});
         notify(error);
       }
