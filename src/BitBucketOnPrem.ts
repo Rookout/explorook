@@ -6,6 +6,9 @@ import {getLogger} from "./logger";
 const logger = getLogger("bitbucket");
 const isNode = () => !(typeof window !== "undefined" && window !== null);
 const fetch = isNode() ? require('node-fetch') : window.fetch;
+// So, BitBucket can really perform well when asked for large datasets.
+// This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
+const FETCH_LIMIT = 30000;
 
 export interface BitbucketOnPrem {
     url: string;
@@ -49,7 +52,7 @@ export const getFileTreeFromBitbucket =
     let start = 0;
     let files: string[] = [];
     while (!isLastPage) {
-        const res = await fetchNoCache(`${fileTreeUrl}&start=${start}`, {
+        const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${FETCH_LIMIT}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
