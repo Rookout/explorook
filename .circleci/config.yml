@@ -12,7 +12,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: homebrew-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
+          key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build and Publish
           command: |
@@ -54,7 +54,7 @@ jobs:
             # publish in google storage bucket (additionally to electronbuild-publisher)
             bash upload_release_to_gs.sh
       - save_cache:
-          key: homebrew-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
+          key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
           paths:
             - /usr/local/Homebrew
   version_validation:
