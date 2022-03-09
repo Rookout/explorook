@@ -11,8 +11,8 @@ jobs:
       xcode: "12.4.0"
     steps:
       - checkout
-      - restore_cache:
-          key: homebrew-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
+      # - restore_cache:
+      #     key: homebrew-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Build and Publish
           command: |
