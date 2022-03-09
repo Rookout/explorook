@@ -215,8 +215,8 @@ function main() {
   const primary = app.requestSingleInstanceLock();
   if (primary) {
     app.on("second-instance", () => {
-      // Deep link handling for windows is a bit different
-      if (process.platform === "win32") {
+      // Deep link handling for windows and linux is a bit different
+      if (["win32", "linux"].includes(process.platform)) {
         deeplinkHandler();
       }
 

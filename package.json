@@ -32,7 +32,7 @@
       "output": "installers"
     },
     "protocols": {
-      "name": "Rookout",
+      "name": "rookout",
       "schemes": ["rookout"]
     },
     "files": [
@@ -45,7 +45,11 @@
     ],
     "linux": {
       "target": "appImage",
-      "category": "Utility"
+      "category": "Utility",
+      "mimeTypes": ["x-scheme-handler/rookout"],
+      "desktop": {
+        "exec": "rookout %u"
+      }
     },
     "dmg": {
       "background": "assets/dmg-background.png"
