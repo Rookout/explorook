@@ -15,13 +15,14 @@ import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
 import { userInfo } from "os";
 import * as path from "path";
+import {deeplinkHandler, initDeeplinks} from "./deeplinks";
 import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
 import fetch from "node-fetch";
 import * as os from "os";
 const YAML = require("yaml");
-import { initExceptionManager, notify, Logger } from "./exceptionManager";
+import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
 autoUpdater.logger = new Logger();
 log.transports.console.level = "warn";
@@ -69,7 +70,7 @@ function getAppIcon() {
 
 function getTrayIcon() {
   if (process.platform.match("darwin")) {
-    return "mac/explorook_tray_Template.png"
+    return "mac/explorook_tray_Template.png";
   }
   return getAppIcon();
 }
@@ -212,10 +213,23 @@ async function quitApplication() {
 function main() {
   // check if another instance of this app is already open
   const primary = app.requestSingleInstanceLock();
-  if (!primary) {
+  if (primary) {
+    app.on("second-instance", () => {
+      // Deep link handling for windows and linux is a bit different
+      if (["win32", "linux"].includes(process.platform)) {
+        deeplinkHandler();
+      }
+
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        mainWindow.focus();
+      }
+    });
+  } else {
     quitApplication();
   }
 
+  initDeeplinks(app);
   // store helps us store data on local disk
   store = new ExplorookStore();
   // access token used to access this app's GraphQL api
@@ -263,7 +277,7 @@ async function update() {
     console.log("detected read-only volume - auto update disabled");
     return;
   }
-  autoUpdater.on('error',  async (error) => {
+  autoUpdater.on("error",  async (error) => {
     try {
       // Make sure that GitHub is not available before showing the error message
       const gitHubRes = await fetch("https://github.com/");
