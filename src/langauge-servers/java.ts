@@ -1,8 +1,8 @@
-import { JAVA_FILENAME } from './javaUtils';
-import { langServerConfigStore, javaLangServerJarLocation } from './configStore';
-import { launchLangaugeServer } from './langaugeServer';
-import * as rpc from "vscode-ws-jsonrpc";
+import * as rpc from "@codingame/monaco-jsonrpc";
 import * as path from 'path'
+import { javaLangServerJarLocation, langServerConfigStore } from './configStore';
+import { JAVA_FILENAME } from './javaUtils';
+import { launchLangaugeServer } from './langaugeServer';
 
 export const launchJavaLangaugeServer = (socket: rpc.IWebSocket) => {
     if (langServerConfigStore.doesJavaJarExist() && langServerConfigStore.jdkLocation) {

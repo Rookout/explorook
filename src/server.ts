@@ -9,7 +9,7 @@ import * as http from "http";
 import * as net from "net";
 import { join } from "path";
 import * as url from "url";
-import * as rpc from "vscode-ws-jsonrpc";
+import * as rpc from "@codingame/monaco-jsonrpc";
 import { Server } from "ws";
 import * as WebSocket from "ws";
 import { resolvers } from "./api";
