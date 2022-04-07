@@ -10,7 +10,6 @@
     ],
     "module": "commonjs",
     "noImplicitAny": true,
-    "resolveJsonModule": true,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
