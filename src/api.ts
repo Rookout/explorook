@@ -309,7 +309,7 @@ export const resolvers = {
         return remote.app.getVersion();
       } else {
         // remote should exist. but sometimes it's undefined and breaks tests for some reason, so adding a temp fallback
-        return "1.8.16";
+        return "1.8.34";
       }
     },
     recentLogs: (parent: any): Log[] => {
