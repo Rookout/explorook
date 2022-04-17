@@ -1,12 +1,13 @@
 import * as rpc from "@codingame/monaco-jsonrpc";
-import { createConnection, createServerProcess, forward, returnSteamReadWrite } from "@codingame/monaco-jsonrpc/lib/server";
+import { createConnection, forward, returnSteamReadWrite } from "@codingame/monaco-jsonrpc/lib/server";
 import {createStreamConnectionFromReadWrite} from "@codingame/monaco-jsonrpc/lib/server/launch";
-import RAL from "vscode-jsonrpc/lib/common/ral";
 import * as jsonrpc from "vscode-jsonrpc/node";
-import RIL from "./ril";
 import * as lsp from "vscode-languageserver";
 import { repStore } from "../repoStore";
+import { syncGitRepository } from "./git-handler";
 import { isWindows } from "./javaUtils";
+import {ReadableStreamWrapper} from "./readableStream";
+import {WritableStreamWrapper} from "./writableStream";
 
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
@@ -14,7 +15,6 @@ import { isWindows } from "./javaUtils";
  * ------------------------------------------------------------------------------------------ */
 // import * as path from 'path';
 
-import { syncGitRepository } from "./git-handler";
 export interface LangServerStartConfig {
     LangaugeName: string;
     langserverCommand: string;
@@ -47,8 +47,8 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: LangSe
     // const streamReader = new jsonrpc.ReadableStreamMessageReader(outStream);
     // const streamWriter = new jsonrpc.WriteableStreamMessageWriter(inStream);
     // const serverConnection = createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs);
-    const streamReaderRIL = RIL().stream.asReadableStream(outStream);
-    const streamWriterRIL = RIL().stream.asWritableStream(inStream);
+    const streamReaderRIL = new ReadableStreamWrapper(outStream);
+    const streamWriterRIL = new WritableStreamWrapper(inStream);
     const streamReader = new jsonrpc.ReadableStreamMessageReader(streamReaderRIL);
     const streamWriter = new jsonrpc.WriteableStreamMessageWriter(streamWriterRIL);
     const serverConnection = createStreamConnectionFromReadWrite(streamReader, streamWriter, onDispose);
