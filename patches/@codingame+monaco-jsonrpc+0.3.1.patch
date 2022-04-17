@@ -1,0 +1,164 @@
+diff --git a/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.d.ts b/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.d.ts
+index d3d76ea..c64b555 100644
+--- a/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.d.ts
++++ b/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.d.ts
+@@ -1,9 +1,9 @@
+ import { MessageReader, MessageWriter, Disposable, Message } from 'vscode-jsonrpc';
+-export declare function forward(clientConnection: IConnection, serverConnection: IConnection, map?: (message: Message) => Message): void;
++export declare function forward(clientConnection: IConnection, serverConnection: IConnection, map?: (message: Message) => (Message | Promise<Message>)): void;
+ export interface IConnection extends Disposable {
+     readonly reader: MessageReader;
+     readonly writer: MessageWriter;
+-    forward(to: IConnection, map?: (message: Message) => Message): void;
++    forward(to: IConnection, map?: (message: Message) => (Message | Promise<Message>)): void;
+     onClose(callback: () => void): Disposable;
+ }
+ export declare function createConnection<T extends {}>(reader: MessageReader, writer: MessageWriter, onDispose: () => void, extensions?: T): IConnection & T;
+diff --git a/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.js b/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.js
+index 7ac76ec..f196b98 100644
+--- a/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.js
++++ b/node_modules/@codingame/monaco-jsonrpc/lib/server/connection.js
+@@ -19,8 +19,15 @@ function createConnection(reader, writer, onDispose, extensions = {}) {
+     reader.onClose(() => disposeOnClose.dispose());
+     writer.onClose(() => disposeOnClose.dispose());
+     return Object.assign({ reader, writer, forward(to, map = (message) => message) {
+-            reader.listen(input => {
+-                const output = map(input);
++            reader.listen(async input => {
++                let output;
++                try {
++                    output = await map(input);
++                } catch (error) {
++                    console.error(error);
++                    disposeOnClose.dispose()
++                    return;
++                }
+                 to.writer.write(output);
+             });
+         },
+diff --git a/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.d.ts b/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.d.ts
+index 8667fbb..32a4fbe 100644
+--- a/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.d.ts
++++ b/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.d.ts
+@@ -2,11 +2,14 @@
+ import * as net from 'net';
+ import * as stream from 'stream';
+ import * as cp from 'child_process';
++import {StreamMessageReader, StreamMessageWriter} from "vscode-jsonrpc/node";
+ import { IConnection } from "./connection";
+ import { IWebSocket, IWebSocketConnection } from '../socket';
+ export declare function createServerProcess(serverName: string, command: string, args?: string[], options?: cp.SpawnOptions): IConnection;
++export function returnSteamReadWrite(serverName: string, command: string, args?: string[], options?: cp.SpawnOptions): {outStream: stream.Readable, inStream: stream.Writable, onDispose: () => void};
+ export declare function createWebSocketConnection(socket: IWebSocket): IWebSocketConnection;
+ export declare function createProcessSocketConnection(process: cp.ChildProcess, outSocket: net.Socket, inSocket?: net.Socket): IConnection;
+ export declare function createSocketConnection(outSocket: net.Socket, inSocket: net.Socket, onDispose: () => void): IConnection;
+ export declare function createProcessStreamConnection(process: cp.ChildProcess): IConnection;
+ export declare function createStreamConnection(outStream: stream.Readable, inStream: stream.Writable, onDispose: () => void): IConnection;
++export function createStreamConnectionFromReadWrite(reader: StreamMessageReader, writer: StreamMessageWriter, onDispose: () => void): IConnection;
+diff --git a/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.js b/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.js
+index cabe6ea..043244f 100644
+--- a/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.js
++++ b/node_modules/@codingame/monaco-jsonrpc/lib/server/launch.js
+@@ -16,6 +16,13 @@ function createServerProcess(serverName, command, args, options) {
+     return createProcessStreamConnection(serverProcess);
+ }
+ exports.createServerProcess = createServerProcess;
++function returnSteamReadWrite(serverName, command, args, options) {
++    const serverProcess = cp.spawn(command, args, options);
++    serverProcess.on('error', error => console.error(`Launching ${serverName} Server failed: ${error}`));
++    serverProcess.stderr.on('data', data => console.error(`${serverName} Server: ${data}`));
++    return {outStream: serverProcess.stdout, inStream: serverProcess.stdin, onDispose: () => serverProcess.kill()};
++}
++exports.returnSteamReadWrite = returnSteamReadWrite;
+ function createWebSocketConnection(socket) {
+     const reader = new socket_1.WebSocketMessageReader(socket);
+     const writer = new socket_1.WebSocketMessageWriter(socket);
+@@ -42,4 +49,8 @@ function createStreamConnection(outStream, inStream, onDispose) {
+     return connection_1.createConnection(reader, writer, onDispose);
+ }
+ exports.createStreamConnection = createStreamConnection;
++function createStreamConnectionFromReadWrite(reader, writer, onDispose) {
++    return connection_1.createConnection(reader, writer, onDispose);
++}
++exports.createStreamConnectionFromReadWrite = createStreamConnectionFromReadWrite;
+ //# sourceMappingURL=launch.js.map
+diff --git a/node_modules/@codingame/monaco-jsonrpc/src/server/connection.ts b/node_modules/@codingame/monaco-jsonrpc/src/server/connection.ts
+index 88d570e..5e21195 100644
+--- a/node_modules/@codingame/monaco-jsonrpc/src/server/connection.ts
++++ b/node_modules/@codingame/monaco-jsonrpc/src/server/connection.ts
+@@ -5,7 +5,7 @@
+ import { MessageReader, MessageWriter, Disposable, Message } from 'vscode-jsonrpc';
+ import { DisposableCollection } from "../disposable";
+ 
+-export function forward(clientConnection: IConnection, serverConnection: IConnection, map?: (message: Message) => Message): void {
++export function forward(clientConnection: IConnection, serverConnection: IConnection, map?: (message: Message) => (Message | Promise<Message>)): void {
+     clientConnection.forward(serverConnection, map);
+     serverConnection.forward(clientConnection, map);
+     clientConnection.onClose(() => serverConnection.dispose());
+@@ -15,7 +15,7 @@ export function forward(clientConnection: IConnection, serverConnection: IConnec
+ export interface IConnection extends Disposable {
+     readonly reader: MessageReader;
+     readonly writer: MessageWriter;
+-    forward(to: IConnection, map?: (message: Message) => Message): void;
++    forward(to: IConnection, map?: (message: Message) => (Message | Promise<Message>)): void;
+     onClose(callback: () => void): Disposable;
+ }
+ 
+@@ -27,9 +27,16 @@ export function createConnection<T extends {}>(reader: MessageReader, writer: Me
+     return {
+         reader, writer,
+         forward(to: IConnection, map: (message: Message) => Message = (message) => message): void {
+-            reader.listen(input => {
+-                const output = map(input);
+-                to.writer.write(output)
++            reader.listen(async input => {
++                let output;
++                try {
++                    output = await map(input);
++                } catch (error) {
++                    console.error(error);
++                    disposeOnClose.dispose()
++                    return;
++                }
++                to.writer.write(output);
+             });
+         },
+         onClose(callback: () => void): Disposable {
+diff --git a/node_modules/@codingame/monaco-jsonrpc/src/server/launch.ts b/node_modules/@codingame/monaco-jsonrpc/src/server/launch.ts
+index b9c86f7..5368e14 100644
+--- a/node_modules/@codingame/monaco-jsonrpc/src/server/launch.ts
++++ b/node_modules/@codingame/monaco-jsonrpc/src/server/launch.ts
+@@ -6,6 +6,7 @@
+ import * as net from 'net';
+ import * as stream from 'stream';
+ import * as cp from 'child_process';
++import {WriteableStreamMessageWriter} from "vscode-jsonrpc/lib/common/messageWriter";
+ import { StreamMessageReader, StreamMessageWriter, SocketMessageReader, SocketMessageWriter } from "vscode-jsonrpc/node";
+ import { IConnection, createConnection } from "./connection";
+ import { IWebSocket, WebSocketMessageReader, WebSocketMessageWriter, IWebSocketConnection } from '../socket';
+@@ -21,6 +22,17 @@ export function createServerProcess(serverName: string, command: string, args?:
+     return createProcessStreamConnection(serverProcess);
+ }
+ 
++export function returnSteamReadWrite(serverName: string, command: string, args?: string[], options?: cp.SpawnOptions): {outStream: stream.Readable, inStream: stream.Writable, onDispose: () => void} {
++    const serverProcess = cp.spawn(command, args, options);
++    serverProcess.on('error', error =>
++        console.error(`Launching ${serverName} Server failed: ${error}`)
++    );
++    serverProcess.stderr.on('data', data =>
++        console.error(`${serverName} Server: ${data}`)
++    );
++    return {outStream: serverProcess.stdout, inStream: serverProcess.stdin, onDispose: () => serverProcess.kill()};
++}
++
+ export function createWebSocketConnection(socket: IWebSocket): IWebSocketConnection {
+     const reader = new WebSocketMessageReader(socket);
+     const writer = new WebSocketMessageWriter(socket);
+@@ -47,3 +59,7 @@ export function createStreamConnection(outStream: stream.Readable, inStream: str
+     return createConnection(reader, writer, onDispose);
+ }
+ 
++export function createStreamConnectionFromReadWrite(reader: StreamMessageReader, writer: WriteableStreamMessageWriter, onDispose: () => void): IConnection {
++    return createConnection(reader, writer, onDispose);
++}
++

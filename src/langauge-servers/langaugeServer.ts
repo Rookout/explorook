@@ -1,16 +1,21 @@
 import * as rpc from "@codingame/monaco-jsonrpc";
-import * as bridgeServer from "@codingame/monaco-jsonrpc/lib/server";
+import { createConnection, createServerProcess, forward, returnSteamReadWrite } from "@codingame/monaco-jsonrpc/lib/server";
+import {createStreamConnectionFromReadWrite} from "@codingame/monaco-jsonrpc/lib/server/launch";
+import RAL from "vscode-jsonrpc/lib/common/ral";
+import * as jsonrpc from "vscode-jsonrpc/node";
+import RIL from "./ril";
 import * as lsp from "vscode-languageserver";
-import { isWindows } from './javaUtils';
-import { repStore } from '../repoStore';
+import { repStore } from "../repoStore";
+import { isWindows } from "./javaUtils";
+
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 // import * as path from 'path';
 
-import { syncGitRepository } from './git-handler';
-export interface langServerStartConfig {
+import { syncGitRepository } from "./git-handler";
+export interface LangServerStartConfig {
     LangaugeName: string;
     langserverCommand: string;
     langserverCommandArgs: string[];
@@ -23,7 +28,7 @@ export interface langServerStartConfig {
 // Every other request to the langserver sends which file is it asking about,
 // the file's uri is sent like this "file://<relative_path_to_file>".
 // But the langserver uses fullPath so we use the repoStore to get it.
-export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langServerStartConfig) => {
+export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: LangServerStartConfig) => {
 
     // Since we can't know which response is a response to definition,
     // we save up all the messages ids for definitions requests.
@@ -34,32 +39,38 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
     const writer = new rpc.WebSocketMessageWriter(socket);
     let repoFullpath: string = null;
 
-    const langserverProcessName = 'Rookout-' + startConfig.LangaugeName + '-LangServer'
-    const serverConnection = bridgeServer.createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs)
-    const socketConnection = bridgeServer.createConnection(reader, writer, () => { socket.dispose(); serverConnection.dispose(); });
 
 
-    bridgeServer.forward(socketConnection, serverConnection, message => {
+    const langserverProcessName = `Rookout-${startConfig.LangaugeName}-LangServer`;
+    const { outStream, inStream, onDispose } =
+        returnSteamReadWrite(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs);
+    // const streamReader = new jsonrpc.ReadableStreamMessageReader(outStream);
+    // const streamWriter = new jsonrpc.WriteableStreamMessageWriter(inStream);
+    // const serverConnection = createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs);
+    const streamReaderRIL = RIL().stream.asReadableStream(outStream);
+    const streamWriterRIL = RIL().stream.asWritableStream(inStream);
+    const streamReader = new jsonrpc.ReadableStreamMessageReader(streamReaderRIL);
+    const streamWriter = new jsonrpc.WriteableStreamMessageWriter(streamWriterRIL);
+    const serverConnection = createStreamConnectionFromReadWrite(streamReader, streamWriter, onDispose);
+    const socketConnection = createConnection(reader, writer, () => { socket.dispose(); serverConnection.dispose(); });
+
+
+    forward(socketConnection, serverConnection, async message => {
         if (rpc.isRequestMessage(message)) {
-            handleRequestMessage(message).finally(() => {
-                console.log(message);
-                return message;
-            });
-        } else {
-            if (rpc.isNotificationMessage(message)) {
-                handleNotificationMessage(message);
-            }
-
-            if (rpc.isResponseMessage(message)) {
-                handleResponseMessage(message);
-            }
-
-            console.log(message);
-
-            return message;
+            await handleRequestMessage(message);
         }
 
+        if (rpc.isNotificationMessage(message)) {
+            await handleNotificationMessage(message);
+        }
 
+        if (rpc.isResponseMessage(message)) {
+            await handleResponseMessage(message);
+        }
+
+        console.log(message);
+
+        return message;
     });
 
     // Request message are client -> server messages where the server needs to response to them
@@ -75,31 +86,32 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
             if (initParams) {
               repoFullpath = await syncGitRepository(initParams);
             } else {
-              const repoId = initializeParams.workspaceFolders[0].uri.replace('file:///', '')
-              const repo = repStore.getRepoById(repoId.replace('file:///', ''))
+              const repoId = initializeParams.workspaceFolders[0].uri.replace("file:///", "");
+              const repo = repStore.getRepoById(repoId.replace("file:///", ""));
               repoFullpath = repo.fullpath;
             }
 
             repoFullpath = encodeURI(repoFullpath);
             if (isWindows) {
-                repoFullpath = repoFullpath.replace('%5C', '\\');
+                repoFullpath = repoFullpath.replace("%5C", "\\");
             }
-            
-            // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate 
+
+            // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate
             // to the language server the workspace folder
-            initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = 'file://' + repoFullpath
+            initializeParams.rootUri = initializeParams.workspaceFolders[0].uri =
+                initializeParams.workspaceFolders[0].name = `file://${repoFullpath}`;
             initializeParams.rootPath = repoFullpath;
         // @ts-ignore
         } else if (message?.params?.textDocument?.uri) {
             // @ts-ignore
-            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath)
+            message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath);
         }
 
         // Mark the go-to-definition requets in order to catch the responses to them
         if (message.method === lsp.DefinitionRequest.type.method && message.id) {
             definitionsIds.add(message.id);
         }
-    }
+    };
 
     // Notification message are client -> server messages where the server DOESNT needs to response to them
     const handleNotificationMessage = (message: rpc.NotificationMessage) => {
@@ -107,14 +119,14 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
             message.method === lsp.DidCloseTextDocumentNotification.type.method) {
 
             // @ts-ignore
-            message.params.textDocument?.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath)
+            message.params.textDocument?.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath);
         }
 
         // The frontend might send didChange requests which are wrong because of monaco-in-react behavior, so we ignore this kind of request
         if (message.method === lsp.DidChangeTextDocumentNotification.type.method) {
-            message.method = "rookout-dummy"
+            message.method = "rookout-dummy";
         }
-    }
+    };
 
     // Reponse message are server -> client messages
     const handleResponseMessage = (message: rpc.ResponseMessage) => {
@@ -134,8 +146,8 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
             (message.result as any).capabilities.referencesProvider = false;
             (message.result as any).capabilities.codeLensProvider = false;
         }
-    }
-}
+    };
+};
 
 
 // The language server returns the full path of the result,
@@ -144,11 +156,11 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: langSe
 // e.g, if the repo path is "/Users/gilad/dev/python/" (python example), it will be changed to "file:///functions.py"
 const fixDefinitionResultsPath = (definitionResults: any[], repoFullPath: string): any[] => {
     return definitionResults.map(result => {
-        result.uri = result.uri.replace(repoFullPath, '');
-        return result
-    })
+        result.uri = result.uri.replace(repoFullPath, "");
+        return result;
+    });
 };
 
 const getFileFullPath = (relativePath: string, repoFullpath: string): string => {
-    return relativePath.replace('file://', 'file://' + repoFullpath);
+    return relativePath.replace("file://", `file://${repoFullpath}`);
 };

@@ -1,0 +1,52 @@
+diff --git a/node_modules/vscode-jsonrpc/common.d.ts b/node_modules/vscode-jsonrpc/common.d.ts
+new file mode 100644
+index 0000000..539e8e4
+--- /dev/null
++++ b/node_modules/vscode-jsonrpc/common.d.ts
+@@ -0,0 +1,14 @@
++export * from './lib/common/api';
++export * from './lib/common/is';
++export * from './lib/common/cancellation';
++export * from './lib/common/ral';
++export * from './lib/common/connection';
++export * from './lib/common/disposable';
++export * from './lib/common/encoding';
++export * from './lib/common/events';
++export * from './lib/common/linkedMap';
++export * from './lib/common/messageBuffer';
++export * from './lib/common/messageReader';
++export * from './lib/common/messages';
++export * from './lib/common/messageWriter';
++export * from './lib/common/semaphore';
+diff --git a/node_modules/vscode-jsonrpc/common.js b/node_modules/vscode-jsonrpc/common.js
+new file mode 100644
+index 0000000..44fab7a
+--- /dev/null
++++ b/node_modules/vscode-jsonrpc/common.js
+@@ -0,0 +1,16 @@
++'use strict';
++
++module.exports = require('./lib/common/api');
++module.exports = require('./lib/common/is');
++module.exports = require('./lib/common/cancellation');
++module.exports = require('./lib/common/ral');
++module.exports = require('./lib/common/connection');
++module.exports = require('./lib/common/disposable');
++module.exports = require('./lib/common/encoding');
++module.exports = require('./lib/common/events');
++module.exports = require('./lib/common/linkedMap');
++module.exports = require('./lib/common/messageBuffer');
++module.exports = require('./lib/common/messageReader');
++module.exports = require('./lib/common/messages');
++module.exports = require('./lib/common/messageWriter');
++module.exports = require('./lib/common/semaphore');
+diff --git a/node_modules/vscode-jsonrpc/node.d.ts b/node_modules/vscode-jsonrpc/node.d.ts
+index b4c4fcd..0fb7489 100644
+--- a/node_modules/vscode-jsonrpc/node.d.ts
++++ b/node_modules/vscode-jsonrpc/node.d.ts
+@@ -4,3 +4,5 @@
+  * ----------------------------------------------------------------------------------------- */
+ 
+ export * from './lib/node/main';
++export { default as RIL } from './lib/node/ril';
++export { default as RIL } from './lib/node/ril';
