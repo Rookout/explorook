@@ -1,5 +1,5 @@
-import {RAL} from "vscode-jsonrpc/common";
-import {create, Disposable} from "./disposable";
+import { RAL } from "vscode-jsonrpc/common";
+import { create, Disposable } from "./disposable";
 
 export class ReadableStreamWrapper implements RAL.ReadableStream {
 

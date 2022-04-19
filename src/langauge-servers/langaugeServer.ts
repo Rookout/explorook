@@ -3,10 +3,10 @@ import { createConnection, createStreamConnectionFromReadWrite, forward, returnS
 import * as jsonrpc from "vscode-jsonrpc/node";
 import * as lsp from "vscode-languageserver";
 import { repStore } from "../repoStore";
+import { ReadableStreamWrapper } from "../vscode-jsonrpc/readableStream";
+import { WritableStreamWrapper } from "../vscode-jsonrpc/writableStream";
 import { syncGitRepository } from "./git-handler";
 import { isWindows } from "./javaUtils";
-import {ReadableStreamWrapper} from "./readableStream";
-import {WritableStreamWrapper} from "./writableStream";
 
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
