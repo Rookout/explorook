@@ -43,9 +43,6 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: LangSe
     const langserverProcessName = `Rookout-${startConfig.LangaugeName}-LangServer`;
     const { outStream, inStream, onDispose } =
         returnSteamReadWrite(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs);
-    // const streamReader = new jsonrpc.ReadableStreamMessageReader(outStream);
-    // const streamWriter = new jsonrpc.WriteableStreamMessageWriter(inStream);
-    // const serverConnection = createServerProcess(langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs);
     const streamReaderRIL = new ReadableStreamWrapper(outStream);
     const streamWriterRIL = new WritableStreamWrapper(inStream);
     const streamReader = new jsonrpc.ReadableStreamMessageReader(streamReaderRIL);
