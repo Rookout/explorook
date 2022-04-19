@@ -1,5 +1,5 @@
-import {Disposable, RAL} from "vscode-jsonrpc/common";
-import {create} from "./disposable";
+import {RAL} from "vscode-jsonrpc/common";
+import {create, Disposable} from "./disposable";
 
 export class WritableStreamWrapper implements RAL.WritableStream {
 
