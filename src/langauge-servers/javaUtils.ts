@@ -1,15 +1,15 @@
-import { getLogger } from './../logger';
-import * as path from 'path'
-import * as fs from 'fs'
-import * as cp from 'child_process'
-import * as os from 'os'
-import _ = require('lodash')
+import * as cp from "child_process";
+import * as fs from "fs";
+import _ = require("lodash");
+import * as os from "os";
+import * as path from "path";
+import { getLogger } from "../logger";
 
-const logger = getLogger('langserver')
-export const isWindows = process.platform.match('win32')
-const isMac = process.platform.match('darwin')
-const isLinux = process.platform.match('linux')
-export const JAVA_FILENAME = isWindows ? 'java.exe' : 'java';
+const logger = getLogger("langserver");
+export const isWindows = process.platform.match("win32");
+const isMac = process.platform.match("darwin");
+const isLinux = process.platform.match("linux");
+export const JAVA_FILENAME = isWindows ? "java.exe" : "java";
 
 export interface JavaRuntime {
     location: string;
@@ -28,10 +28,10 @@ export const findJavaHomes = (): JavaRuntime[] => {
     updateJDKs(jdkSet, fromCommonPlaces());
 
     jdkSet.forEach(jdkLocation => {
-        logger.debug('Java - found candidate jdk location', { jdkLocation })
-        const javaBin = path.join(jdkLocation, "bin", JAVA_FILENAME)
+        logger.debug("Java - found candidate jdk location", { jdkLocation });
+        const javaBin = path.join(jdkLocation, "bin", JAVA_FILENAME);
 
-        if (fs.existsSync(javaBin)){
+        if (fs.existsSync(javaBin)) {
             const version = getJavaVersion(jdkLocation);
 
             if (version) {
@@ -40,29 +40,32 @@ export const findJavaHomes = (): JavaRuntime[] => {
                     version
                 });
             } else {
-                logger.warn("Java - no java exec was found")
+                logger.warn("Java - no java exec was found");
             }
         }
-    })
+    });
     return javaBinLocations;
-}
+};
 
 const updateJDKs = (set: Set<string>, newJdks: string[]) => {
-    newJdks.forEach(jdkLoc => {set.add(jdkLoc); console.log(jdkLoc)})
-}
+    newJdks.forEach(jdkLoc => {
+        set.add(jdkLoc);
+        console.log(jdkLoc);
+    });
+};
 
 const getJavaLocationsfromEnv = (envVarName: string): string[] => {
     if (!process.env[envVarName]) {
-        return []
+        return [];
     }
 
     // Expecting the envVar to hold 1 or more 'path/to/jdk/home' s, if more seperated by ';'
     const workspaces = process.env[envVarName].split(path.delimiter);
-    const javaLocations = new Array<string>()
-    workspaces.forEach(javaLoc => javaLocations.push(javaLoc))
+    const javaLocations = new Array<string>();
+    workspaces.forEach(javaLoc => javaLocations.push(javaLoc));
 
     return javaLocations;
-}
+};
 
 const fromCommonPlaces = (): string[] => {
     const javaLocations: string[] = [];
@@ -76,9 +79,9 @@ const fromCommonPlaces = (): string[] => {
         jvms.forEach(jvm => {
             const javaLoc = path.join(jvmStore, jvm, subfolder);
             if (fs.existsSync(javaLoc)) {
-                javaLocations.push(javaLoc)
+                javaLocations.push(javaLoc);
             }
-        })
+        });
     }
 
     // common place for Windows
@@ -97,10 +100,10 @@ const fromCommonPlaces = (): string[] => {
             jvms.forEach(jvm => {
                 const javaLoc = path.join(jvmStore, jvm);
                 if (fs.existsSync(javaLoc)) {
-                    javaLocations.push(javaLoc)
+                    javaLocations.push(javaLoc);
                 }
-            })
-        })
+            });
+        });
     }
 
     // common place for Linux
@@ -111,14 +114,14 @@ const fromCommonPlaces = (): string[] => {
         jvms.forEach(jvm => {
             const javaLoc = path.join(jvmStore, jvm);
             if (fs.existsSync(javaLoc)) {
-                javaLocations.push(javaLoc)
+                javaLocations.push(javaLoc);
             }
-        })
+        });
 
     }
 
     return javaLocations;
-}
+};
 
 
 export const getJavaVersion = (javaPath: string) => checkVersionInReleaseFile(javaPath) || checkVersionByCLI(javaPath);
@@ -132,7 +135,7 @@ const checkVersionInReleaseFile = (javaPath: string): number => {
         return 0;
     }
 
-    const content = fs.readFileSync(releaseFile, { encoding: 'utf-8' });
+    const content = fs.readFileSync(releaseFile, { encoding: "utf-8" });
     const regexp = /^JAVA_VERSION="(.*)"/gm;
     const match = regexp.exec(content.toString());
     if (!match) {
@@ -140,7 +143,7 @@ const checkVersionInReleaseFile = (javaPath: string): number => {
     }
     const majorVersion = parseMajorVersion(match[1]);
     return majorVersion;
-}
+};
 
 const parseMajorVersion = (version: string): number => {
     if (!version) {
@@ -161,10 +164,10 @@ const parseMajorVersion = (version: string): number => {
         }
         return javaVersion;
     } catch (e) {
-        logger.error('version cannot be parsed', { version })
+        logger.error("version cannot be parsed", { version });
         return 0;
     }
-}
+};
 
 const checkVersionByCLI = (javaHome: string): number => {
     if (!javaHome) {
@@ -172,9 +175,9 @@ const checkVersionByCLI = (javaHome: string): number => {
     }
 
     const javaBin = path.join(javaHome, "bin", JAVA_FILENAME);
-    let stdout = ""
-    try{
-        stdout = cp.execFileSync(javaBin, ["-version"])
+    let stdout = "";
+    try {
+        stdout = cp.execFileSync(javaBin, ["-version"]);
     } catch (e) {
         throw new Error("Java home location is invalid");
     }
@@ -186,4 +189,4 @@ const checkVersionByCLI = (javaHome: string): number => {
     }
     return parseMajorVersion(match[1]);
 
-}
+};

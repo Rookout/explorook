@@ -1,6 +1,5 @@
 import * as rpc from "@codingame/monaco-jsonrpc";
-import { createConnection, forward, returnSteamReadWrite } from "@codingame/monaco-jsonrpc/lib/server";
-import {createStreamConnectionFromReadWrite} from "@codingame/monaco-jsonrpc/lib/server/launch";
+import { createConnection, createStreamConnectionFromReadWrite, forward, returnSteamReadWrite } from "@codingame/monaco-jsonrpc/lib/server";
 import * as jsonrpc from "vscode-jsonrpc/node";
 import * as lsp from "vscode-languageserver";
 import { repStore } from "../repoStore";
