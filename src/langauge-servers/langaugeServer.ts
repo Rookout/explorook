@@ -6,7 +6,7 @@ import { repStore } from "../repoStore";
 import { ReadableStreamWrapper } from "../vscode-jsonrpc/readableStream";
 import { WritableStreamWrapper } from "../vscode-jsonrpc/writableStream";
 import { syncGitRepository } from "./git-handler";
-import { isWindows } from "./javaUtils";
+import {getAndCreateWorkspaceDir, isWindows, removeGradleJar} from "./javaUtils";
 
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) 2018 TypeFox GmbH (http://www.typefox.io). All rights reserved.
@@ -92,11 +92,13 @@ export const launchLangaugeServer = (socket: rpc.IWebSocket, startConfig: LangSe
                 repoFullpath = repoFullpath.replace("%5C", "\\");
             }
 
+            // Delete the gradle jar file to make sure we don't have an error due to a bad checksum
+            // removeGradleJar(repoFullpath);
+
             // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate
             // to the language server the workspace folder
-            initializeParams.rootUri = initializeParams.workspaceFolders[0].uri =
-                initializeParams.workspaceFolders[0].name = `file://${repoFullpath}`;
-            initializeParams.rootPath = repoFullpath;
+            initializeParams.rootUri = undefined;
+            initializeParams.rootPath = undefined;
         // @ts-ignore
         } else if (message?.params?.textDocument?.uri) {
             // @ts-ignore

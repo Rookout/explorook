@@ -36,11 +36,18 @@ export enum GitProtocols {
 }
 
 export const GIT_ROOT = path.join(getLibraryFolder(), "git_root");
+export const WORKSPACE = path.join(getLibraryFolder(), "explorookWorkspace");
 
 const store = getStoreSafe();
 
 if (!fs.existsSync(GIT_ROOT)) {
     fs.mkdirSync(GIT_ROOT, {
+        recursive: true
+    });
+}
+
+if (!fs.existsSync(WORKSPACE)) {
+    fs.mkdirSync(WORKSPACE, {
         recursive: true
     });
 }

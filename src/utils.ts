@@ -14,6 +14,17 @@ export const getLibraryFolder = () => {
     }
 };
 
+export const getLibraryConfigFolder = (libraryFolder: string) => {
+    switch (process.platform) {
+        case "win32":
+            return path.join(libraryFolder, "config_win");
+        case "darwin":
+            return path.join(libraryFolder, "config_mac");
+        default:
+            return path.join(libraryFolder, "config_linux");
+    }
+};
+
 export const getSettings = (): Settings => {
   const settings: any = {
       BitbucketOnPremServers: store.get("BitbucketOnPremServers", undefined)

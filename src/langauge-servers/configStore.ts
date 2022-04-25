@@ -1,18 +1,19 @@
 import * as fs from "fs";
 import * as https from "https";
-import _ = require("lodash");
+import _find from "lodash/find";
 import * as path from "path";
 import { getStoreSafe, IStore } from "../explorook-store";
 import { getLogger } from "../logger";
-import { getLibraryFolder } from "../utils";
+import { getLibraryConfigFolder, getLibraryFolder } from "../utils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
 
 export const logger = getLogger("langServer");
-const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
+const langServerExecFolder = path.join(getLibraryFolder(), "eclipseServer");
 
 const JavaLangServerDownloadURL = "https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar";
-export const javaLangServerJarLocation = path.join(langServerExecFolder, "Rookout-Java-Language-Server.jar");
-export const minimumJavaVersionRequired = 13;
+export const javaLangServerJarLocation = path.join(langServerExecFolder, "plugins", "org.eclipse.equinox.launcher_1.6.400.v20210924-0641.jar");
+export const configLocation = getLibraryConfigFolder(langServerExecFolder);
+export const minimumJavaVersionRequired = 2;
 
 class LangServerConfigStore {
     public isDownloadingJavaJar: boolean = false;
@@ -84,7 +85,7 @@ class LangServerConfigStore {
     private findJdkLocation = () => {
         const jreLocations = findJavaHomes();
 
-        const foundJre = _.find(jreLocations, jre => jre.version >= minimumJavaVersionRequired);
+        const foundJre = _find(jreLocations, jre => jre.version >= minimumJavaVersionRequired);
 
         if (foundJre) {
             this.jdkLocation = foundJre.location;

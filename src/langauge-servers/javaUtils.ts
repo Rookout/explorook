@@ -3,6 +3,7 @@ import * as fs from "fs";
 import _ = require("lodash");
 import * as os from "os";
 import * as path from "path";
+import {GIT_ROOT} from "../git";
 import { getLogger } from "../logger";
 
 const logger = getLogger("langserver");
@@ -188,5 +189,21 @@ const checkVersionByCLI = (javaHome: string): number => {
         return 0;
     }
     return parseMajorVersion(match[1]);
+};
 
+export const removeGradleJar = (repoFullpath: string) => {
+    const repoName = path.basename(repoFullpath);
+    const gradleDirPath = path.join(GIT_ROOT, repoName, "gradle");
+    if (fs.existsSync(gradleDirPath)) {
+        fs.rmdirSync(gradleDirPath, { recursive: true });
+    }
+};
+
+export const getAndCreateWorkspaceDir = (repoFullPath: string) => {
+    const repoName = path.basename(repoFullPath);
+    const gradleDirPath = path.join(GIT_ROOT, repoName, "workspace");
+    if (fs.existsSync(gradleDirPath)) {
+        return gradleDirPath;
+    }
+    return undefined;
 };
