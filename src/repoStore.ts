@@ -1,8 +1,6 @@
 import { ipcRenderer } from "electron";
 import fs = require("fs");
-import _find from "lodash/find";
-import _forEach from "lodash/forEach";
-import _remove from "lodash/remove";
+import _ = require("lodash");
 import { Repository } from "./common/repository";
 import { getStoreSafe, IStore } from "./explorook-store";
 import { IndexWorker } from "./fsIndexer";
@@ -92,7 +90,7 @@ class RepoStore {
 
     public async add(repo: Repository): Promise<string> {
         try {
-            const existingRepo = _find(this.repos, r => r.fullpath === repo.fullpath);
+            const existingRepo = _.find(this.repos, r => r.fullpath === repo.fullpath);
             if (existingRepo) {
                 return existingRepo.id;
             }
@@ -118,7 +116,7 @@ class RepoStore {
     }
 
     public remove(id: string): boolean {
-        const removed = _remove(this.repos, (r) => r.id === id);
+        const removed = _.remove(this.repos, (r) => r.id === id);
         removed.forEach((r) => {
             r.indexer.deleteIndex();
             ipcRenderer.send("track", "repo-remove", { repoName: r.repoName, repoId: r.id });
@@ -142,11 +140,11 @@ class RepoStore {
     }
 
     public getRepoById(id: string): Repo {
-        return _find(this.repos, repo => id === repo.id);
+        return _.find(this.repos, repo => id === repo.id);
     }
 
     public reAllIndices() {
-        _forEach(this.repos, (repo: Repo) => {
+        _.forEach(this.repos, (repo: Repo) => {
             repo.reIndex();
         });
     }
