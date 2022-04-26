@@ -1,10 +1,8 @@
-import { IStore, getStoreSafe } from './explorook-store';
 import { ipcRenderer } from "electron";
 import fs = require("fs");
-import git = require("isomorphic-git");
 import _ = require("lodash");
-import parseRepo = require("parse-repo");
 import { Repository } from "./common/repository";
+import { getStoreSafe, IStore } from "./explorook-store";
 import { IndexWorker } from "./fsIndexer";
 import { getRepoId } from "./git";
 import {logger} from "./langauge-servers/configStore";
@@ -65,7 +63,7 @@ class RepoStore {
     private repos: Repo[];
 
     constructor() {
-        this.store = getStoreSafe()
+        this.store = getStoreSafe();
         const models = JSON.parse(this.store.get("repositories", "[]")) as Repository[];
         this.allowIndex = JSON.parse(this.store.get("allow-indexing", "true"));
         this.repos = [];
@@ -142,7 +140,13 @@ class RepoStore {
     }
 
     public getRepoById(id: string): Repo {
-        return _.find(this.repos,repo => { return id === repo.id})
+        return _.find(this.repos, repo => id === repo.id);
+    }
+
+    public reAllIndices() {
+        _.forEach(this.repos, (repo: Repo) => {
+            repo.reIndex();
+        });
     }
 }
 

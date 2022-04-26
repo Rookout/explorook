@@ -284,6 +284,10 @@ export const resolvers = {
       args.repo.reIndex();
       return true;
     },
+    refreshAllIndices(parent: any): boolean {
+      repStore.reAllIndices();
+      return true;
+    },
     getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
       logger.debug("Getting commit ID for file", args);
       const {provider, repo, remoteOrigin} = args;

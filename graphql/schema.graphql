@@ -32,6 +32,7 @@ type Query {
   listTree(repoId: String!): [String]!
   listRepos: [Repository!]!
   refreshIndex(repoId: String!): Boolean
+  refreshAllIndices: Boolean
   repository(repoId: String!): Repository!
   getCommitIdForFile(
     provider: OnPremSourceProvider!
