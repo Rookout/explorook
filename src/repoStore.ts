@@ -148,6 +148,18 @@ class RepoStore {
             repo.reIndex();
         });
     }
+
+    public reMultipleIndices(ids: string[]) {
+        if (_.isEmpty(ids)) {
+            return;
+        }
+        const idSet = new Set(ids);
+        _.forEach(this.repos, (repo: Repo) => {
+            if (idSet.has(repo.id)) {
+                repo.reIndex();
+            }
+        });
+    }
 }
 
 export const repStore = new RepoStore();
