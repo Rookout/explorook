@@ -288,6 +288,10 @@ export const resolvers = {
       repStore.reAllIndices();
       return true;
     },
+    refreshMultipleIndices(parent: any, args: { repoIds: string[] }): boolean {
+      repStore.reMultipleIndices(args.repoIds);
+      return true;
+    },
     getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
       logger.debug("Getting commit ID for file", args);
       const {provider, repo, remoteOrigin} = args;
