@@ -150,8 +150,12 @@ class RepoStore {
     }
 
     public reMultipleIndices(ids: string[]) {
+        if (_.isEmpty(ids)) {
+            return;
+        }
+        const idSet = new Set(ids);
         _.forEach(this.repos, (repo: Repo) => {
-            if (_.includes(ids, repo.id)) {
+            if (idSet.has(repo.id)) {
                 repo.reIndex();
             }
         });
