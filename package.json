@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.8.36",
+  "version": "1.8.37",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
