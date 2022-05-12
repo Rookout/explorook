@@ -15,6 +15,7 @@ import * as WebSocket from "ws";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
 import { launchJavaLangaugeServer } from "./langauge-servers/java";
+import { launchPythonLanguageServer } from "./langauge-servers/python";
 import {
   authenticateController,
   authenticateControllerV2,
@@ -163,6 +164,7 @@ const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc
   switch (langName.toLowerCase()) {
     case "java":
       return launchJavaLangaugeServer;
-    // Python exists but should not be avilable in this version yet
+    case "python":
+      return launchPythonLanguageServer;
   }
 };

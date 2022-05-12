@@ -27,7 +27,12 @@ import {
   removeGitReposFromStore,
   TMP_DIR_PREFIX
 } from "./git";
-import { langServerConfigStore, minimumJavaVersionRequired } from "./langauge-servers/configStore";
+import {
+  langServerConfigStore,
+  minimumJavaVersionRequired,
+  minimumPythonMajorVersion,
+  minimumPythonMinorVersion
+} from "./langauge-servers/configStore";
 import Log from "./logData";
 import {getLogger} from "./logger";
 import LogsContainer from "./logsContainer";
@@ -345,10 +350,23 @@ export const resolvers = {
       return {
         jdkLocation: langServerConfigStore.jdkLocation,
         jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() };
+    },
+    allLangServerConfigs: async (parent: any): Promise<LangServerConfigs> => {
+      return {
+        java: {
+          jdkLocation: langServerConfigStore.jdkLocation,
+          jdkMinimumVersionRequired: minimumJavaVersionRequired.toString()
+        },
+        python: {
+          pythonExecLocation: langServerConfigStore.pythonLocation,
+          pythonMinimumMajorVersionRequired: minimumPythonMajorVersion,
+          pythonMinimumMinorVersionRequired: minimumPythonMinorVersion
+        }
+      };
     }
   },
   LangServerOps: {
-    setJavaLangServerConfig: async (parent: any, args: { config: JavaLangServerConfig }): Promise<OperationStatus> => {
+    setJavaLangServerConfig: async (parent: any, args: { config: InputJavaLangServerConfig }): Promise<OperationStatus> => {
       try {
         langServerConfigStore.setJdkLocation(args.config.jdkLocation);
       } catch (e) {
@@ -356,6 +374,19 @@ export const resolvers = {
         return {
           isSuccess: false,
           reason: e.message };
+      }
+      return { isSuccess: true };
+    },
+    setLangServerConfig: async (parent: any, args: { config: InputLangServerConfigs }): Promise<OperationStatus> => {
+      try {
+        langServerConfigStore.setJdkLocation(args.config.jdkLocation);
+        langServerConfigStore.setPythonLocation(args.config.pythonExecLocation);
+      } catch (e) {
+        logger.error("Failed to setLangServerConfig", e);
+        return {
+          isSuccess: false,
+          reason: e.message
+        };
       }
       return { isSuccess: true };
     }

@@ -6,6 +6,7 @@ import { getStoreSafe, IStore } from "./explorook-store";
 import { IndexWorker } from "./fsIndexer";
 import { getRepoId } from "./git";
 import {logger} from "./langauge-servers/configStore";
+
 export class Repo {
     public repoName: string;
     public fullpath: string;

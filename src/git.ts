@@ -22,7 +22,7 @@ const uuidv4 = require("uuid/v4");
 const isGitUrl = require("is-git-url");
 const folderDelete = require("folder-delete");
 
-const TEN_MEGABYTE = 10_485_760
+const TEN_MEGABYTE = 10_485_760;
 
 export interface GitConnectionOptions {
     connectionString: string;

@@ -1,9 +1,9 @@
-import { getLogger } from './../logger';
-import * as path from 'path'
-import * as fs from 'fs'
-import * as cp from 'child_process'
-import * as os from 'os'
-import _ = require('lodash')
+import { getLogger } from "../logger";
+import * as path from "path";
+import * as fs from "fs";
+import * as cp from "child_process";
+import * as os from "os";
+import _ = require("lodash");
 
 const logger = getLogger('langserver')
 export const isWindows = process.platform.match('win32')
@@ -53,7 +53,7 @@ const updateJDKs = (set: Set<string>, newJdks: string[]) => {
 
 const getJavaLocationsfromEnv = (envVarName: string): string[] => {
     if (!process.env[envVarName]) {
-        return []
+        return [];
     }
 
     // Expecting the envVar to hold 1 or more 'path/to/jdk/home' s, if more seperated by ';'
@@ -76,7 +76,7 @@ const fromCommonPlaces = (): string[] => {
         jvms.forEach(jvm => {
             const javaLoc = path.join(jvmStore, jvm, subfolder);
             if (fs.existsSync(javaLoc)) {
-                javaLocations.push(javaLoc)
+                javaLocations.push(javaLoc);
             }
         })
     }
@@ -118,7 +118,7 @@ const fromCommonPlaces = (): string[] => {
     }
 
     return javaLocations;
-}
+};
 
 
 export const getJavaVersion = (javaPath: string) => checkVersionInReleaseFile(javaPath) || checkVersionByCLI(javaPath);
@@ -186,4 +186,4 @@ const checkVersionByCLI = (javaHome: string): number => {
     }
     return parseMajorVersion(match[1]);
 
-}
+};

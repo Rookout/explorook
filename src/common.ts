@@ -16,8 +16,28 @@ interface CanQueryRepoStatus {
 }
 
 interface JavaLangServerConfig {
-  jdkLocation: string
-  jdkMinimumVersionRequired?: string
+  jdkLocation: string;
+  jdkMinimumVersionRequired?: string;
+}
+
+interface PythonLangServerConfig {
+  pythonExecLocation: string;
+  pythonMinimumMajorVersionRequired?: number;
+  pythonMinimumMinorVersionRequired?: number;
+}
+
+interface InputJavaLangServerConfig {
+  jdkLocation: string;
+}
+
+interface LangServerConfigs {
+  java?: JavaLangServerConfig;
+  python?: PythonLangServerConfig;
+}
+
+interface InputLangServerConfigs {
+  jdkLocation: string;
+  pythonExecLocation: string;
 }
 
 interface LangServerInitParams {

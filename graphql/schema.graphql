@@ -82,12 +82,24 @@ input SettingsInput {
 }
 
 type LangServerConfig {
-  java: javaLangServerConfig
+  java: javaLangServerConfig @deprecated(reason: "Use allLangServerConfigs")
+  allLangServerConfigs: langServerConfigs
 }
 
 type javaLangServerConfig {
   jdkLocation: String
   jdkMinimumVersionRequired: String
+}
+
+type pythonLangServerConfig {
+  pythonExecLocation: String
+  pythonMinimumMajorVersionRequired: Int
+  pythonMinimumMinorVersionRequired: Int
+}
+
+type langServerConfigs {
+  java: javaLangServerConfig
+  python: pythonLangServerConfig
 }
 
 type OperationStatus {
@@ -110,11 +122,17 @@ type Mutation {
 }
 
 type LangServerOps {
-  setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus!
+  setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus! @deprecated(reason: "Use setLangServerConfig")
+  setLangServerConfig(config: LangServerConfigInput): OperationStatus!
 }
 
 input JavaLangServerConfigInput {
   jdkLocation: String
+}
+
+input LangServerConfigInput {
+  jdkLocation: String
+  pythonExecLocation: String
 }
 
 enum OnPremSourceProvider {

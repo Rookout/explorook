@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.8.37",
+  "version": "1.8.38",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -33,7 +33,9 @@
     },
     "protocols": {
       "name": "rookout",
-      "schemes": ["rookout"]
+      "schemes": [
+        "rookout"
+      ]
     },
     "files": [
       "dist",
@@ -46,7 +48,9 @@
     "linux": {
       "target": "appImage",
       "category": "Utility",
-      "mimeTypes": ["x-scheme-handler/rookout"],
+      "mimeTypes": [
+        "x-scheme-handler/rookout"
+      ],
       "desktop": {
         "exec": "rookout %u"
       }
@@ -87,7 +91,7 @@
     "@types/auto-launch": "^5.0.0",
     "@types/aws-lambda": "^8.10.17",
     "@types/body-parser": "^1.17.0",
-    "@types/lodash": "^4.14.109",
+    "@types/lodash": "^4.14.182",
     "@types/ws": "^5.1.2",
     "aws-lambda": "^1.0.5",
     "copyfiles": "^2.3.0",
@@ -128,6 +132,7 @@
     "isomorphic-git": "^1.8.2",
     "lodash": "^4.17.21",
     "log4js": "^6.4.0",
+    "minimatch": "^5.0.1",
     "node-rsa": "^1.0.5",
     "p4api": "^3.4.0",
     "parse-repo": "^1.0.4",
