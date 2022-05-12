@@ -84,6 +84,7 @@ export const launchLanguageServer = (socket: rpc.IWebSocket, startConfig: LangSe
             const rootUri = `file://${repoFullpath}`;
             initializeParams.rootUri = initializeParams.workspaceFolders[0].uri = initializeParams.workspaceFolders[0].name = rootUri;
             initializeParams.rootPath = repoFullpath;
+            initializeParams.trace = "off";
         } else if (message?.params?.textDocument?.uri) {
             message.params.textDocument.uri = getFileFullPath(message.params.textDocument.uri, repoFullpath);
         }
