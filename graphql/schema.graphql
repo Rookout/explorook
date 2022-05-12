@@ -97,9 +97,16 @@ type pythonLangServerConfig {
   pythonMinimumMinorVersionRequired: Int
 }
 
+type goLangServerConfig {
+  goExecLocation: String
+  goMinimumMajorVersionRequired: Int
+  goMinimumMinorVersionRequired: Int
+}
+
 type langServerConfigs {
   java: javaLangServerConfig
   python: pythonLangServerConfig
+  go: goLangServerConfig
 }
 
 type OperationStatus {

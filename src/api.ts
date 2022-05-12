@@ -28,7 +28,7 @@ import {
   TMP_DIR_PREFIX
 } from "./git";
 import {
-  langServerConfigStore,
+  langServerConfigStore, minimumGoMajorVersion, minimumGoMinorVersion,
   minimumJavaVersionRequired,
   minimumPythonMajorVersion,
   minimumPythonMinorVersion
@@ -361,6 +361,11 @@ export const resolvers = {
           pythonExecLocation: langServerConfigStore.pythonLocation,
           pythonMinimumMajorVersionRequired: minimumPythonMajorVersion,
           pythonMinimumMinorVersionRequired: minimumPythonMinorVersion
+        },
+        go: {
+          goExecLocation: langServerConfigStore.goLocation,
+          goMinimumMajorVersionRequired: minimumGoMajorVersion,
+          goMinimumMinorVersionRequired: minimumGoMinorVersion
         }
       };
     }
@@ -381,6 +386,7 @@ export const resolvers = {
       try {
         langServerConfigStore.setJdkLocation(args.config.jdkLocation);
         langServerConfigStore.setPythonLocation(args.config.pythonExecLocation);
+        langServerConfigStore.setGoLocation(args.config.goExecLocation);
       } catch (e) {
         logger.error("Failed to setLangServerConfig", e);
         return {

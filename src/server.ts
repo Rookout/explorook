@@ -14,6 +14,7 @@ import { Server } from "ws";
 import * as WebSocket from "ws";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
+import { launchGoLanguageServer } from "./langauge-servers/go";
 import { launchJavaLangaugeServer } from "./langauge-servers/java";
 import { launchPythonLanguageServer } from "./langauge-servers/python";
 import {
@@ -166,5 +167,7 @@ const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc
       return launchJavaLangaugeServer;
     case "python":
       return launchPythonLanguageServer;
+    case "go":
+      return launchGoLanguageServer;
   }
 };

@@ -26,6 +26,12 @@ interface PythonLangServerConfig {
   pythonMinimumMinorVersionRequired?: number;
 }
 
+interface GoLangServerConfig {
+  goExecLocation: string;
+  goMinimumMajorVersionRequired?: number;
+  goMinimumMinorVersionRequired?: number;
+}
+
 interface InputJavaLangServerConfig {
   jdkLocation: string;
 }
@@ -33,11 +39,13 @@ interface InputJavaLangServerConfig {
 interface LangServerConfigs {
   java?: JavaLangServerConfig;
   python?: PythonLangServerConfig;
+  go?: GoLangServerConfig;
 }
 
 interface InputLangServerConfigs {
   jdkLocation: string;
   pythonExecLocation: string;
+  goExecLocation: string;
 }
 
 interface LangServerInitParams {

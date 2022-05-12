@@ -6,6 +6,7 @@ import * as path from "path";
 import { getStoreSafe, IStore } from "../explorook-store";
 import { getLogger } from "../logger";
 import { getLibraryFolder } from "../utils";
+import {findGoLocation, getGoVersion} from "./goUtils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
 import {findPythonLocation, getPythonVersion, PIP_FILENAME} from "./pythonUtils";
 
@@ -17,6 +18,8 @@ export const javaLangServerJarLocation = path.join(langServerExecFolder, "Rookou
 export const minimumJavaVersionRequired = 13;
 export const minimumPythonMajorVersion = 3;
 export const minimumPythonMinorVersion = 7;
+export const minimumGoMajorVersion = 1;
+export const minimumGoMinorVersion = 17;
 
 class LangServerConfigStore {
     private static installPythonLanguageServer(pythonLocation: string) {
@@ -26,6 +29,7 @@ class LangServerConfigStore {
     public isDownloadingJavaJar: boolean = false;
     public jdkLocation: string;
     public pythonLocation: string;
+    public goLocation: string;
     private store: IStore;
 
     constructor() {
@@ -40,6 +44,11 @@ class LangServerConfigStore {
         this.pythonLocation = this.store.get("python-location", "");
         if (!this.pythonLocation) {
             this.findPythonLocation();
+        }
+
+        this.goLocation = this.store.get("go-location", "");
+        if (!this.goLocation) {
+            this.findGoLocation();
         }
 
         this.installPythonLanguageServerIfNeeded();
@@ -119,6 +128,25 @@ class LangServerConfigStore {
         }
     }
 
+    public setGoLocation = (location: string) => {
+        if (_.isEmpty(location) || _.isEmpty(location.trim())) {
+            this.goLocation = "";
+            this.store.set("go-location", "");
+            return;
+        }
+        const goVersion = getGoVersion(location);
+        if (goVersion.major >= minimumGoMajorVersion && goVersion.minor >= minimumGoMinorVersion) {
+            this.goLocation = location;
+            this.store.set("go-location", this.pythonLocation);
+            return;
+        } else if (goVersion) {
+            const errorMsg = `The submitted Go version is lower than: ${minimumGoMajorVersion}.${minimumGoMinorVersion}`;
+            throw new Error(errorMsg);
+        } else {
+            throw new Error("This location is an invalid Go executable location");
+        }
+    }
+
     // Since we use fs.createWriteStream() in order to write the downloaded langserver file, it will not
     // not create the directories on its own.
     private ensureLangServerExecFolderExists = () => {
@@ -164,12 +192,24 @@ class LangServerConfigStore {
     private findPythonLocation = () => {
         const pythonLocations = findPythonLocation();
 
-        const foundPython = _.find(pythonLocations, jre =>
-            jre.majorVersion >= minimumPythonMajorVersion && jre.minorVersion >= minimumPythonMinorVersion);
+        const foundPython = _.find(pythonLocations, python =>
+            python.majorVersion >= minimumPythonMajorVersion && python.minorVersion >= minimumPythonMinorVersion);
 
         if (foundPython) {
             this.pythonLocation = foundPython.location;
             this.store.set("python-location", this.pythonLocation);
+        }
+    }
+
+    private findGoLocation = () => {
+        const goLocations = findGoLocation();
+
+        const foundGo = _.find(goLocations, go =>
+            go.majorVersion >= minimumGoMajorVersion && go.minorVersion >= minimumGoMinorVersion);
+
+        if (foundGo) {
+            this.goLocation = foundGo.location;
+            this.store.set("go-location", this.goLocation);
         }
     }
 }
