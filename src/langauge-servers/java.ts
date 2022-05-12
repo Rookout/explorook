@@ -4,7 +4,7 @@ import { javaLangServerJarLocation, langServerConfigStore } from "./configStore"
 import { JAVA_FILENAME } from "./javaUtils";
 import { launchLanguageServer } from "./langaugeServer";
 
-export const launchJavaLangaugeServer = (socket: rpc.IWebSocket) => {
+export const launchJavaLanguageServer = (socket: rpc.IWebSocket) => {
     if (langServerConfigStore.doesJavaJarExist() && langServerConfigStore.jdkLocation) {
         const args = ["-jar", javaLangServerJarLocation];
 

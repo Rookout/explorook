@@ -15,7 +15,7 @@ import * as WebSocket from "ws";
 import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
 import { launchGoLanguageServer } from "./langauge-servers/go";
-import { launchJavaLangaugeServer } from "./langauge-servers/java";
+import { launchJavaLanguageServer } from "./langauge-servers/java";
 import {launchJavascriptLanguageServer} from "./langauge-servers/javascript";
 import { launchPythonLanguageServer } from "./langauge-servers/python";
 import {
@@ -130,7 +130,7 @@ const startWebSocketServer = (httpServer: net.Server) => {
       }
 
       const langName = pathname.replace("/langServer/", "");
-      const launchLangServer = getLaunchLanguangeServerFuncByLangName(langName);
+      const launchLangServer = getLaunchLanguageServerFuncByLangName(langName);
 
       if (!launchLangServer) {
         return closeWebSocket(webSocket, "Bad Language / Language isnt supported");
@@ -162,10 +162,10 @@ const closeWebSocket = (ws: WebSocket, error: string) => {
   ws.close();
 };
 
-const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc.IWebSocket) => void) => {
+const getLaunchLanguageServerFuncByLangName = (langName: string): ((socket: rpc.IWebSocket) => void) => {
   switch (langName.toLowerCase()) {
     case "java":
-      return launchJavaLangaugeServer;
+      return launchJavaLanguageServer;
     case "python":
       return launchPythonLanguageServer;
     case "go":
