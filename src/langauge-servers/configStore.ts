@@ -30,6 +30,7 @@ class LangServerConfigStore {
     public jdkLocation: string;
     public pythonLocation: string;
     public goLocation: string;
+    public jsServerInstalled: boolean = false;
     private store: IStore;
 
     constructor() {
@@ -52,6 +53,7 @@ class LangServerConfigStore {
         }
 
         this.installPythonLanguageServerIfNeeded();
+        this.installJavascriptLanguageServerIfNeeded();
 
         if (!this.doesJavaJarExist()) {
             this.downloadJavaLangServer();
@@ -88,6 +90,22 @@ class LangServerConfigStore {
             if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
                 LangServerConfigStore.installPythonLanguageServer(this.pythonLocation);
             }
+        }
+    }
+
+    public installJavascriptLanguageServerIfNeeded() {
+        try {
+            const stdout = cp.execSync("npm list -g quick-lint-js", { encoding: "utf-8" });
+            const trimmedOutput = _.trim(stdout);
+            if (trimmedOutput.includes("(empty)")) {
+                cp.execSync("npm install -g quick-lint-js");
+                this.jsServerInstalled = true;
+            } else {
+                this.jsServerInstalled = true;
+            }
+        } catch (e) {
+            const trimmedError = _.trim(e.message);
+            logger.error(trimmedError);
         }
     }
 

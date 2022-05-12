@@ -16,6 +16,7 @@ import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
 import { launchGoLanguageServer } from "./langauge-servers/go";
 import { launchJavaLangaugeServer } from "./langauge-servers/java";
+import {launchJavascriptLanguageServer} from "./langauge-servers/javascript";
 import { launchPythonLanguageServer } from "./langauge-servers/python";
 import {
   authenticateController,
@@ -169,5 +170,8 @@ const getLaunchLanguangeServerFuncByLangName = (langName: string): ((socket: rpc
       return launchPythonLanguageServer;
     case "go":
       return launchGoLanguageServer;
+    case "javascript":
+    case "typescript":
+      return launchJavascriptLanguageServer;
   }
 };
