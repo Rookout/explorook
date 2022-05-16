@@ -18,6 +18,7 @@ import { launchGoLanguageServer } from "./langauge-servers/go";
 import { launchJavaLanguageServer } from "./langauge-servers/java";
 import {launchJavascriptLanguageServer} from "./langauge-servers/javascript";
 import { launchPythonLanguageServer } from "./langauge-servers/python";
+import {launchTypescriptLanguageServer} from "./langauge-servers/typescript";
 import {
   authenticateController,
   authenticateControllerV2,
@@ -171,7 +172,8 @@ const getLaunchLanguageServerFuncByLangName = (langName: string): ((socket: rpc.
     case "go":
       return launchGoLanguageServer;
     case "javascript":
-    case "typescript":
       return launchJavascriptLanguageServer;
+    case "typescript":
+      return launchTypescriptLanguageServer;
   }
 };

@@ -31,6 +31,7 @@ class LangServerConfigStore {
     public pythonLocation: string;
     public goLocation: string;
     public jsServerInstalled: boolean = false;
+    public tsServerInstalled: boolean = false;
     private store: IStore;
 
     constructor() {
@@ -54,6 +55,7 @@ class LangServerConfigStore {
 
         this.installPythonLanguageServerIfNeeded();
         this.installJavascriptLanguageServerIfNeeded();
+        this.installTypescriptLanguageServerIfNeeded();
 
         if (!this.doesJavaJarExist()) {
             this.downloadJavaLangServer();
@@ -95,13 +97,35 @@ class LangServerConfigStore {
 
     public installJavascriptLanguageServerIfNeeded() {
         try {
-            const stdout = cp.execSync("npm list -g quick-lint-js", { encoding: "utf-8" });
+            const npmLocation = cp.execSync("which npm", { encoding: "utf-8" }).trim();
+            const stdout = cp.execFileSync(path.basename(npmLocation),
+                ["list -g quick-lint-js"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.includes("(empty)")) {
-                cp.execSync("npm install -g quick-lint-js");
+                cp.execFileSync(path.basename(npmLocation),
+                    ["install -g quick-lint-js"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
                 this.jsServerInstalled = true;
             } else {
                 this.jsServerInstalled = true;
+            }
+        } catch (e) {
+            const trimmedError = _.trim(e.message);
+            logger.error(trimmedError);
+        }
+    }
+
+    public installTypescriptLanguageServerIfNeeded() {
+        try {
+            const npmLocation = cp.execSync("which npm", { encoding: "utf-8" }).trim();
+            const stdout = cp.execFileSync(path.basename(npmLocation),
+                ["list -g typescript-language-server"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
+            const trimmedOutput = _.trim(stdout);
+            if (trimmedOutput.includes("(empty)")) {
+                cp.execFileSync(path.basename(npmLocation),
+                    ["install -g typescript-language-server typescript"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
+                this.tsServerInstalled = true;
+            } else {
+                this.tsServerInstalled = true;
             }
         } catch (e) {
             const trimmedError = _.trim(e.message);
