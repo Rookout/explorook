@@ -50,7 +50,7 @@ jobs:
             echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
             # package code for every distribution (mac, win, linux) and publish as github release
-            yarn run build-packages
+            yarn run build-packages-all-distributions
             # publish in google storage bucket (additionally to electronbuild-publisher)
             bash upload_release_to_gs.sh
       - save_cache:
