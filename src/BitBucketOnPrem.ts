@@ -38,6 +38,48 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     return fetch(requestInfo.toString().replace('scm/', '').replace('scm%2F',''), requestInit);
 }
 
+export const getFileTreeByPath =
+    async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
+        const fileTreeUrl = UrlAssembler(url).template("rest/api/1.0/projects/:projectKey/repos/:repoName/browse")
+            .param({
+                projectKey,
+                repoName
+            }).toString();
+        logger.debug("Getting files for", {projectKey, repoName, url, commit});
+        let isLastPage = false;
+        let start = 0;
+        let files: string[] = [];
+        while (!isLastPage) {
+            const res = await fetchNoCache(`${fileTreeUrl}?start=${start}&limit=${FETCH_LIMIT}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const fileTreeResponse: any = await res.json();
+
+            const {children} = fileTreeResponse || {};
+            const {values} = children || {};
+            if (Array.isArray(values)) {
+               for (const item of values) {
+                   const {type,  path} = item;
+                   const {name} = path || {};
+                   files.push(`${name}${type === 'DIRECTORY' ? '/' : ''}`);
+               }
+            } else {
+                notify("Bitbucket OnPrem files tree request returned an unexpected value", { metaData: { resStatus: res.status, fileTreeResponse } });
+                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", { res, fileTreeResponse });
+                return [];
+            }
+
+            isLastPage = children.isLastPage;
+            if (!isLastPage) {
+                start = children.nextPageStart;
+                logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
+            }
+        }
+
+        return await Promise.resolve(files) as any ;
+    };
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
     const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
