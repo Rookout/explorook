@@ -48,6 +48,13 @@ interface InputLangServerConfigs {
   goExecLocation: string;
 }
 
+interface InputEnabledLanguageServers {
+  java: boolean;
+  python: boolean;
+  go: boolean;
+  jsAndTs: boolean;
+}
+
 interface LangServerInitParams {
   isGitRepo: boolean;
   gitURL?: string;

@@ -131,6 +131,7 @@ type Mutation {
 type LangServerOps {
   setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus! @deprecated(reason: "Use setLangServerConfig")
   setLangServerConfig(config: LangServerConfigInput): OperationStatus!
+  enableOrDisableLangServers(config: EnabledLanguageServersInput): OperationStatus!
 }
 
 input JavaLangServerConfigInput {
@@ -141,6 +142,13 @@ input LangServerConfigInput {
   jdkLocation: String
   pythonExecLocation: String
   goExecLocation: String
+}
+
+input EnabledLanguageServersInput {
+  java: Boolean
+  python: Boolean
+  go: Boolean
+  jsAndTs: Boolean
 }
 
 enum OnPremSourceProvider {

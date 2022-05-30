@@ -395,6 +395,20 @@ export const resolvers = {
         };
       }
       return { isSuccess: true };
+    },
+    enableOrDisableLangServers: async (parent: any, args: { config: InputEnabledLanguageServers }): Promise<OperationStatus> => {
+      try {
+        langServerConfigStore.setIsLanguageServerEnabled("python", args.config.python);
+        langServerConfigStore.setIsLanguageServerEnabled("go", args.config.go);
+        langServerConfigStore.setIsLanguageServerEnabled("jsAndTs", args.config.jsAndTs);
+      } catch (e) {
+        logger.error("Failed to enableLangServers", e);
+        return {
+          isSuccess: false,
+          reason: e.message
+        };
+      }
+      return { isSuccess: true };
     }
   }
 };

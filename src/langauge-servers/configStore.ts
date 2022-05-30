@@ -25,6 +25,12 @@ export const minimumPythonMinorVersion = 7;
 export const minimumGoMajorVersion = 1;
 export const minimumGoMinorVersion = 17;
 
+const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
+    python: "enable-python-server",
+    go: "enable-go-server",
+    jsAndTs: "enable-js-ts-server"
+};
+
 class LangServerConfigStore {
     private static installPythonLanguageServer(pythonLocation: string) {
         cp.execFileSync(PIP_FILENAME, ["install", "python-lsp-server[all]"], { cwd: pythonLocation, encoding: "utf-8" });
@@ -51,13 +57,13 @@ class LangServerConfigStore {
         }
 
         this.pythonLocation = this.store.get("python-location", "");
-        this.enablePythonServer = this.store.get("enable-python-server", "false") === "true";
+        this.enablePythonServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["python"], "false") === "true";
         if (!this.pythonLocation && this.enablePythonServer) {
             this.findPythonLocation();
         }
 
         this.goLocation = this.store.get("go-location", "");
-        this.enableGoServer = this.store.get("enable-go-server", "false") === "true";
+        this.enableGoServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["go"], "false") === "true";
         if (!this.goLocation && this.enableGoServer) {
             this.findGoLocation();
         }
@@ -65,7 +71,7 @@ class LangServerConfigStore {
         if (this.enablePythonServer) {
             this.installPythonLanguageServerIfNeeded();
         }
-        this.enableJsTsServer = this.store.get("enable-js-ts-server", "false") === "true";
+        this.enableJsTsServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["jsAndTs"], "false") === "true";
         if (this.enableJsTsServer) {
             this.ensureLangServerNpmFolderExists();
             this.installJavascriptLanguageServerIfNeeded();
@@ -166,6 +172,14 @@ class LangServerConfigStore {
             throw new Error("The submitted JRE's version is lower than required JDK " + minimumJavaVersionRequired);
         } else {
             throw new Error("This location is an invalid JRE location");
+        }
+    }
+
+    public setIsLanguageServerEnabled = (language: string, isEnabled: boolean) => {
+        const isEnabledString = isEnabled ? "true" : "false";
+        const languageStoreKey = LANGUAGE_STORE_ENABLE_KEYS[language];
+        if (languageStoreKey) {
+            this.store.set(languageStoreKey, isEnabledString);
         }
     }
 
