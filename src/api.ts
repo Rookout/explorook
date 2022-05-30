@@ -368,6 +368,15 @@ export const resolvers = {
           goMinimumMinorVersionRequired: minimumGoMinorVersion
         }
       };
+    },
+    enabledLangServers: async (parent: any): Promise<EnabledLanguageServers> => {
+      return {
+        java: true,
+        python: langServerConfigStore.enablePythonServer,
+        go: langServerConfigStore.enableGoServer,
+        javascript: langServerConfigStore.enableJsTsServer,
+        typescript: langServerConfigStore.enableJsTsServer
+      };
     }
   },
   LangServerOps: {
@@ -400,7 +409,7 @@ export const resolvers = {
       try {
         langServerConfigStore.setIsLanguageServerEnabled("python", args.config.python);
         langServerConfigStore.setIsLanguageServerEnabled("go", args.config.go);
-        langServerConfigStore.setIsLanguageServerEnabled("jsAndTs", args.config.jsAndTs);
+        langServerConfigStore.setIsLanguageServerEnabled("jsAndTs", args.config.javascript && args.config.typescript);
       } catch (e) {
         logger.error("Failed to enableLangServers", e);
         return {

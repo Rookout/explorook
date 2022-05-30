@@ -84,6 +84,7 @@ input SettingsInput {
 type LangServerConfig {
   java: javaLangServerConfig @deprecated(reason: "Use allLangServerConfigs")
   allLangServerConfigs: langServerConfigs
+  enabledLangServers: EnabledLangServers
 }
 
 type javaLangServerConfig {
@@ -107,6 +108,14 @@ type langServerConfigs {
   java: javaLangServerConfig
   python: pythonLangServerConfig
   go: goLangServerConfig
+}
+
+type EnabledLangServers {
+  java: Boolean
+  python: Boolean
+  go: Boolean
+  javascript: Boolean
+  typescript: Boolean
 }
 
 type OperationStatus {
@@ -148,7 +157,8 @@ input EnabledLanguageServersInput {
   java: Boolean
   python: Boolean
   go: Boolean
-  jsAndTs: Boolean
+  javascript: Boolean
+  typescript: Boolean
 }
 
 enum OnPremSourceProvider {
