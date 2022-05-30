@@ -1,10 +1,10 @@
 import * as rpc from "vscode-ws-jsonrpc";
-import {langServerConfigStore} from "./configStore";
+import {javascriptLangServerExecLocation, langServerConfigStore} from "./configStore";
 import {launchLanguageServer} from "./langaugeServer";
 
 export const launchJavascriptLanguageServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.jsServerInstalled) {
+    if (langServerConfigStore.enableJsTsServer && langServerConfigStore.jsServerInstalled) {
         const args = ["--lsp-server"];
-        launchLanguageServer(socket, {LanguageName: "Javascript", langserverCommand: "quick-lint-js", langserverCommandArgs: args});
+        launchLanguageServer(socket, {LanguageName: "Javascript", langserverCommand: javascriptLangServerExecLocation, langserverCommandArgs: args});
     }
 };

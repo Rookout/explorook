@@ -15,6 +15,10 @@ const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
 
 const JavaLangServerDownloadURL = "https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar";
 export const javaLangServerJarLocation = path.join(langServerExecFolder, "Rookout-Java-Language-Server.jar");
+export const langServersNpmInstallationLocation = path.join(langServerExecFolder, "npm_modules");
+export const javascriptLangServerExecLocation = path.join(langServersNpmInstallationLocation, "node_modules", "quick-lint-js", "quick-lint-js.exe");
+export const typescriptLangServerExecLocation = path.join(
+    langServersNpmInstallationLocation, "node_modules", "typescript-language-server", "lib", "cli.js");
 export const minimumJavaVersionRequired = 13;
 export const minimumPythonMajorVersion = 3;
 export const minimumPythonMinorVersion = 7;
@@ -32,6 +36,9 @@ class LangServerConfigStore {
     public goLocation: string;
     public jsServerInstalled: boolean = false;
     public tsServerInstalled: boolean = false;
+    public enablePythonServer: boolean = false;
+    public enableGoServer: boolean = false;
+    public enableJsTsServer: boolean = false;
     private store: IStore;
 
     constructor() {
@@ -44,18 +51,26 @@ class LangServerConfigStore {
         }
 
         this.pythonLocation = this.store.get("python-location", "");
-        if (!this.pythonLocation) {
+        this.enablePythonServer = this.store.get("enable-python-server", "false") === "true";
+        if (!this.pythonLocation && this.enablePythonServer) {
             this.findPythonLocation();
         }
 
         this.goLocation = this.store.get("go-location", "");
-        if (!this.goLocation) {
+        this.enableGoServer = this.store.get("enable-go-server", "false") === "true";
+        if (!this.goLocation && this.enableGoServer) {
             this.findGoLocation();
         }
 
-        this.installPythonLanguageServerIfNeeded();
-        this.installJavascriptLanguageServerIfNeeded();
-        this.installTypescriptLanguageServerIfNeeded();
+        if (this.enablePythonServer) {
+            this.installPythonLanguageServerIfNeeded();
+        }
+        this.enableJsTsServer = this.store.get("enable-js-ts-server", "false") === "true";
+        if (this.enableJsTsServer) {
+            this.ensureLangServerNpmFolderExists();
+            this.installJavascriptLanguageServerIfNeeded();
+            this.installTypescriptLanguageServerIfNeeded();
+        }
 
         if (!this.doesJavaJarExist()) {
             this.downloadJavaLangServer();
@@ -97,39 +112,42 @@ class LangServerConfigStore {
 
     public installJavascriptLanguageServerIfNeeded() {
         try {
-            const npmLocation = cp.execSync("which npm", { encoding: "utf-8" }).trim();
-            const stdout = cp.execFileSync(path.basename(npmLocation),
-                ["list -g quick-lint-js"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
+            const stdout = cp.execSync("npm list quick-lint-js", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.includes("(empty)")) {
-                cp.execFileSync(path.basename(npmLocation),
-                    ["install -g quick-lint-js"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
+                cp.execSync(`npm install quick-lint-js`, { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+            }
+            this.jsServerInstalled = true;
+        } catch (e) {
+            const trimmedError = _.trim(e.stdout?.toString());
+            console.error(trimmedError);
+            if (trimmedError.includes("(empty)")) {
+                cp.execSync("npm install quick-lint-js", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
                 this.jsServerInstalled = true;
             } else {
-                this.jsServerInstalled = true;
+                logger.error(trimmedError);
             }
-        } catch (e) {
-            const trimmedError = _.trim(e.message);
-            logger.error(trimmedError);
         }
     }
 
     public installTypescriptLanguageServerIfNeeded() {
         try {
-            const npmLocation = cp.execSync("which npm", { encoding: "utf-8" }).trim();
-            const stdout = cp.execFileSync(path.basename(npmLocation),
-                ["list -g typescript-language-server"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
+            const stdout = cp.execSync("npm list typescript-language-server", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.includes("(empty)")) {
-                cp.execFileSync(path.basename(npmLocation),
-                    ["install -g typescript-language-server typescript"], { cwd: path.dirname(npmLocation), encoding: "utf-8" });
+                // Windows might need npm.cmd
+                cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+            }
+            this.tsServerInstalled = true;
+        } catch (e) {
+            const trimmedError = _.trim(e.stdout?.toString());
+            console.error(trimmedError);
+            if (trimmedError.includes("(empty)")) {
+                cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
                 this.tsServerInstalled = true;
             } else {
-                this.tsServerInstalled = true;
+                logger.error(trimmedError);
             }
-        } catch (e) {
-            const trimmedError = _.trim(e.message);
-            logger.error(trimmedError);
         }
     }
 
@@ -194,6 +212,12 @@ class LangServerConfigStore {
     private ensureLangServerExecFolderExists = () => {
         if (!fs.existsSync(langServerExecFolder)) {
             fs.mkdirSync(langServerExecFolder, { recursive: true });
+        }
+    }
+
+    private ensureLangServerNpmFolderExists = () => {
+        if (!fs.existsSync(langServersNpmInstallationLocation)) {
+            fs.mkdirSync(langServersNpmInstallationLocation, { recursive: true });
         }
     }
 

@@ -1,10 +1,10 @@
 import * as rpc from "vscode-ws-jsonrpc";
-import {langServerConfigStore} from "./configStore";
+import {langServerConfigStore, typescriptLangServerExecLocation} from "./configStore";
 import {launchLanguageServer} from "./langaugeServer";
 
 export const launchTypescriptLanguageServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.tsServerInstalled) {
+    if (langServerConfigStore.enableJsTsServer && langServerConfigStore.tsServerInstalled) {
         const args = ["--stdio"];
-        launchLanguageServer(socket, {LanguageName: "Typescript", langserverCommand: "typescript-language-server", langserverCommandArgs: args});
+        launchLanguageServer(socket, {LanguageName: "Typescript", langserverCommand: typescriptLangServerExecLocation, langserverCommandArgs: args});
     }
 };

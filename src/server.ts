@@ -16,7 +16,6 @@ import { resolvers } from "./api";
 import { notify } from "./exceptionManager";
 import { launchGoLanguageServer } from "./langauge-servers/go";
 import { launchJavaLanguageServer } from "./langauge-servers/java";
-import {launchJavascriptLanguageServer} from "./langauge-servers/javascript";
 import { launchPythonLanguageServer } from "./langauge-servers/python";
 import {launchTypescriptLanguageServer} from "./langauge-servers/typescript";
 import {
@@ -172,7 +171,6 @@ const getLaunchLanguageServerFuncByLangName = (langName: string): ((socket: rpc.
     case "go":
       return launchGoLanguageServer;
     case "javascript":
-      return launchJavascriptLanguageServer;
     case "typescript":
       return launchTypescriptLanguageServer;
   }
