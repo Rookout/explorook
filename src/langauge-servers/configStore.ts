@@ -183,7 +183,11 @@ class LangServerConfigStore {
         if (languageStoreKey) {
             this.store.set(languageStoreKey, isEnabledString);
             if (language === "jsAndTs") {
-                this.enableJsTsServer = isEnabled && isMacOrLinux;
+                const newIsEnabled = isEnabled && isMacOrLinux;
+                if (newIsEnabled === this.enableJsTsServer) {
+                    return;
+                }
+                this.enableJsTsServer = newIsEnabled;
                 if (!this.enableJsTsServer) {
                     return;
                 }
@@ -191,6 +195,9 @@ class LangServerConfigStore {
                 this.installJavascriptLanguageServerIfNeeded();
                 this.installTypescriptLanguageServerIfNeeded();
             } else if (language === "python") {
+                if (isEnabled === this.enablePythonServer) {
+                    return;
+                }
                 this.enablePythonServer = isEnabled;
                 if (!this.enablePythonServer) {
                     return;
@@ -200,7 +207,11 @@ class LangServerConfigStore {
                 }
                 this.installPythonLanguageServerIfNeeded();
             } else if (language === "go") {
-                this.enableGoServer = isEnabled && isMacOrLinux;
+                const newIsEnabled = isEnabled && isMacOrLinux;
+                if (newIsEnabled === this.enableGoServer) {
+                    return;
+                }
+                this.enableGoServer = newIsEnabled;
                 if (this.enableGoServer && !this.goLocation) {
                     this.findGoLocation();
                 }
