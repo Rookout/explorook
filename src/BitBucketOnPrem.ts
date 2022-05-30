@@ -9,7 +9,14 @@ const fetch = isNode() ? require('node-fetch') : window.fetch;
 // So, BitBucket can really perform well when asked for large datasets.
 // This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
 const FETCH_LIMIT = 30000;
-
+enum FILE_TYPE  {
+    DIRECTORY = 'DIRECTORY',
+    FILE = 'FILE'
+}
+enum TREE_FETCH_URL  {
+    ROOT = "rest/api/1.0/projects/:projectKey/repos/:repoName/browse",
+    BY_PATH= "rest/api/1.0/projects/:projectKey/repos/:repoName/browse"
+}
 export interface BitbucketOnPrem {
     url: string;
     accessToken: string;
@@ -39,16 +46,20 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
 }
 
 export const getFileTreeByPath =
-    async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
-        const fileTreeUrl = UrlAssembler(url).template("rest/api/1.0/projects/:projectKey/repos/:repoName/browse")
+    async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
+        const templateUrl: TREE_FETCH_URL = filePath ? TREE_FETCH_URL.BY_PATH : TREE_FETCH_URL.ROOT;
+        let fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
                 projectKey,
-                repoName
+                repoName,
             }).toString();
+        if (filePath) {
+            fileTreeUrl += `/${filePath}`;
+        }
         logger.debug("Getting files for", {projectKey, repoName, url, commit});
         let isLastPage = false;
         let start = 0;
-        let files: string[] = [];
+        const files: string[] = [];
         while (!isLastPage) {
             const res = await fetchNoCache(`${fileTreeUrl}?start=${start}&limit=${FETCH_LIMIT}`, {
                 headers: {
@@ -63,7 +74,7 @@ export const getFileTreeByPath =
                for (const item of values) {
                    const {type,  path} = item;
                    const {name} = path || {};
-                   files.push(`${name}${type === 'DIRECTORY' ? '/' : ''}`);
+                   files.push(`${filePath && false ? filePath + "/" : ""}${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
                }
             } else {
                 notify("Bitbucket OnPrem files tree request returned an unexpected value", { metaData: { resStatus: res.status, fileTreeResponse } });
@@ -78,7 +89,7 @@ export const getFileTreeByPath =
             }
         }
 
-        return await Promise.resolve(files) as any ;
+        return [...files];
     };
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
