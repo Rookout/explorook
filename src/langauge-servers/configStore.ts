@@ -10,6 +10,8 @@ import {findGoLocation, getGoVersion} from "./goUtils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
 import {findPythonLocation, getPythonVersion, PIP_FILENAME} from "./pythonUtils";
 
+const isMacOrLinux = !_.isEmpty(process.platform.match("linux")) || !_.isEmpty(process.platform.match("darwin"));
+
 export const logger = getLogger("langServer");
 const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
 
@@ -63,7 +65,7 @@ class LangServerConfigStore {
         }
 
         this.goLocation = this.store.get("go-location", "");
-        this.enableGoServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["go"], "false") === "true";
+        this.enableGoServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["go"], "false") === "true" && isMacOrLinux;
         if (!this.goLocation && this.enableGoServer) {
             this.findGoLocation();
         }
@@ -71,7 +73,7 @@ class LangServerConfigStore {
         if (this.enablePythonServer) {
             this.installPythonLanguageServerIfNeeded();
         }
-        this.enableJsTsServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["jsAndTs"], "false") === "true";
+        this.enableJsTsServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["jsAndTs"], "false") === "true" && isMacOrLinux;
         if (this.enableJsTsServer) {
             this.ensureLangServerNpmFolderExists();
             this.installJavascriptLanguageServerIfNeeded();
