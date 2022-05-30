@@ -142,14 +142,7 @@ export const getFileTreeFromBitbucket =
             }
         }
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
-
-
-        return new Promise(resolve => {
-            setTimeout(() => {
-                return resolve(files);
-            }, 5000);
-        });
-        // return files;
+        return files;
     };
 
 export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
