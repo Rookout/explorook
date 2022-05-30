@@ -182,6 +182,29 @@ class LangServerConfigStore {
         const languageStoreKey = LANGUAGE_STORE_ENABLE_KEYS[language];
         if (languageStoreKey) {
             this.store.set(languageStoreKey, isEnabledString);
+            if (language === "jsAndTs") {
+                this.enableJsTsServer = isEnabled && isMacOrLinux;
+                if (!this.enableJsTsServer) {
+                    return;
+                }
+                this.ensureLangServerNpmFolderExists();
+                this.installJavascriptLanguageServerIfNeeded();
+                this.installTypescriptLanguageServerIfNeeded();
+            } else if (language === "python") {
+                this.enablePythonServer = isEnabled;
+                if (!this.enablePythonServer) {
+                    return;
+                }
+                if (!this.pythonLocation) {
+                    this.findPythonLocation();
+                }
+                this.installPythonLanguageServerIfNeeded();
+            } else if (language === "go") {
+                this.enableGoServer = isEnabled && isMacOrLinux;
+                if (this.enableGoServer && !this.goLocation) {
+                    this.findGoLocation();
+                }
+            }
         }
     }
 
