@@ -9,13 +9,18 @@ const fetch = isNode() ? require('node-fetch') : window.fetch;
 // So, BitBucket can really perform well when asked for large datasets.
 // This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
 const FETCH_LIMIT = 30000;
-enum FILE_TYPE  {
+
+enum FILE_TYPE {
     DIRECTORY = 'DIRECTORY',
     FILE = 'FILE'
 }
-enum TREE_FETCH_URL  {
-    BY_PATH= "rest/api/1.0/projects/:projectKey/repos/:repoName/browse"
+
+enum TREE_FETCH_URL {
+    BY_PATH = "rest/api/1.0/projects/:projectKey/repos/:repoName/browse"
 }
+
+const LOCAL_KEY = 'large_repos';
+
 export interface BitbucketOnPrem {
     url: string;
     accessToken: string;
@@ -31,23 +36,29 @@ export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
 
+export interface LargeRepoIndicatorInput {
+    args: {
+        repoName: string,
+        host: string
+    };
+}
+
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
 // Otherwise we get inconsistent results from bitbucket API with different tokens
 const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     requestInit = requestInit || {};
     if (!requestInit?.cache) {
-        requestInit.cache = 'no-store'
+        requestInit.cache = 'no-store';
     }
     if (!requestInit?.credentials) {
         requestInit.credentials = 'omit';
     }
-    return fetch(requestInfo.toString().replace('scm/', '').replace('scm%2F',''), requestInit);
-}
+    return fetch(requestInfo.toString().replace('scm/', '').replace('scm%2F', ''), requestInit);
+};
 
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
         const templateUrl: TREE_FETCH_URL = TREE_FETCH_URL.BY_PATH;
-
         // build url without filePath (Url slug needs to be "src/folder" but UrlAssembler will turn it into unicode)
         const fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
@@ -55,7 +66,7 @@ export const getFileTreeByPath =
                 repoName,
             }).toString();
 
-        const sluggedUrl = addSlugToUrl(fileTreeUrl, filePath)
+        const sluggedUrl = addSlugToUrl(fileTreeUrl, filePath);
 
         logger.debug("Getting files for", {projectKey, repoName, url, commit});
         let isLastPage = false;
@@ -72,14 +83,14 @@ export const getFileTreeByPath =
             const {children} = fileTreeResponse || {};
             const {values} = children || {};
             if (Array.isArray(values)) {
-               for (const item of values) {
-                   const {type,  path} = item;
-                   const {name} = path || {};
-                   files.push(`${filePath && false ? filePath + "/" : ""}${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
-               }
+                for (const item of values) {
+                    const {type, path} = item;
+                    const {name} = path || {};
+                    files.push(`${filePath && false ? filePath + "/" : ""}${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
+                }
             } else {
-                notify("Bitbucket OnPrem files tree request returned an unexpected value", { metaData: { resStatus: res.status, fileTreeResponse } });
-                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", { res, fileTreeResponse });
+                notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileTreeResponse}});
+                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", {res, fileTreeResponse});
                 return [];
             }
 
@@ -89,47 +100,57 @@ export const getFileTreeByPath =
                 logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
             }
         }
-
         return [...files];
     };
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
-    const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
-        projectKey,
-        repoName
-    }).query({
-        at: commit
-    }).toString();
 
-    logger.debug("Getting files for", {projectKey, repoName, url, commit});
-    let isLastPage = false;
-    let start = 0;
-    let files: string[] = [];
-    while (!isLastPage) {
-        const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${FETCH_LIMIT}`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+        if (isRepoLarge(repoName, url)) {
+            return await getFileTreeByPath({url, accessToken, projectKey, repoName, commit});
+        }
+        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+            projectKey,
+            repoName
+        }).query({
+            at: commit
+        }).toString();
+
+        logger.debug("Getting files for", {projectKey, repoName, url, commit});
+        let isLastPage = false;
+        let start = 0;
+        let files: string[] = [];
+        while (!isLastPage) {
+            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${FETCH_LIMIT}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const fileList: any = await res.json();
+            if (Array.isArray(fileList.values)) {
+                files = [...files, ...fileList.values];
+            } else {
+                notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileList}});
+                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", {res, fileList});
+                return [];
             }
-        });
-        const fileList: any = await res.json();
-        if (Array.isArray(fileList.values)) {
-            files = [...files, ...fileList.values];
-        } else {
-            notify("Bitbucket OnPrem files tree request returned an unexpected value", { metaData: { resStatus: res.status, fileList } });
-            logger.error("Bitbucket OnPrem files tree request returned an unexpected value", { res, fileList });
-            return [];
-        }
 
-        // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
-        isLastPage = fileList.isLastPage;
-        if (!isLastPage) {
-            start = fileList.nextPageStart;
-            logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
+            // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
+            isLastPage = fileList.isLastPage;
+            if (!isLastPage) {
+                start = fileList.nextPageStart;
+                logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
+            }
         }
-    }
-    logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
-    return files;
-};
+        logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
+
+
+        return new Promise(resolve => {
+            setTimeout(() => {
+                return resolve(files);
+            }, 5000);
+        });
+        // return files;
+    };
 
 export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
     logger.debug("Getting user from url", {url});
@@ -167,7 +188,7 @@ export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPr
 };
 
 export const getReposForProjectFromBitbucket = async ({url, accessToken, projectKey}: BitbucketOnPrem) => {
-    logger.debug("Getting repos", { url, projectKey });
+    logger.debug("Getting repos", {url, projectKey});
     const reposQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos").param({
         projectKey
     }).toString();
@@ -177,12 +198,12 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
         }
     });
     const repos = await res.json();
-    logger.debug("Finished getting repos", { url, projectKey, repos: JSON.stringify(repos)});
+    logger.debug("Finished getting repos", {url, projectKey, repos: JSON.stringify(repos)});
     return repos.values;
 };
 
 export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
-    logger.debug("Getting commits for repo", { url, projectKey, repoName });
+    logger.debug("Getting commits for repo", {url, projectKey, repoName});
     const commitsQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/commits").param({
         projectKey,
         repoName
@@ -193,12 +214,12 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
         }
     });
     const commits = await res.json();
-    logger.debug("Finished getting commits for repo", { url, projectKey, repoName, commits: JSON.stringify(commits)});
+    logger.debug("Finished getting commits for repo", {url, projectKey, repoName, commits: JSON.stringify(commits)});
     return commits.values;
 };
 
 export const getBranchesForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
-    logger.debug("Getting branches for repo", { url, projectKey, repoName });
+    logger.debug("Getting branches for repo", {url, projectKey, repoName});
     const branchesQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/branches").param({
         projectKey,
         repoName
@@ -209,12 +230,12 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
         }
     });
     const branches = await res.json();
-    logger.debug("Finished getting branches for repo", { url, projectKey, repoName, branches: JSON.stringify(branches) });
+    logger.debug("Finished getting branches for repo", {url, projectKey, repoName, branches: JSON.stringify(branches)});
     return branches.values;
 };
 
 export const getFileContentFromBitbucket = async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem) => {
-    logger.debug("Getting file content", { url, projectKey, repoName, commit, filePath });
+    logger.debug("Getting file content", {url, projectKey, repoName, commit, filePath});
     let isLastPage = false;
     let currentLine = 0;
     let fileContent = "";
@@ -241,18 +262,18 @@ export const getFileContentFromBitbucket = async ({url, accessToken, projectKey,
             currentLine += file.size;
             isLastPage = file.isLastPage;
         } catch (e) {
-            logger.error("Failed to query file content", { url, projectKey, repoName, commit, filePath, e });
+            logger.error("Failed to query file content", {url, projectKey, repoName, commit, filePath, e});
             isLastPage = true;
             fileContent = "";
         }
     }
 
-    logger.debug("Finished getting file content", { url, projectKey, repoName, commit, filePath });
+    logger.debug("Finished getting file content", {url, projectKey, repoName, commit, filePath});
     return fileContent;
 };
 
 export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem) => {
-    logger.debug("Getting commit info", { url, projectKey, repoName, commit });
+    logger.debug("Getting commit info", {url, projectKey, repoName, commit});
     const commitQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/commits/:commit").param({
         projectKey,
         repoName,
@@ -273,4 +294,25 @@ const addSlugToUrl = (url: string, slug: string): string => {
         return url;
     }
     return `${url}/${slug}`;
+};
+
+
+export const saveRepoAsLarge = (repoName: string, url: string): boolean => {
+    const fromLocalStorage: string = localStorage.getItem(LOCAL_KEY);
+    const largeRepos: { [key: string]: boolean } = fromLocalStorage ? JSON.parse(fromLocalStorage) : {};
+    largeRepos[`${url}@${repoName}`] = true;
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(largeRepos));
+    return true;
+};
+
+export const isRepoLarge = (repoName: string, url: string): boolean => {
+    const fromLocalStorage: string = localStorage.getItem(LOCAL_KEY);
+    if (!fromLocalStorage) return false;
+    try {
+        const largeRepos: { [key: string]: boolean } = JSON.parse(fromLocalStorage);
+        return largeRepos[`${url}@${repoName}`];
+    } catch (e) {
+        return false;
+    }
+
 };

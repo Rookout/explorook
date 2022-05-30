@@ -58,6 +58,11 @@ input BitbucketInput {
   filePath: String
 }
 
+input LargeRepoIndicatorInput {
+    repoName: String!
+    host: String!
+}
+
 input GitRepo {
   repoUrl: String!
 }
@@ -131,6 +136,9 @@ type BitbucketOnPrem {
   commit(args: BitbucketInput!): BitbucketCommit
   branches(args: BitbucketInput!): [BitbucketBranch]
   file(args: BitbucketInput!): String
+  setLargeRepo(args: LargeRepoIndicatorInput!): Boolean
+  isLargeRepo(args: LargeRepoIndicatorInput!): Boolean
+
 }
 
 type BitbucketUser {
