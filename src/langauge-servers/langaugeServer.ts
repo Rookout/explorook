@@ -76,7 +76,7 @@ export const launchLanguageServer = (socket: rpc.IWebSocket, startConfig: LangSe
 
             repoFullpath = encodeURI(repoFullpath);
             if (isWindows) {
-                repoFullpath = repoFullpath.replace("%5C", "\\");
+                repoFullpath = repoFullpath.replace(/%5C/g, "\\");
             }
 
             // rootUri and rootPath are considered deprecated by the vscode's lsp and they are the only way to indicate
