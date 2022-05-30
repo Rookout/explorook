@@ -14,7 +14,6 @@ enum FILE_TYPE  {
     FILE = 'FILE'
 }
 enum TREE_FETCH_URL  {
-    ROOT = "rest/api/1.0/projects/:projectKey/repos/:repoName/browse",
     BY_PATH= "rest/api/1.0/projects/:projectKey/repos/:repoName/browse"
 }
 export interface BitbucketOnPrem {
@@ -47,21 +46,23 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
 
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
-        const templateUrl: TREE_FETCH_URL = filePath ? TREE_FETCH_URL.BY_PATH : TREE_FETCH_URL.ROOT;
-        let fileTreeUrl = UrlAssembler(url).template(templateUrl)
+        const templateUrl: TREE_FETCH_URL = TREE_FETCH_URL.BY_PATH;
+
+        // build url without filePath (Url slug needs to be "src/folder" but UrlAssembler will turn it into unicode)
+        const fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
                 projectKey,
                 repoName,
             }).toString();
-        if (filePath) {
-            fileTreeUrl += `/${filePath}`;
-        }
+
+        const sluggedUrl = addSlugToUrl(fileTreeUrl, filePath)
+
         logger.debug("Getting files for", {projectKey, repoName, url, commit});
         let isLastPage = false;
         let start = 0;
         const files: string[] = [];
         while (!isLastPage) {
-            const res = await fetchNoCache(`${fileTreeUrl}?start=${start}&limit=${FETCH_LIMIT}`, {
+            const res = await fetchNoCache(`${sluggedUrl}?start=${start}&limit=${FETCH_LIMIT}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -265,4 +266,11 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
 
     logger.debug("Finished getting commit info", {url, projectKey, repoName, commit, res});
     return res.json();
+};
+
+const addSlugToUrl = (url: string, slug: string): string => {
+    if (!slug) {
+        return url;
+    }
+    return `${url}/${slug}`;
 };
