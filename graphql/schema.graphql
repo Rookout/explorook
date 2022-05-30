@@ -140,6 +140,7 @@ input JavaLangServerConfigInput {
 input LangServerConfigInput {
   jdkLocation: String
   pythonExecLocation: String
+  goExecLocation: String
 }
 
 enum OnPremSourceProvider {
