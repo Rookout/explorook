@@ -86,7 +86,7 @@ export const getFileTreeByPath =
                 for (const item of values) {
                     const {type, path} = item;
                     const {name} = path || {};
-                    files.push(`${filePath && false ? filePath + "/" : ""}${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
+                    files.push(`${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
                 }
             } else {
                 notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileTreeResponse}});
