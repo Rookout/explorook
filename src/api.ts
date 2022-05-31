@@ -11,7 +11,7 @@ import {
   getFileTreeFromBitbucket,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
-  getUserFromBitbucket, isRepoLarge, saveRepoAsLarge, LargeRepoIndicatorInput
+  getUserFromBitbucket,
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
@@ -341,10 +341,6 @@ export const resolvers = {
         getBranchesForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
         getFileContentFromBitbucket(args),
-    setLargeRepo: async (parent: any, {args}: LargeRepoIndicatorInput): Promise<boolean> =>
-        saveRepoAsLarge(args.repoName, args.host),
-    isLargeRepo: async (parent: any, {args}: LargeRepoIndicatorInput): Promise<boolean> =>
-        isRepoLarge(args.repoName, args.host),
   },
   LangServerConfig: {
     java: async (parent: any): Promise<JavaLangServerConfig> => {

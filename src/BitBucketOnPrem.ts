@@ -1,6 +1,7 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
 import {notify} from "./exceptionManager";
+import {IStore} from "./explorook-store";
 import {getLogger} from "./logger";
 
 const logger = getLogger("bitbucket");
@@ -19,8 +20,6 @@ enum TREE_FETCH_URL {
     BY_PATH = "rest/api/1.0/projects/:projectKey/repos/:repoName/browse"
 }
 
-const LOCAL_KEY = 'large_repos';
-
 export interface BitbucketOnPrem {
     url: string;
     accessToken: string;
@@ -36,12 +35,6 @@ export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
 
-export interface LargeRepoIndicatorInput {
-    args: {
-        repoName: string,
-        host: string
-    };
-}
 
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
 // Otherwise we get inconsistent results from bitbucket API with different tokens
@@ -105,9 +98,9 @@ export const getFileTreeByPath =
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
 
-        if (isRepoLarge(repoName, url)) {
-            return await getFileTreeByPath({url, accessToken, projectKey, repoName, commit});
-        }
+        // if (isRepoLarge(repoName, url)) {
+        //     return await getFileTreeByPath({url, accessToken, projectKey, repoName, commit});
+        // }
         const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
             projectKey,
             repoName
@@ -289,23 +282,3 @@ const addSlugToUrl = (url: string, slug: string): string => {
     return `${url}/${slug}`;
 };
 
-
-export const saveRepoAsLarge = (repoName: string, url: string): boolean => {
-    const fromLocalStorage: string = localStorage.getItem(LOCAL_KEY);
-    const largeRepos: { [key: string]: boolean } = fromLocalStorage ? JSON.parse(fromLocalStorage) : {};
-    largeRepos[`${url}@${repoName}`] = true;
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(largeRepos));
-    return true;
-};
-
-export const isRepoLarge = (repoName: string, url: string): boolean => {
-    const fromLocalStorage: string = localStorage.getItem(LOCAL_KEY);
-    if (!fromLocalStorage) return false;
-    try {
-        const largeRepos: { [key: string]: boolean } = JSON.parse(fromLocalStorage);
-        return largeRepos[`${url}@${repoName}`];
-    } catch (e) {
-        return false;
-    }
-
-};
