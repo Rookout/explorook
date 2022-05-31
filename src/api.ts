@@ -374,8 +374,8 @@ export const resolvers = {
         java: true,
         python: langServerConfigStore.enablePythonServer,
         go: langServerConfigStore.enableGoServer,
-        javascript: langServerConfigStore.enableJsTsServer,
-        typescript: langServerConfigStore.enableJsTsServer
+        javascript: langServerConfigStore.enableTypescriptServer,
+        typescript: langServerConfigStore.enableTypescriptServer
       };
     }
   },
@@ -409,7 +409,7 @@ export const resolvers = {
       try {
         langServerConfigStore.setIsLanguageServerEnabled("python", args.config.python);
         langServerConfigStore.setIsLanguageServerEnabled("go", args.config.go);
-        langServerConfigStore.setIsLanguageServerEnabled("jsAndTs", args.config.javascript && args.config.typescript);
+        langServerConfigStore.setIsLanguageServerEnabled("typescript", args.config.typescript);
       } catch (e) {
         logger.error("Failed to enableLangServers", e);
         return {

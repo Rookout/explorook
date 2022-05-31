@@ -3,7 +3,7 @@ import {langServerConfigStore, typescriptLangServerExecLocation} from "./configS
 import {launchLanguageServer} from "./langaugeServer";
 
 export const launchTypescriptLanguageServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.enableJsTsServer && langServerConfigStore.tsServerInstalled) {
+    if (langServerConfigStore.enableTypescriptServer && langServerConfigStore.tsServerInstalled) {
         const args = ["--stdio"];
         launchLanguageServer(socket, {LanguageName: "Typescript", langserverCommand: typescriptLangServerExecLocation, langserverCommandArgs: args});
     }

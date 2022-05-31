@@ -30,7 +30,7 @@ export const minimumGoMinorVersion = 17;
 const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
     python: "enable-python-server",
     go: "enable-go-server",
-    jsAndTs: "enable-js-ts-server"
+    typescript: "enable-typescript-server"
 };
 
 class LangServerConfigStore {
@@ -46,7 +46,8 @@ class LangServerConfigStore {
     public tsServerInstalled: boolean = false;
     public enablePythonServer: boolean = false;
     public enableGoServer: boolean = false;
-    public enableJsTsServer: boolean = false;
+    public enableJavascriptServer: boolean = false;
+    public enableTypescriptServer: boolean = false;
     private store: IStore;
 
     constructor() {
@@ -73,10 +74,9 @@ class LangServerConfigStore {
         if (this.enablePythonServer) {
             this.installPythonLanguageServerIfNeeded();
         }
-        this.enableJsTsServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["jsAndTs"], "false") === "true" && isMacOrLinux;
-        if (this.enableJsTsServer) {
+        this.enableTypescriptServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["typescript"], "false") === "true" && isMacOrLinux;
+        if (this.enableTypescriptServer) {
             this.ensureLangServerNpmFolderExists();
-            this.installJavascriptLanguageServerIfNeeded();
             this.installTypescriptLanguageServerIfNeeded();
         }
 
@@ -180,17 +180,16 @@ class LangServerConfigStore {
     public setIsLanguageServerEnabled = (language: string, isEnabled: boolean) => {
         const languageStoreKey = LANGUAGE_STORE_ENABLE_KEYS[language];
         if (languageStoreKey) {
-            if (language === "jsAndTs") {
+            if (language === "typescript") {
                 const newIsEnabled = isEnabled && isMacOrLinux;
-                if (newIsEnabled === this.enableJsTsServer) {
+                if (newIsEnabled === this.enableTypescriptServer) {
                     return;
                 }
                 if (newIsEnabled) {
                     this.ensureLangServerNpmFolderExists();
-                    this.installJavascriptLanguageServerIfNeeded();
                     this.installTypescriptLanguageServerIfNeeded();
                 }
-                this.enableJsTsServer = newIsEnabled;
+                this.enableTypescriptServer = newIsEnabled;
                 const isEnabledString = newIsEnabled ? "true" : "false";
                 this.store.set(languageStoreKey, isEnabledString);
             } else if (language === "python") {

@@ -3,7 +3,7 @@ import {javascriptLangServerExecLocation, langServerConfigStore} from "./configS
 import {launchLanguageServer} from "./langaugeServer";
 
 export const launchJavascriptLanguageServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.enableJsTsServer && langServerConfigStore.jsServerInstalled) {
+    if (langServerConfigStore.enableJavascriptServer && langServerConfigStore.jsServerInstalled) {
         const args = ["--lsp-server"];
         launchLanguageServer(socket, {LanguageName: "Javascript", langserverCommand: javascriptLangServerExecLocation, langserverCommandArgs: args});
     }
