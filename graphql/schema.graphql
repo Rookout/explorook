@@ -131,7 +131,6 @@ type BitbucketOnPrem {
   commit(args: BitbucketInput!): BitbucketCommit
   branches(args: BitbucketInput!): [BitbucketBranch]
   file(args: BitbucketInput!): String
-
 }
 
 type BitbucketUser {

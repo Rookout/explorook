@@ -34,7 +34,6 @@ export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
 
-
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
 // Otherwise we get inconsistent results from bitbucket API with different tokens
 const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
@@ -50,22 +49,25 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
 
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
-        const templateUrl: TREE_FETCH_URL = TREE_FETCH_URL.BY_PATH;
+        const templateUrl: string =  addSlugToUrl(TREE_FETCH_URL.BY_PATH, filePath);
         // build url without filePath (Url slug needs to be "src/folder" but UrlAssembler will turn it into unicode)
         const fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
                 projectKey,
                 repoName,
-            }).toString();
+            })
+            .query({
+                at: commit
+            })
+            .toString();
 
-        const sluggedUrl = addSlugToUrl(fileTreeUrl, filePath);
 
         logger.debug("Getting files for", {projectKey, repoName, url, commit, filePath});
         let isLastPage = false;
         let start = 0;
         const files: string[] = [];
         while (!isLastPage) {
-            const res = await fetchNoCache(`${sluggedUrl}?start=${start}&limit=${FETCH_LIMIT}`, {
+            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${FETCH_LIMIT}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
