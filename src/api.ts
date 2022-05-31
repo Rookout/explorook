@@ -28,7 +28,9 @@ import {
   TMP_DIR_PREFIX
 } from "./git";
 import {
-  langServerConfigStore, minimumGoMajorVersion, minimumGoMinorVersion,
+  langServerConfigStore,
+  minimumGoMajorVersion,
+  minimumGoMinorVersion,
   minimumJavaVersionRequired,
   minimumPythonMajorVersion,
   minimumPythonMinorVersion
