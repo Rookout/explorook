@@ -98,9 +98,6 @@ export const getFileTreeByPath =
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
 
-        // if (isRepoLarge(repoName, url)) {
-        //     return await getFileTreeByPath({url, accessToken, projectKey, repoName, commit});
-        // }
         const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
             projectKey,
             repoName
