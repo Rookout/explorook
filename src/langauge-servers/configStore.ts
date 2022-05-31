@@ -28,6 +28,7 @@ export const minimumGoMajorVersion = 1;
 export const minimumGoMinorVersion = 17;
 
 const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
+    java: "enable-java-server",
     python: "enable-python-server",
     go: "enable-go-server",
     typescript: "enable-typescript-server"
@@ -44,6 +45,7 @@ class LangServerConfigStore {
     public goLocation: string;
     public jsServerInstalled: boolean = false;
     public tsServerInstalled: boolean = false;
+    public enableJavaServer: boolean = true;
     public enablePythonServer: boolean = false;
     public enableGoServer: boolean = false;
     public enableJavascriptServer: boolean = false;
@@ -55,7 +57,12 @@ class LangServerConfigStore {
         this.ensureLangServerExecFolderExists();
 
         this.jdkLocation = this.store.get("java-home-location", "");
-        if (!this.jdkLocation) {
+        this.enableJavaServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["java"], "true") === "true";
+        // Make sure the java enabled value is saved
+        if (this.enableJavaServer && this.store.get(LANGUAGE_STORE_ENABLE_KEYS["java"], "") === "") {
+            this.store.set(LANGUAGE_STORE_ENABLE_KEYS["java"], "true");
+        }
+        if (!this.jdkLocation && this.enableJavaServer) {
             this.findJdkLocation();
         }
 
@@ -80,7 +87,7 @@ class LangServerConfigStore {
             this.installTypescriptLanguageServerIfNeeded();
         }
 
-        if (!this.doesJavaJarExist()) {
+        if (this.enableJavaServer && !this.doesJavaJarExist()) {
             this.downloadJavaLangServer();
         }
     }
@@ -177,10 +184,30 @@ class LangServerConfigStore {
         }
     }
 
-    public setIsLanguageServerEnabled = (language: string, isEnabled: boolean) => {
+    public setIsLanguageServerEnabled = async (language: string, isEnabled: boolean) => {
         const languageStoreKey = LANGUAGE_STORE_ENABLE_KEYS[language];
         if (languageStoreKey) {
-            if (language === "typescript") {
+            if (language === "java") {
+                if (isEnabled === this.enableJavaServer) {
+                    return;
+                }
+                if (isEnabled) {
+                    if (!this.jdkLocation) {
+                        this.findJdkLocation();
+                    }
+                    if (!this.doesJavaJarExist()) {
+                        await this.downloadJavaLangServer();
+                        // If it was not downloaded successfully
+                        if (!this.doesJavaJarExist()) {
+                            logger.error("Failed to download java server");
+                            throw new Error("Failed to download java server");
+                        }
+                    }
+                }
+                this.enableJavaServer = isEnabled;
+                const isEnabledString = isEnabled ? "true" : "false";
+                this.store.set(languageStoreKey, isEnabledString);
+            } else if (language === "typescript") {
                 const newIsEnabled = isEnabled && isMacOrLinux;
                 if (newIsEnabled === this.enableTypescriptServer) {
                     return;

@@ -373,7 +373,7 @@ export const resolvers = {
     },
     enabledLangServers: async (parent: any): Promise<EnabledLanguageServers> => {
       return {
-        java: true,
+        java: langServerConfigStore.enableJavaServer,
         python: langServerConfigStore.enablePythonServer,
         go: langServerConfigStore.enableGoServer,
         javascript: langServerConfigStore.enableTypescriptServer,
@@ -409,9 +409,10 @@ export const resolvers = {
     },
     enableOrDisableLangServers: async (parent: any, args: { config: InputEnabledLanguageServers }): Promise<OperationStatus> => {
       try {
-        langServerConfigStore.setIsLanguageServerEnabled("python", args.config.python);
-        langServerConfigStore.setIsLanguageServerEnabled("go", args.config.go);
-        langServerConfigStore.setIsLanguageServerEnabled("typescript", args.config.typescript);
+        await langServerConfigStore.setIsLanguageServerEnabled("java", args.config.java);
+        await langServerConfigStore.setIsLanguageServerEnabled("python", args.config.python);
+        await langServerConfigStore.setIsLanguageServerEnabled("go", args.config.go);
+        await langServerConfigStore.setIsLanguageServerEnabled("typescript", args.config.typescript);
       } catch (e) {
         logger.error("Failed to enableLangServers", e);
         return {
