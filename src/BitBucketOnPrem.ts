@@ -1,7 +1,6 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
 import {notify} from "./exceptionManager";
-import {IStore} from "./explorook-store";
 import {getLogger} from "./logger";
 
 const logger = getLogger("bitbucket");
@@ -61,7 +60,7 @@ export const getFileTreeByPath =
 
         const sluggedUrl = addSlugToUrl(fileTreeUrl, filePath);
 
-        logger.debug("Getting files for", {projectKey, repoName, url, commit});
+        logger.debug("Getting files for", {projectKey, repoName, url, commit, filePath});
         let isLastPage = false;
         let start = 0;
         const files: string[] = [];
@@ -73,12 +72,12 @@ export const getFileTreeByPath =
             });
             const fileTreeResponse: any = await res.json();
 
-            const {children} = fileTreeResponse || {};
-            const {values} = children || {};
+            const { children } = fileTreeResponse || {};
+            const { values } = children || {};
             if (Array.isArray(values)) {
                 for (const item of values) {
-                    const {type, path} = item;
-                    const {name} = path || {};
+                    const { type, path } = item;
+                    const { name } = path || {};
                     files.push(`${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
                 }
             } else {
@@ -90,10 +89,10 @@ export const getFileTreeByPath =
             isLastPage = children.isLastPage;
             if (!isLastPage) {
                 start = children.nextPageStart;
-                logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
+                logger.debug("File path is paged. Getting next page", {nextPageStart: start});
             }
         }
-        return [...files];
+        return files;
     };
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
