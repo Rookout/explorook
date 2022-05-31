@@ -11,7 +11,7 @@ import {
   getFileTreeFromBitbucket,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
-  getUserFromBitbucket,
+  getUserFromBitbucket
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
@@ -340,7 +340,7 @@ export const resolvers = {
     branches: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
         getBranchesForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
-        getFileContentFromBitbucket(args),
+        getFileContentFromBitbucket(args)
   },
   LangServerConfig: {
     java: async (parent: any): Promise<JavaLangServerConfig> => {
