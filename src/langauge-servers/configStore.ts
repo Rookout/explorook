@@ -1,4 +1,5 @@
 import * as cp from "child_process";
+import { compare } from "compare-versions";
 import * as fs from "fs";
 import * as https from "https";
 import _ = require("lodash");
@@ -21,11 +22,9 @@ export const langServersNpmInstallationLocation = path.join(langServerExecFolder
 export const javascriptLangServerExecLocation = path.join(langServersNpmInstallationLocation, "node_modules", "quick-lint-js", "quick-lint-js.exe");
 export const typescriptLangServerExecLocation = path.join(
     langServersNpmInstallationLocation, "node_modules", "typescript-language-server", "lib", "cli.js");
-export const minimumJavaVersionRequired = 13;
-export const minimumPythonMajorVersion = 3;
-export const minimumPythonMinorVersion = 7;
-export const minimumGoMajorVersion = 1;
-export const minimumGoMinorVersion = 17;
+export const minimumJavaVersionRequired = "13";
+export const minimumPythonVersion = "3.7";
+export const minimumGoVersion = "1.17";
 
 const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
     java: "enable-java-server",
@@ -173,7 +172,7 @@ class LangServerConfigStore {
             return;
         }
         const javaVersion = getJavaVersion(location);
-        if (javaVersion >= minimumJavaVersionRequired) {
+        if (compare(javaVersion.toString(), minimumJavaVersionRequired, ">=")) {
             this.jdkLocation = location;
             this.store.set("java-home-location", this.jdkLocation);
             return;
@@ -254,12 +253,12 @@ class LangServerConfigStore {
             return;
         }
         const pythonVersion = getPythonVersion(location);
-        if (pythonVersion.major >= minimumPythonMajorVersion && pythonVersion.minor >= minimumPythonMinorVersion) {
+        if (compare(pythonVersion, minimumPythonVersion, ">=")) {
             this.pythonLocation = location;
             this.store.set("python-location", this.pythonLocation);
             return;
-        } else if (pythonVersion) {
-            const errorMsg = `The submitted Python version is lower than: ${minimumPythonMajorVersion}.${minimumPythonMinorVersion}`;
+        } else if (pythonVersion && pythonVersion !== "0") {
+            const errorMsg = `The submitted Python version is lower than: ${minimumPythonVersion}`;
             throw new Error(errorMsg);
         } else {
             throw new Error("This location is an invalid Python executable location");
@@ -273,12 +272,12 @@ class LangServerConfigStore {
             return;
         }
         const goVersion = getGoVersion(location);
-        if (goVersion.major >= minimumGoMajorVersion && goVersion.minor >= minimumGoMinorVersion) {
+        if (goVersion && compare(goVersion, minimumGoVersion, ">=")) {
             this.goLocation = location;
             this.store.set("go-location", this.pythonLocation);
             return;
-        } else if (goVersion) {
-            const errorMsg = `The submitted Go version is lower than: ${minimumGoMajorVersion}.${minimumGoMinorVersion}`;
+        } else if (goVersion && goVersion !== "0") {
+            const errorMsg = `The submitted Go version is lower than: ${minimumGoVersion}`;
             throw new Error(errorMsg);
         } else {
             throw new Error("This location is an invalid Go executable location");
@@ -325,7 +324,7 @@ class LangServerConfigStore {
     private findJdkLocation = () => {
         const jreLocations = findJavaHomes();
 
-        const foundJre = _.find(jreLocations, jre => jre.version >= minimumJavaVersionRequired);
+        const foundJre = _.find(jreLocations, jre => compare(jre.version.toString(), minimumJavaVersionRequired, ">="));
 
         if (foundJre) {
             this.jdkLocation = foundJre.location;
@@ -335,9 +334,7 @@ class LangServerConfigStore {
 
     private findPythonLocation = () => {
         const pythonLocations = findPythonLocation();
-
-        const foundPython = _.find(pythonLocations, python =>
-            python.majorVersion >= minimumPythonMajorVersion && python.minorVersion >= minimumPythonMinorVersion);
+        const foundPython = _.find(pythonLocations, python => compare(python.version, minimumPythonVersion, ">="));
 
         if (foundPython) {
             this.pythonLocation = foundPython.location;
@@ -348,8 +345,7 @@ class LangServerConfigStore {
     private findGoLocation = () => {
         const goLocations = findGoLocation();
 
-        const foundGo = _.find(goLocations, go =>
-            go.majorVersion >= minimumGoMajorVersion && go.minorVersion >= minimumGoMinorVersion);
+        const foundGo = _.find(goLocations, go => compare(go.version, minimumGoVersion, ">="));
 
         if (foundGo) {
             this.goLocation = foundGo.location;

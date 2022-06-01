@@ -11,8 +11,7 @@ const isLinux = process.platform.match("linux");
 
 export interface GoRuntime {
     location: string;
-    minorVersion: number;
-    majorVersion: number;
+    version: string;
 }
 
 /**
@@ -36,8 +35,7 @@ export const findGoLocation = (): GoRuntime[] => {
             if (version) {
                 goLocations.push({
                     location: goLocation,
-                    minorVersion: version.minor,
-                    majorVersion: version.major
+                    version
                 });
             } else {
                 logger.warn("Go - no go exec was found");
@@ -70,34 +68,26 @@ const fromCommonPlaces = (): string[] => {
     return goLocations;
 };
 
-const parseVersion = (version: string): {major: number, minor: number} => {
+const parseVersion = (version: string): string => {
     if (!version) {
-        return {major: 0, minor: 0};
+        return "0";
     }
 
-    let cleanVersion = version;
     if (version.startsWith("go")) {
-        cleanVersion = version.slice(2);
-    }
-
-    try {
-        const splitVersion = cleanVersion.split(".");
-        return {major: parseInt(splitVersion[0], 10), minor: parseInt(splitVersion[1], 10)};
-    } catch (e) {
-        logger.error("version cannot be parsed", { version });
-        return {major: 0, minor: 0};
+        return version.slice(2);
+    } else {
+        return "0";
     }
 };
 
-export const getGoVersion = (goExecutableFolder: string): {major: number, minor: number} => checkVersionByCLI(goExecutableFolder);
+export const getGoVersion = (goExecutableFolder: string): string => checkVersionByCLI(goExecutableFolder);
 
-const checkVersionByCLI = (goLocation: string): {major: number, minor: number} => {
+const checkVersionByCLI = (goLocation: string): string => {
     if (!goLocation) {
-        return {major: 0, minor: 0};
+        return "0";
     }
 
-
-    let stdout = "";
+    let stdout = "0";
     try {
         stdout = cp.execFileSync(goLocation, ["version"]);
     } catch (e) {
@@ -106,8 +96,9 @@ const checkVersionByCLI = (goLocation: string): {major: number, minor: number} =
 
     const trimmedOutput = _.trim(stdout);
     const splitVersion = _.split(trimmedOutput, " ");
+    // Separates it into: ["go", "version", "go<version>"]
     if (_.isEmpty(splitVersion)) {
-        return {major: 0, minor: 0};
+        return "0";
     }
     return parseVersion(splitVersion[2]);
 };

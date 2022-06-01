@@ -20,16 +20,10 @@ interface JavaLangServerConfig {
   jdkMinimumVersionRequired?: string;
 }
 
-interface PythonLangServerConfig {
-  pythonExecLocation: string;
-  pythonMinimumMajorVersionRequired?: number;
-  pythonMinimumMinorVersionRequired?: number;
-}
-
-interface GoLangServerConfig {
-  goExecLocation: string;
-  goMinimumMajorVersionRequired?: number;
-  goMinimumMinorVersionRequired?: number;
+interface LangServerConfig {
+  executableLocation: string;
+  minVersionRequired?: string;
+  maxVersionRequired?: string;
 }
 
 interface InputJavaLangServerConfig {
@@ -37,9 +31,9 @@ interface InputJavaLangServerConfig {
 }
 
 interface LangServerConfigs {
-  java?: JavaLangServerConfig;
-  python?: PythonLangServerConfig;
-  go?: GoLangServerConfig;
+  java?: LangServerConfig;
+  python?: LangServerConfig;
+  go?: LangServerConfig;
 }
 
 interface EnabledLanguageServers {

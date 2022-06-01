@@ -30,11 +30,9 @@ import {
 } from "./git";
 import {
   langServerConfigStore,
-  minimumGoMajorVersion,
-  minimumGoMinorVersion,
+  minimumGoVersion,
   minimumJavaVersionRequired,
-  minimumPythonMajorVersion,
-  minimumPythonMinorVersion
+  minimumPythonVersion
 } from "./langauge-servers/configStore";
 import Log from "./logData";
 import {getLogger} from "./logger";
@@ -354,23 +352,24 @@ export const resolvers = {
     java: async (parent: any): Promise<JavaLangServerConfig> => {
       return {
         jdkLocation: langServerConfigStore.jdkLocation,
-        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() };
+        jdkMinimumVersionRequired: minimumJavaVersionRequired };
     },
     allLangServerConfigs: async (parent: any): Promise<LangServerConfigs> => {
       return {
         java: {
-          jdkLocation: langServerConfigStore.jdkLocation,
-          jdkMinimumVersionRequired: minimumJavaVersionRequired.toString()
+          executableLocation: langServerConfigStore.jdkLocation,
+          minVersionRequired: minimumJavaVersionRequired,
+          maxVersionRequired: ""
         },
         python: {
-          pythonExecLocation: langServerConfigStore.pythonLocation,
-          pythonMinimumMajorVersionRequired: minimumPythonMajorVersion,
-          pythonMinimumMinorVersionRequired: minimumPythonMinorVersion
+          executableLocation: langServerConfigStore.pythonLocation,
+          minVersionRequired: minimumPythonVersion,
+          maxVersionRequired: ""
         },
         go: {
-          goExecLocation: langServerConfigStore.goLocation,
-          goMinimumMajorVersionRequired: minimumGoMajorVersion,
-          goMinimumMinorVersionRequired: minimumGoMinorVersion
+          executableLocation: langServerConfigStore.goLocation,
+          minVersionRequired: minimumGoVersion,
+          maxVersionRequired: ""
         }
       };
     },

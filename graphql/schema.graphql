@@ -83,7 +83,7 @@ input SettingsInput {
 
 type LangServerConfig {
   java: javaLangServerConfig @deprecated(reason: "Use allLangServerConfigs")
-  allLangServerConfigs: langServerConfigs
+  allLangServerConfigs: LanguageServerConfigs
   enabledLangServers: EnabledLangServers
 }
 
@@ -92,22 +92,16 @@ type javaLangServerConfig {
   jdkMinimumVersionRequired: String
 }
 
-type pythonLangServerConfig {
-  pythonExecLocation: String
-  pythonMinimumMajorVersionRequired: Int
-  pythonMinimumMinorVersionRequired: Int
+type LangServerConfig {
+  executableLocation: String
+  minVersionRequired: String
+  maxVersionRequired: String
 }
 
-type goLangServerConfig {
-  goExecLocation: String
-  goMinimumMajorVersionRequired: Int
-  goMinimumMinorVersionRequired: Int
-}
-
-type langServerConfigs {
-  java: javaLangServerConfig
-  python: pythonLangServerConfig
-  go: goLangServerConfig
+type LanguageServerConfigs {
+  java: LangServerConfig
+  python: LangServerConfig
+  go: LangServerConfig
 }
 
 type EnabledLangServers {

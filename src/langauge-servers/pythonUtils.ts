@@ -15,8 +15,7 @@ export const PIP_FILENAME = isWindows ? "pip3.exe" : "pip3";
 
 export interface PythonRuntime {
     location: string;
-    minorVersion: number;
-    majorVersion: number;
+    version: string;
 }
 
 /**
@@ -41,8 +40,7 @@ export const findPythonLocation = (): PythonRuntime[] => {
             if (version) {
                 pythonLocations.push({
                     location: pythonLocation,
-                    minorVersion: version.minor,
-                    majorVersion: version.major
+                    version
                 });
             } else {
                 logger.warn("Python - no python exec was found");
@@ -91,25 +89,11 @@ const fromCommonPlaces = (): string[] => {
     return pythonLocations;
 };
 
-const parseVersion = (version: string): {major: number, minor: number} => {
-    if (!version) {
-        return {major: 0, minor: 0};
-    }
+export const getPythonVersion = (pythonExecutableFolder: string): string => checkVersionByCLI(pythonExecutableFolder);
 
-    try {
-        const splitVersion = version.split(".");
-        return {major: parseInt(splitVersion[0], 10), minor: parseInt(splitVersion[1], 10)};
-    } catch (e) {
-        logger.error("version cannot be parsed", { version });
-        return {major: 0, minor: 0};
-    }
-};
-
-export const getPythonVersion = (pythonExecutableFolder: string): {major: number, minor: number} => checkVersionByCLI(pythonExecutableFolder);
-
-const checkVersionByCLI = (pythonLocation: string): {major: number, minor: number} => {
+const checkVersionByCLI = (pythonLocation: string): string => {
     if (!pythonLocation) {
-        return {major: 0, minor: 0};
+        return "0";
     }
 
     const pythonExecutable = path.join(pythonLocation, PYTHON_FILENAME);
@@ -122,9 +106,10 @@ const checkVersionByCLI = (pythonLocation: string): {major: number, minor: numbe
     }
 
     const trimmedOutput = _.trim(stdout);
+    // Separates it into: ["Python", "<version>"]
     const splitVersion = _.split(trimmedOutput, " ");
     if (_.isEmpty(splitVersion)) {
-        return {major: 0, minor: 0};
+        return "0";
     }
-    return parseVersion(splitVersion[1]);
+    return splitVersion[1];
 };
