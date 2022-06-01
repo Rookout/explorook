@@ -46,7 +46,6 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
         const templateUrl: string = addSlugToUrl('rest/api/1.0/projects/:projectKey/repos/:repoName/browse', filePath);
-        // build url without filePath (Url slug needs to be "src/folder" but UrlAssembler will turn it into unicode)
         const fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
                 projectKey,
