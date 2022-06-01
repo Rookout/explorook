@@ -349,11 +349,6 @@ export const resolvers = {
         getFileContentFromBitbucket(args)
   },
   LangServerConfig: {
-    java: async (parent: any): Promise<JavaLangServerConfig> => {
-      return {
-        jdkLocation: langServerConfigStore.jdkLocation,
-        jdkMinimumVersionRequired: minimumJavaVersionRequired };
-    },
     allLangServerConfigs: async (parent: any): Promise<LangServerConfigs> => {
       return {
         java: {
@@ -384,17 +379,6 @@ export const resolvers = {
     }
   },
   LangServerOps: {
-    setJavaLangServerConfig: async (parent: any, args: { config: InputJavaLangServerConfig }): Promise<OperationStatus> => {
-      try {
-        langServerConfigStore.setJdkLocation(args.config.jdkLocation);
-      } catch (e) {
-        logger.error("Failed to setLangServerConfig", e);
-        return {
-          isSuccess: false,
-          reason: e.message };
-      }
-      return { isSuccess: true };
-    },
     setLangServerConfig: async (parent: any, args: { config: InputLangServerConfigs }): Promise<OperationStatus> => {
       try {
         langServerConfigStore.setJdkLocation(args.config.jdkLocation);

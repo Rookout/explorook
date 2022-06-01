@@ -82,14 +82,8 @@ input SettingsInput {
 }
 
 type LangServerConfig {
-  java: javaLangServerConfig @deprecated(reason: "Use allLangServerConfigs")
   allLangServerConfigs: LanguageServerConfigs
   enabledLangServers: EnabledLangServers
-}
-
-type javaLangServerConfig {
-  jdkLocation: String
-  jdkMinimumVersionRequired: String
 }
 
 type LangServerConfig {
@@ -132,13 +126,8 @@ type Mutation {
 }
 
 type LangServerOps {
-  setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus! @deprecated(reason: "Use setLangServerConfig")
   setLangServerConfig(config: LangServerConfigInput): OperationStatus!
   enableOrDisableLangServers(config: EnabledLanguageServersInput): OperationStatus!
-}
-
-input JavaLangServerConfigInput {
-  jdkLocation: String
 }
 
 input LangServerConfigInput {
