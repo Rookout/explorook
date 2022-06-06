@@ -1,3 +1,4 @@
+import { initialize as initElectronRemote } from "@electron/remote/main";
 import Analytics = require("analytics-node");
 import {
   app,
@@ -26,6 +27,8 @@ import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
 autoUpdater.logger = new Logger();
 log.transports.console.level = "warn";
+// TODO enable webContents using @electron/remote/main after electron v14 and after creating its BrowserWindow
+initElectronRemote();
 
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());

@@ -4,9 +4,8 @@ import './index.css';
 import { App } from './App';
 import registerServiceWorker from './registerServiceWorker';
 import bugsnag from '@bugsnag/js';
-import { ipcRenderer, remote } from 'electron';
-
-const app = remote.app;
+import { ipcRenderer } from 'electron';
+import { app } from '@electron/remote';
 
 // a request will be emitted from Footer.js
 ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {

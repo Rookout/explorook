@@ -1,11 +1,12 @@
 import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
 import {getStoreSafe} from "./explorook-store";
 const bugsnag = require("@bugsnag/js");
-const electron = require('electron');
+const electron = require("electron");
+const electronRemote = require("@electron/remote");
 let app: Electron.App;
 // check if not running in headless mode (plain nodejs process)
-if (typeof electron !== 'string') {
-  app = electron.app || electron.remote.app;
+if (typeof electron !== "string") {
+  app = electron.app || electronRemote.app;
 }
 
 let exceptionManagerInstance: Client;
@@ -18,7 +19,7 @@ Object.freeze(ignoredErrors); // prevents anyone from changing the object
 
 export const initExceptionManager = (getUserID: () => string) => {
     if (!exceptionManagerInstance && app) {
-      const releaseStage = app.isPackaged ? 'production' : 'development';
+      const releaseStage = app.isPackaged ? "production" : "development";
       exceptionManagerInstance = bugsnag({
         onUncaughtException: (err: any) => {
           // override default behaviour to not crash

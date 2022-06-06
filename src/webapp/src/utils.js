@@ -1,4 +1,5 @@
-import { ipcRenderer, remote } from "electron";
+import { ipcRenderer } from "electron";
+import { getCurrentWindow, app } from '@electron/remote';
 
 export const copyText = function(text) {
     var el = document.createElement("textarea");
@@ -11,9 +12,9 @@ export const copyText = function(text) {
 }
 
 export const closeWindow = () => {
-    const w = remote.getCurrentWindow();
+    const w = getCurrentWindow();
     if (window.process.platform.match("darwin")) {
-        remote.app.dock.hide();
+        app.dock.hide();
     }
     w.hide();
     ipcRenderer.send("hidden");
