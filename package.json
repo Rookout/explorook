@@ -84,7 +84,6 @@
   "license": "MIT",
   "devDependencies": {
     "@bugsnag/core": "6.5.0",
-    "@electron/remote": "2.0.8",
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
     "@playlyfe/gql": "^2.6.0",
@@ -93,6 +92,7 @@
     "@types/aws-lambda": "^8.10.17",
     "@types/body-parser": "^1.17.0",
     "@types/lodash": "^4.14.109",
+    "@types/node-fetch": "^2.6.1",
     "@types/ws": "^5.1.2",
     "aws-lambda": "^1.0.5",
     "copyfiles": "^2.3.0",
@@ -100,7 +100,7 @@
     "electron": "12.2.3",
     "electron-builder": "23.1.0",
     "electron-notarize": "^1.1.0",
-    "graphql-middleware": "^3.0.2",
+    "graphql-middleware": "6.1.28",
     "node-fetch": "^2.6.7",
     "ts-loader": "^6.0.4",
     "tslint": "^5.10.0",
@@ -112,10 +112,11 @@
   },
   "dependencies": {
     "@bugsnag/js": "6.5.2",
+    "@electron/remote": "2.0.8",
+    "@graphql-tools/schema": "^8.3.13",
     "@types/valid-url": "^1.0.2",
     "analytics-node": "^6.0.0",
-    "apollo-server-core": "^2.19.1",
-    "apollo-server-express": "^2.19.1",
+    "apollo-server-express": "3.8.2",
     "args-parser": "^1.1.0",
     "auto-launch": "^5.0.5",
     "body-parser": "^1.19.0",
@@ -150,7 +151,6 @@
   },
   "resolutions": {
     "@playlyfe/gql/lodash": "^4.17.15",
-    "graphql-tools": "4.0.7",
     "graphql-constraint-directive/validator": "^13.6.0"
   }
 }

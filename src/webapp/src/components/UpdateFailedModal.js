@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { ipcRenderer } from "electron";
-import { getCurrentWindow, BrowserWindow } from '@electron/remote';
+// import * as remote from '@electron/remote';
+import { BrowserWindow } from '@electron/remote';
 import { Confirm } from "./ConfirmModal";
 
 const TWO_DAYS = (1000 * 60 * 60 * 48);
@@ -36,13 +37,14 @@ export const UpdateFailedModal = () => {
 
     const onPopDialogRequested = () => {
         setManualDownload(true);
-        const window = getCurrentWindow();
+        const window = require('@electron/remote').getCurrentWindow();
         if (!window.isVisible()) {
             window.show();
         }
     }
 
     const openDownloadAppLink = () => {
+        // const window = new remote.BrowserWindow();
         const window = new BrowserWindow();
         window.loadURL(downloadUrl);
         setManualDownload(false);
@@ -50,7 +52,7 @@ export const UpdateFailedModal = () => {
     }
 
     const closeDialog = () => {
-        const window = getCurrentWindow();
+        const window = require('@electron/remote').getCurrentWindow();
         setManualDownload(false);
         window.hide();
     }

@@ -1,10 +1,10 @@
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-express";
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import * as express from "express";
 import { readFileSync } from "fs";
 import { applyMiddleware } from "graphql-middleware";
-import { makeExecutableSchema } from "graphql-tools";
 import * as http from "http";
 import * as net from "net";
 import { join } from "path";
@@ -78,7 +78,6 @@ export const start = (options: StartOptions) => {
       updateGitLoadingState: settings.updateGitLoadingState
     }),
     schema: schemaWithMiddleware,
-    subscriptions: false,
     introspection: true,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {

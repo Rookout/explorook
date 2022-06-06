@@ -2,11 +2,14 @@ import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
 import {getStoreSafe} from "./explorook-store";
 const bugsnag = require("@bugsnag/js");
 const electron = require("electron");
-const electronRemote = require("@electron/remote");
+const remote = process.type === "browser"
+    ? require("electron")
+    : require("@electron/remote");
+
 let app: Electron.App;
 // check if not running in headless mode (plain nodejs process)
 if (typeof electron !== "string") {
-  app = electron.app || electronRemote.app;
+  app = electron.app || remote.app;
 }
 
 let exceptionManagerInstance: Client;

@@ -5,7 +5,6 @@ import path from 'path'
 import fs from 'fs'
 import * as Store from 'electron-store'
 import { Confirm } from './ConfirmModal'
-import { getCurrentWindow, dialog, app } from '@electron/remote';
 
 const store = new Store({ name: 'explorook' })
 
@@ -23,7 +22,7 @@ export const ReposList = () => {
   }, [])
 
   const onPopDialogRequested = async () => {
-    const win = getCurrentWindow()
+    const win = require('@electron/remote').getCurrentWindow()
     let reHide = false
     if (!win.isVisible()) {
       win.show()
@@ -32,7 +31,7 @@ export const ReposList = () => {
     await onAddClicked()
     if (!reHide) return
     if (window.process.platform.match('darwin')) {
-      app.dock.hide()
+      require('@electron/remote').app.dock.hide()
     }
     win.hide()
   }
@@ -48,8 +47,8 @@ export const ReposList = () => {
   }
 
   const onAddClicked = async () => {
-    const win = getCurrentWindow()
-    const { filePaths } = await dialog.showOpenDialog(win, {
+    const win = require('@electron/remote').getCurrentWindow()
+    const { filePaths } = await require('@electron/remote').dialog.showOpenDialog(win, {
       properties: ['openDirectory', 'multiSelections'],
     })
 

@@ -25,10 +25,10 @@ import * as os from "os";
 const YAML = require("yaml");
 import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
-autoUpdater.logger = new Logger();
-log.transports.console.level = "warn";
 // TODO enable webContents using @electron/remote/main after electron v14 and after creating its BrowserWindow
 initElectronRemote();
+autoUpdater.logger = new Logger();
+log.transports.console.level = "warn";
 
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
@@ -358,7 +358,7 @@ function createWindows() {
   // we don't want to open a window on machine startup (only tray pops)
   // const startOptions = app.getLoginItemSettings();
   // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
-  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true, enableRemoteModule: true } });
+  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true, enableRemoteModule: true, contextIsolation: false } });
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
     createMainWindow(indexWorker, !firstTimeLaunch);
   });
@@ -381,7 +381,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     frame: false,
     icon,
     show: !hidden,
-    webPreferences: { nodeIntegration: true, enableRemoteModule: true }
+    webPreferences: { nodeIntegration: true, enableRemoteModule: true, contextIsolation: false }
   });
   if (signedEula) {
     startGraphqlServer();
