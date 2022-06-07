@@ -6,7 +6,6 @@ import { Menu, MenuItem } from "@material-ui/core";
 import { closeWindow } from "../utils";
 import * as Store from "electron-store";
 
-// const EXPLOROOK_VERSION = remote.app.getVersion();
 const EXPLOROOK_VERSION = app.getVersion();
 
 export const Header = () => {
