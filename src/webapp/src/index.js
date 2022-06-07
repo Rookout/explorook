@@ -5,6 +5,7 @@ import { App } from './App';
 import registerServiceWorker from './registerServiceWorker';
 import bugsnag from '@bugsnag/js';
 import { ipcRenderer } from 'electron';
+import { app } from '@electron/remote';
 
 // a request will be emitted from Footer.js
 ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
@@ -16,11 +17,11 @@ ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
             // https://docs.bugsnag.com/platforms/javascript/configuration-options/#onuncaughtexception-node-js-only
             console.log(err)
           },
-          projectRoot: require('@electron/remote').app.getAppPath(),
+          projectRoot: app.getAppPath(),
           apiKey: '6e673fda179162f48a2c6b5d159552d2',
           appType: 'explorook-react',
-          appVersion: require('@electron/remote').app.getVersion(),
-          releaseStage: require('@electron/remote').app.isPackaged ? 'production' : 'development',
+          appVersion: app.getVersion(),
+          releaseStage: app.isPackaged ? 'production' : 'development',
           beforeSend: report => {
             report.updateMetaData("user", {
               userID: ipcRenderer.sendSync("get-user-id")

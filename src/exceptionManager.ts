@@ -3,7 +3,7 @@ import {getStoreSafe} from "./explorook-store";
 const bugsnag = require("@bugsnag/js");
 const electron = require("electron");
 const remote = process.type === "browser"
-    ? require("electron")
+    ? electron
     : require("@electron/remote");
 
 let app: Electron.App;

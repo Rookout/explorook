@@ -1,10 +1,10 @@
 import { ipcRenderer } from "electron";
-// import * as remote from '@electron/remote';
+import { app, getCurrentWindow } from "@electron/remote";
 
 export const closeWindow = () => {
-    const w = require('@electron/remote').getCurrentWindow();
+    const w = getCurrentWindow();
     if (window.process.platform.match("darwin")) {
-        require('@electron/remote').app.dock.hide();
+        app.dock.hide();
     }
     w.hide();
     ipcRenderer.send("hidden");
