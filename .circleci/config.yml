@@ -67,7 +67,7 @@ jobs:
           command: sh ./validate_version.sh
   publish_release_notes:
     docker:
-      - image: node:14.18.0
+      - image: node:16.14.2
     steps:
       - checkout
       - run:
