@@ -174,7 +174,7 @@ const checkVersionByCLI = (javaHome: string): number => {
     const javaBin = path.join(javaHome, "bin", JAVA_FILENAME);
     let stdout = ""
     try{
-        stdout = cp.execFileSync(javaBin, ["-version"])
+        stdout = cp.execFileSync(javaBin, ["-version"], {encoding: "utf-8"})
     } catch (e) {
         throw new Error("Java home location is invalid");
     }
