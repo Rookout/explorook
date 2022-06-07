@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.8.38",
+  "version": "1.8.39",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -33,7 +33,9 @@
     },
     "protocols": {
       "name": "rookout",
-      "schemes": ["rookout"]
+      "schemes": [
+        "rookout"
+      ]
     },
     "files": [
       "dist",
@@ -46,7 +48,9 @@
     "linux": {
       "target": "appImage",
       "category": "Utility",
-      "mimeTypes": ["x-scheme-handler/rookout"],
+      "mimeTypes": [
+        "x-scheme-handler/rookout"
+      ],
       "desktop": {
         "exec": "rookout %u"
       }
