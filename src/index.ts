@@ -366,15 +366,21 @@ function createWindows() {
   // we don't want to open a window on machine startup (only tray pops)
   // const startOptions = app.getLoginItemSettings();
   // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
-  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true, contextIsolation: false } });
+  indexWorker = new BrowserWindow({
+    width: 400,
+    height: 400,
+    show: !!process.env.development,
+    webPreferences: { nodeIntegration: true, contextIsolation: false }
+  });
   remoteEnable(indexWorker.webContents);
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
     createMainWindow(indexWorker, !firstTimeLaunch);
   });
-  indexWorker.loadFile(path.join(__dirname, "index-worker.html"));
-  if (process.env.development || process.env.ELECTRON_ENV === "debug") {
-    indexWorker.webContents.openDevTools();
-  }
+  indexWorker.loadFile(path.join(__dirname, "index-worker.html")).finally(() => {
+    if (process.env.development || process.env.ELECTRON_ENV === "debug") {
+      indexWorker.webContents.openDevTools();
+    }
+  });
 }
 
 function startGraphqlServer() {
