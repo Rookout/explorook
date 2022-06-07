@@ -8,6 +8,7 @@ import {
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
   getFileContentFromBitbucket,
+  getFileTreeByPath,
   getFileTreeFromBitbucket,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
@@ -329,6 +330,8 @@ export const resolvers = {
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
       getFileTreeFromBitbucket(args),
+    fileTreeByPath: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
+        getFileTreeByPath(args),
     user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),
     projects: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getProjectsFromBitbucket(args),
     repos: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getReposForProjectFromBitbucket(args),

@@ -123,6 +123,7 @@ enum OnPremSourceProvider {
 
 type BitbucketOnPrem {
   fileTree(args: BitbucketInput!): [String]
+  fileTreeByPath(args: BitbucketInput!): [String]
   user(args: BitbucketInput!): BitbucketUser
   projects(args: BitbucketInput!): [BitbucketProject]
   repos(args: BitbucketInput!): [BitbucketRepo]
