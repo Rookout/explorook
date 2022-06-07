@@ -57,7 +57,7 @@ const corsOptions = {
   origin: corsDomainWhitelist
 };
 
-export const start = (options: StartOptions) => {
+export const start = async (options: StartOptions) => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
   const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: "utf8" });
@@ -71,6 +71,8 @@ export const start = (options: StartOptions) => {
   const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal);
 
   const app = express();
+  const httpServer = http.createServer(app);
+
   const apolloServer = new ApolloServer({
     context: () => ({
       onAddRepoRequest: settings.onAddRepoRequest,
@@ -101,9 +103,10 @@ export const start = (options: StartOptions) => {
     app.use(authorizationMiddleware(settings.accessToken));
   }
 
+  await apolloServer.start();
   apolloServer.applyMiddleware({ app, path: "/" });
+  httpServer.listen(settings.port);
 
-  const httpServer = http.createServer(app).listen(settings.port);
 
   startWebSocketServer(httpServer);
 
