@@ -18,6 +18,12 @@ const config = {
         test: /\.ts?$/,
         use: 'ts-loader',
         exclude: /node_modules/
+      },
+      // Solves a graphql-tools related issue: https://github.com/ardatan/graphql-tools/issues/3325
+      {
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: "javascript/auto"
       }
     ]
   },

@@ -4,9 +4,8 @@ import './index.css';
 import { App } from './App';
 import registerServiceWorker from './registerServiceWorker';
 import bugsnag from '@bugsnag/js';
-import { ipcRenderer, remote } from 'electron';
-
-const app = remote.app;
+import { ipcRenderer } from 'electron';
+import { app } from '@electron/remote';
 
 // a request will be emitted from Footer.js
 ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
@@ -22,7 +21,7 @@ ipcRenderer.once("exception-manager-enabled-changed", (event, enabled) => {
           apiKey: '6e673fda179162f48a2c6b5d159552d2',
           appType: 'explorook-react',
           appVersion: app.getVersion(),
-          releaseStage:  app.isPackaged ? 'production' : 'development',
+          releaseStage: app.isPackaged ? 'production' : 'development',
           beforeSend: report => {
             report.updateMetaData("user", {
               userID: ipcRenderer.sendSync("get-user-id")

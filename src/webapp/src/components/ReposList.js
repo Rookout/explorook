@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import * as igit from 'isomorphic-git'
-import { ipcRenderer, remote } from 'electron'
+import { ipcRenderer } from 'electron'
 import path from 'path'
 import fs from 'fs'
 import * as Store from 'electron-store'
+import { app, dialog, getCurrentWindow } from '@electron/remote'
 import { Confirm } from './ConfirmModal'
-
-const dialog = remote.dialog
 
 const store = new Store({ name: 'explorook' })
 
@@ -24,7 +23,7 @@ export const ReposList = () => {
   }, [])
 
   const onPopDialogRequested = async () => {
-    const win = remote.getCurrentWindow()
+    const win = getCurrentWindow()
     let reHide = false
     if (!win.isVisible()) {
       win.show()
@@ -33,7 +32,7 @@ export const ReposList = () => {
     await onAddClicked()
     if (!reHide) return
     if (window.process.platform.match('darwin')) {
-      remote.app.dock.hide()
+      app.dock.hide()
     }
     win.hide()
   }
@@ -49,7 +48,7 @@ export const ReposList = () => {
   }
 
   const onAddClicked = async () => {
-    const win = remote.getCurrentWindow()
+    const win = getCurrentWindow()
     const { filePaths } = await dialog.showOpenDialog(win, {
       properties: ['openDirectory', 'multiSelections'],
     })

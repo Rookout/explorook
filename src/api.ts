@@ -1,4 +1,3 @@
-import { remote } from "electron";
 import fs = require("fs");
 import _ = require("lodash");
 import {posix} from "path";
@@ -312,10 +311,10 @@ export const resolvers = {
       return {};
     },
     appVersion: async (parent: any): Promise<string> => {
-      if (process.env.development) {
+      if (process.env.development || process.env.headless_mode === "true") {
         return require("../package.json")?.version;
-      } else if (remote) {
-        return remote.app.getVersion();
+      } else if (require("@electron/remote")?.app) {
+        return require("@electron/remote").app.getVersion();
       } else {
         // remote should exist. but sometimes it's undefined and breaks tests for some reason, so adding a temp fallback
         return require("../package.json")?.version || "1.8.34";

@@ -1,19 +1,10 @@
-import { ipcRenderer, remote } from "electron";
-
-export const copyText = function(text) {
-    var el = document.createElement("textarea");
-    el.innerText= text;
-    el.setAttribute("visibility", "hidden");
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand("copy");
-    el.remove();
-}
+import { ipcRenderer } from "electron";
+import { app, getCurrentWindow } from "@electron/remote";
 
 export const closeWindow = () => {
-    const w = remote.getCurrentWindow();
+    const w = getCurrentWindow();
     if (window.process.platform.match("darwin")) {
-        remote.app.dock.hide();
+        app.dock.hide();
     }
     w.hide();
     ipcRenderer.send("hidden");

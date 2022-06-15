@@ -1,3 +1,7 @@
+import {
+  enable as remoteEnable,
+  initialize as initElectronRemote
+} from "@electron/remote/main";
 import Analytics = require("analytics-node");
 import {
   app,
@@ -11,6 +15,7 @@ import {
   Tray
 } from "electron";
 import * as log from "electron-log";
+import * as Store from "electron-store";
 import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
 import { userInfo } from "os";
@@ -24,8 +29,10 @@ import * as os from "os";
 const YAML = require("yaml");
 import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
+initElectronRemote();
 autoUpdater.logger = new Logger();
 log.transports.console.level = "warn";
+Store.initRenderer();
 
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
@@ -238,8 +245,8 @@ function main() {
   });
   userId = store.getOrCreate("user-id", uuidv4());
   userSite = store.getOrCreate("user-site", "default");
-  dataCollectionEnabled = store.get("sentry-enabled", true);
-  signedEula = store.get("has-signed-eula", false);
+  dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
+  signedEula = Boolean(store.get("has-signed-eula", false));
   if (signedEula && (dataCollectionEnabled || process.env.development)) {
     initExceptionManager(() => userId);
     initAnalytics();
@@ -319,6 +326,10 @@ async function getPlatformDownloadLink(verNum: string) {
   const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${ymlFile}`;
   const response = await fetch(versionUrl);
   const availableVersions = await response.text();
+  /*
+  TODO Fix bug where files is undefined:
+  Trace: autoUpdater error: TypeError: Cannot read properties of undefined (reading 'map')
+  */
   const fileNames = YAML.parse(availableVersions).files.map((file: { url: string, sha512: string, size: number }) => file.url);
   const fileLink = fileNames.find((fileName: string) => fileName.includes(fileExt));
   return `https://get.rookout.com/explorook/${osName}/${fileLink}`;
@@ -355,14 +366,21 @@ function createWindows() {
   // we don't want to open a window on machine startup (only tray pops)
   // const startOptions = app.getLoginItemSettings();
   // const hidden = startOptions.wasOpenedAsHidden || _.includes(process.argv, "--hidden");
-  indexWorker = new BrowserWindow({ width: 400, height: 400, show: !!process.env.development, webPreferences: { nodeIntegration: true, enableRemoteModule: true } });
+  indexWorker = new BrowserWindow({
+    width: 400,
+    height: 400,
+    show: !!process.env.development,
+    webPreferences: { nodeIntegration: true, contextIsolation: false }
+  });
+  remoteEnable(indexWorker.webContents);
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
     createMainWindow(indexWorker, !firstTimeLaunch);
   });
-  indexWorker.loadFile(path.join(__dirname, "index-worker.html"));
-  if (process.env.development || process.env.ELECTRON_ENV === "debug") {
-    indexWorker.webContents.openDevTools();
-  }
+  indexWorker.loadFile(path.join(__dirname, "index-worker.html")).finally(() => {
+    if (process.env.development || process.env.ELECTRON_ENV === "debug") {
+      indexWorker.webContents.openDevTools();
+    }
+  });
 }
 
 function startGraphqlServer() {
@@ -378,8 +396,9 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     frame: false,
     icon,
     show: !hidden,
-    webPreferences: { nodeIntegration: true, enableRemoteModule: true }
+    webPreferences: { nodeIntegration: true, contextIsolation: false }
   });
+  remoteEnable(mainWindow.webContents);
   if (signedEula) {
     startGraphqlServer();
   }
