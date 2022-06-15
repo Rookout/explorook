@@ -2,7 +2,7 @@ import { Client, INotifyOpts, NotifiableError } from "@bugsnag/core";
 import {getStoreSafe} from "./explorook-store";
 const bugsnag = require("@bugsnag/js");
 const electron = require("electron");
-const remote = process.type === "browser"
+const remote = process.type === "browser" || process.env.headless_mode === "true"
     ? electron
     : require("@electron/remote");
 

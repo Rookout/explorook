@@ -311,7 +311,7 @@ export const resolvers = {
       return {};
     },
     appVersion: async (parent: any): Promise<string> => {
-      if (process.env.development) {
+      if (process.env.development || process.env.headless_mode === "true") {
         return require("../package.json")?.version;
       } else if (require("@electron/remote")?.app) {
         return require("@electron/remote").app.getVersion();
