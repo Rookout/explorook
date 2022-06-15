@@ -47,7 +47,7 @@ jobs:
             # install dependencies
             yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
-            echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
+            echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
