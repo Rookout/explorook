@@ -40,9 +40,9 @@ type Query {
     remoteOrigin: String
     repoId: String!
     path: String!
-  ): String
-  settings: Settings!
-  canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]!
+  ): String @deprecated(reason: "Unused")
+  settings: Settings! @deprecated(reason: "Unused")
+  canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]! @deprecated(reason: "Unused")
   BitbucketOnPrem: BitbucketOnPrem!
   langServerConfig: LangServerConfig!
   recentLogs: [Log]!
@@ -103,8 +103,8 @@ input GitSource {
 type Mutation {
   addRepository(fullpath: String): Boolean
   removeRepository(repoId: String!): Boolean
-  getGitRepo(sources: [GitSource]!): OperationStatus!
-  settings(settings: SettingsInput): Settings!
+  getGitRepo(sources: [GitSource]!): OperationStatus! @deprecated(reason: "Unused")
+  settings(settings: SettingsInput): Settings! @deprecated(reason: "Unused")
   userEmail(userEmail: String): Boolean
   langServerConfig: LangServerOps!
 }
