@@ -9,6 +9,7 @@ import {
   getFileContentFromBitbucket,
   getFileTreeByPath,
   getFileTreeFromBitbucket,
+  getFileTreePageLimit,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
   getUserFromBitbucket
@@ -329,6 +330,8 @@ export const resolvers = {
   BitbucketOnPrem: {
     fileTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
       getFileTreeFromBitbucket(args),
+    fileTreePageLimit: async (parent: any, { args }: BitBucketOnPremInput): Promise<number> =>
+      getFileTreePageLimit(args),
     fileTreeByPath: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
         getFileTreeByPath(args),
     user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),

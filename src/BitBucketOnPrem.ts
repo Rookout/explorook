@@ -9,6 +9,10 @@ const fetch = isNode() ? require('node-fetch') : window.fetch;
 // So, BitBucket can really perform well when asked for large datasets.
 // This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
 const FETCH_LIMIT = 30000;
+// Used to check the bitbucket instance's configured limit in comparison to the default limit, which is 100K
+// Documentation: https://confluence.atlassian.com/bitbucketserver070/bitbucket-server-config-properties-996644784.html
+// Configuration's name: page.max.directory.recursive.children
+const DEFAULT_TREE_FETCH_LIMIT = 100_000;
 
 enum FILE_TYPE {
     DIRECTORY = 'DIRECTORY',
@@ -129,6 +133,27 @@ export const getFileTreeFromBitbucket =
         }
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
         return files;
+    };
+
+export const getFileTreePageLimit =
+    async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem): Promise<number> => {
+        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+            projectKey,
+            repoName
+        }).query({
+            limit: DEFAULT_TREE_FETCH_LIMIT
+        }).toString();
+
+        logger.debug("Getting Bitbucket server's limit for tree fetching using", { fileTreeUrl });
+        const res = await fetchNoCache(fileTreeUrl, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const data: any = await res.json();
+        const limit = data.limit;
+        logger.debug("Got Bitbucket server's limit for tree fetching", { limit });
+        return limit;
     };
 
 export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
