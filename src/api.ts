@@ -3,10 +3,12 @@ import _ = require("lodash");
 import {posix} from "path";
 import {
   BitBucketOnPremInput,
+  BitbucketOnPremRepoProps,
   BitbucketOnPremTreeSavedInput,
   getBranchesForRepoFromBitbucket,
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
+  getCurrentlySavedRepo,
   getFileContentFromBitbucket,
   getFileTreeByPath,
   getFileTreeFromBitbucket,
@@ -342,6 +344,8 @@ export const resolvers = {
         getIsTreeSaved(args),
     searchTree: async (parent: any, { args }: BitbucketOnPremTreeSavedInput): Promise<string[]> =>
         searchBitbucketTree(args),
+    repoBeingCached: async (parent: any): Promise<BitbucketOnPremRepoProps> =>
+        getCurrentlySavedRepo(),
     fileTreeByPath: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
         getFileTreeByPath(args),
     user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),

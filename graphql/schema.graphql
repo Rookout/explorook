@@ -134,6 +134,7 @@ type BitbucketOnPrem {
   saveTree(args: BitbucketInput!): Boolean
   isTreeSaved(args: BitbucketTreeInput!): Boolean
   searchTree(args: BitbucketTreeInput!): [String]
+  repoBeingCached: BitbucketRepoBeingCached
   fileTreeByPath(args: BitbucketInput!): [String]
   user(args: BitbucketInput!): BitbucketUser
   projects(args: BitbucketInput!): [BitbucketProject]
@@ -163,6 +164,12 @@ type BitbucketRepo {
   id: Int!
   project: BitbucketProject!
   name: String!
+}
+
+type BitbucketRepoBeingCached {
+  projectKey: String!
+  repoName: String!
+  commit: String!
 }
 
 type BitbucketCommit {
