@@ -64,6 +64,21 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     return fetch(requestInfo.toString().replace("scm/", "").replace("scm%2F", ""), requestInit);
 };
 
+const fetchTreeParallel =
+    async ({fileTreeUrl, accessToken, start, limit}: {fileTreeUrl: string; accessToken: string; start: number; limit: number}): Promise<string[]> => {
+    const requests = _.map([1, 2, 3, 4, 5], async reqIndex => {
+        const currentStart = start + reqIndex * limit;
+        const res = await fetchNoCache(`${fileTreeUrl}&start=${currentStart}&limit=${limit}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const fileList: any = await res.json();
+        return fileList.values;
+    });
+    return Promise.all(requests);
+};
+
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
         const templateUrl: string = addSlugToUrl("rest/api/1.0/projects/:projectKey/repos/:repoName/browse", filePath);
@@ -169,25 +184,12 @@ export const saveFileTree =
         let files: string[] = [];
         const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName});
         while (!isLastPage) {
-            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${limit}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
-            const fileList: any = await res.json();
-
-            if (Array.isArray(fileList.values)) {
-                files = files.concat(fileList.values);
+            const filesBatch = await fetchTreeParallel({fileTreeUrl, accessToken, start, limit});
+            files = files.concat(filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
+            if (filesBatch[0]?.length && filesBatch[1]?.length && filesBatch[2]?.length && filesBatch[3]?.length && filesBatch[4]?.length) {
+                start = start + 5 * limit;
             } else {
-                notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileList}});
-                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", {res, fileList});
-                return false;
-            }
-
-            // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
-            isLastPage = fileList.isLastPage;
-            if (!isLastPage) {
-                start = fileList.nextPageStart;
+                isLastPage = true;
             }
         }
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
