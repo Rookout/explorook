@@ -56,6 +56,7 @@ input BitbucketInput {
   commit: String
   branch: String
   filePath: String
+  treeSize: Int
 }
 
 input BitbucketTreeInput {
@@ -132,7 +133,9 @@ enum OnPremSourceProvider {
 type BitbucketOnPrem {
   fileTree(args: BitbucketInput!): [String]
   fileTreePageLimit(args: BitbucketInput!): Int
+  isTreeLargerThan(args: BitbucketInput!): Boolean
   saveTree(args: BitbucketInput!): Boolean
+  cancelSaveTree: Boolean
   isTreeSaved(args: BitbucketTreeInput!): Boolean
   searchTree(args: BitbucketTreeInput!): [String]
   repoBeingCached: BitbucketRepoBeingCached

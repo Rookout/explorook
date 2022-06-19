@@ -5,6 +5,7 @@ import {
   BitBucketOnPremInput,
   BitbucketOnPremRepoProps,
   BitbucketOnPremTreeSavedInput,
+  cancelSaveBitbucketTree,
   getBranchesForRepoFromBitbucket,
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
@@ -12,6 +13,7 @@ import {
   getFileContentFromBitbucket,
   getFileTreeByPath,
   getFileTreeFromBitbucket,
+  getFileTreeLargerThan,
   getFileTreePageLimit,
   getIsTreeSaved,
   getProjectsFromBitbucket,
@@ -338,8 +340,12 @@ export const resolvers = {
       getFileTreeFromBitbucket(args),
     fileTreePageLimit: async (parent: any, { args }: BitBucketOnPremInput): Promise<number> =>
       getFileTreePageLimit(args),
+    isTreeLargerThan: async (parent: any, { args }: BitBucketOnPremInput): Promise<boolean> =>
+        getFileTreeLargerThan(args),
     saveTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<boolean> =>
         saveFileTree(args),
+    cancelSaveTree: async (parent: any): Promise<boolean> =>
+        cancelSaveBitbucketTree(),
     isTreeSaved: async (parent: any, { args }: BitbucketOnPremTreeSavedInput): Promise<boolean> =>
         getIsTreeSaved(args),
     searchTree: async (parent: any, { args }: BitbucketOnPremTreeSavedInput): Promise<string[]> =>

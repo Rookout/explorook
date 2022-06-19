@@ -11,6 +11,7 @@ const store = getStoreSafe();
 
 // An id of the repo that is currently being saved (empty if nothing is being saved)
 let repoCurrentlyBeingCached: {projectKey: string, repoName: string, commit: string} | null = null;
+let abortSave = false;
 
 
 // So, BitBucket can really perform well when asked for large datasets.
@@ -35,6 +36,7 @@ export interface BitbucketOnPrem {
     branch?: string;
     fileTree?: string[];
     filePath?: string;
+    treeSize?: number;
 }
 
 export interface BitbucketOnPremRepoProps {
@@ -197,6 +199,14 @@ export const saveFileTree = async ({url, accessToken, projectKey, repoName, comm
     const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName});
     while (!isLastPage) {
         const filesBatch = await fetchTreeParallel({fileTreeUrl, accessToken, start, limit});
+        if (abortSave) {
+            logger.debug("Save aborted via api");
+            // Next save should not be aborted
+            abortSave = false;
+            // Nothing is being fetched
+            repoCurrentlyBeingCached = null;
+            return false;
+        }
         files = files.concat(filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
         if (filesBatch[0]?.length && filesBatch[1]?.length && filesBatch[2]?.length && filesBatch[3]?.length && filesBatch[4]?.length) {
             start = start + 5 * limit;
@@ -213,6 +223,16 @@ export const saveFileTree = async ({url, accessToken, projectKey, repoName, comm
     // This signals that no repo is currently being saved
     repoCurrentlyBeingCached = null;
     return true;
+};
+
+export const cancelSaveBitbucketTree = async (): Promise<boolean> => {
+    if (repoCurrentlyBeingCached) {
+        abortSave = true;
+        return true;
+    } else {
+        // Nothing to abort
+        return false;
+    }
 };
 
 export const getIsTreeSaved = async ({projectKey, repoName, commit}: BitbucketOnPremRepoProps): Promise<boolean> => {
@@ -263,6 +283,32 @@ export const getFileTreePageLimit =
         const limit = data.limit;
         logger.debug("Got Bitbucket server's limit for tree fetching", { limit });
         return limit;
+    };
+
+export const getFileTreeLargerThan =
+    async ({url, accessToken, projectKey, repoName, commit, treeSize}: BitbucketOnPrem): Promise<boolean> => {
+
+        // Check if we get any results when starting from the tree size we check. If values is empty, it means tree is smaller than treeSize
+        // Otherwise, tree is larger than treeSize
+        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+                projectKey,
+                repoName
+            }).query({
+                at: commit,
+                limit: 10,
+                start: treeSize
+            }).toString();
+
+        logger.debug("Getting Bitbucket server's limit for tree fetching using", { fileTreeUrl });
+        const res = await fetchNoCache(fileTreeUrl, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const data: any = await res.json();
+        const largerThanCheckedSize = !_.isEmpty(data.values);
+        logger.debug("Checked if tree is larger than specified size", { url, projectKey, repoName, treeSize, largerThanCheckedSize });
+        return largerThanCheckedSize;
     };
 
 export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
