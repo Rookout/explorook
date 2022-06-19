@@ -3,6 +3,7 @@ import _ = require("lodash");
 import {posix} from "path";
 import {
   BitBucketOnPremInput,
+  BitbucketOnPremTreeSavedInput,
   getBranchesForRepoFromBitbucket,
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
@@ -10,9 +11,11 @@ import {
   getFileTreeByPath,
   getFileTreeFromBitbucket,
   getFileTreePageLimit,
+  getIsTreeSaved,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
-  getUserFromBitbucket
+  getUserFromBitbucket,
+  saveFileTree
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
@@ -332,6 +335,10 @@ export const resolvers = {
       getFileTreeFromBitbucket(args),
     fileTreePageLimit: async (parent: any, { args }: BitBucketOnPremInput): Promise<number> =>
       getFileTreePageLimit(args),
+    saveTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<boolean> =>
+        saveFileTree(args),
+    isTreeSaved: async (parent: any, { args }: BitbucketOnPremTreeSavedInput): Promise<boolean> =>
+        getIsTreeSaved(args),
     fileTreeByPath: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
         getFileTreeByPath(args),
     user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),

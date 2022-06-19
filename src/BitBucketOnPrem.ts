@@ -1,11 +1,14 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
 import {notify} from "./exceptionManager";
+import { getStoreSafe } from "./explorook-store";
 import {getLogger} from "./logger";
 
 const logger = getLogger("bitbucket");
 const isNode = () => !(typeof window !== "undefined" && window !== null);
-const fetch = isNode() ? require('node-fetch') : window.fetch;
+const fetch = isNode() ? require("node-fetch") : window.fetch;
+const store = getStoreSafe();
+
 // So, BitBucket can really perform well when asked for large datasets.
 // This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
 const FETCH_LIMIT = 30000;
@@ -15,8 +18,8 @@ const FETCH_LIMIT = 30000;
 const DEFAULT_TREE_FETCH_LIMIT = 100_000;
 
 enum FILE_TYPE {
-    DIRECTORY = 'DIRECTORY',
-    FILE = 'FILE'
+    DIRECTORY = "DIRECTORY",
+    FILE = "FILE"
 }
 
 export interface BitbucketOnPrem {
@@ -30,26 +33,40 @@ export interface BitbucketOnPrem {
     filePath?: string;
 }
 
+export interface BitbucketOnPremRepoProps {
+    projectKey: string;
+    repoName: string;
+    commit: string;
+}
+
 export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
+
+export interface BitbucketOnPremTreeSavedInput {
+    args: BitbucketOnPremRepoProps;
+}
+
+const getRepoId = ({projectKey, repoName, commit}: {projectKey: string, repoName: string, commit: string}) => {
+    return `${projectKey}-${repoName}-${commit}`;
+};
 
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
 // Otherwise we get inconsistent results from bitbucket API with different tokens
 const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     requestInit = requestInit || {};
     if (!requestInit?.cache) {
-        requestInit.cache = 'no-store';
+        requestInit.cache = "no-store";
     }
     if (!requestInit?.credentials) {
-        requestInit.credentials = 'omit';
+        requestInit.credentials = "omit";
     }
-    return fetch(requestInfo.toString().replace('scm/', '').replace('scm%2F', ''), requestInit);
+    return fetch(requestInfo.toString().replace("scm/", "").replace("scm%2F", ""), requestInit);
 };
 
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
-        const templateUrl: string = addSlugToUrl('rest/api/1.0/projects/:projectKey/repos/:repoName/browse', filePath);
+        const templateUrl: string = addSlugToUrl("rest/api/1.0/projects/:projectKey/repos/:repoName/browse", filePath);
         const fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
                 projectKey,
@@ -95,6 +112,7 @@ export const getFileTreeByPath =
         }
         return files;
     };
+
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
 
@@ -134,6 +152,60 @@ export const getFileTreeFromBitbucket =
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
         return files;
     };
+
+export const saveFileTree =
+    async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<boolean> => {
+
+        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+            projectKey,
+            repoName
+        }).query({
+            at: commit
+        }).toString();
+
+        logger.debug("Getting files for", {projectKey, repoName, url, commit});
+        let isLastPage = false;
+        let start = 0;
+        let files: string[] = [];
+        const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName});
+        while (!isLastPage) {
+            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${limit}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const fileList: any = await res.json();
+
+            if (Array.isArray(fileList.values)) {
+                files = files.concat(fileList.values);
+            } else {
+                notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileList}});
+                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", {res, fileList});
+                return false;
+            }
+
+            // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
+            isLastPage = fileList.isLastPage;
+            if (!isLastPage) {
+                start = fileList.nextPageStart;
+            }
+        }
+        logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
+        // Save the tree
+        const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+        const repoId = getRepoId({projectKey, repoName, commit});
+        currentCachedRepos[repoId] = files;
+        store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
+        return true;
+    };
+
+export const getIsTreeSaved = async ({projectKey, repoName, commit}: BitbucketOnPremRepoProps): Promise<boolean> => {
+    logger.debug("Checking if tree is already saved", {projectKey, repoName, commit});
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const repoId = getRepoId({projectKey, repoName, commit});
+    // Check if the tree is already saved
+    return currentCachedRepos[repoId] !== undefined;
+};
 
 export const getFileTreePageLimit =
     async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem): Promise<number> => {

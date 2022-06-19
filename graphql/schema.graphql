@@ -58,6 +58,12 @@ input BitbucketInput {
   filePath: String
 }
 
+input BitbucketTreeSavedInput {
+  projectKey: String!
+  repoName: String!
+  commit: String!
+}
+
 input GitRepo {
   repoUrl: String!
 }
@@ -124,6 +130,8 @@ enum OnPremSourceProvider {
 type BitbucketOnPrem {
   fileTree(args: BitbucketInput!): [String]
   fileTreePageLimit(args: BitbucketInput!): Int
+  saveTree(args: BitbucketInput!): Boolean
+  isTreeSaved(args: BitbucketTreeSavedInput!): Boolean
   fileTreeByPath(args: BitbucketInput!): [String]
   user(args: BitbucketInput!): BitbucketUser
   projects(args: BitbucketInput!): [BitbucketProject]
