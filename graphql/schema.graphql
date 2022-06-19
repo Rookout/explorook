@@ -58,10 +58,11 @@ input BitbucketInput {
   filePath: String
 }
 
-input BitbucketTreeSavedInput {
+input BitbucketTreeInput {
   projectKey: String!
   repoName: String!
   commit: String!
+  searchTerm: String
 }
 
 input GitRepo {
@@ -131,7 +132,8 @@ type BitbucketOnPrem {
   fileTree(args: BitbucketInput!): [String]
   fileTreePageLimit(args: BitbucketInput!): Int
   saveTree(args: BitbucketInput!): Boolean
-  isTreeSaved(args: BitbucketTreeSavedInput!): Boolean
+  isTreeSaved(args: BitbucketTreeInput!): Boolean
+  searchTree(args: BitbucketTreeInput!): [String]
   fileTreeByPath(args: BitbucketInput!): [String]
   user(args: BitbucketInput!): BitbucketUser
   projects(args: BitbucketInput!): [BitbucketProject]

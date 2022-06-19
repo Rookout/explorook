@@ -37,6 +37,7 @@ export interface BitbucketOnPremRepoProps {
     projectKey: string;
     repoName: string;
     commit: string;
+    searchTerm?: string;
 }
 
 export interface BitBucketOnPremInput {
@@ -207,6 +208,15 @@ export const getIsTreeSaved = async ({projectKey, repoName, commit}: BitbucketOn
     const repoId = getRepoId({projectKey, repoName, commit});
     // Check if the tree is already saved
     return currentCachedRepos[repoId] !== undefined;
+};
+
+export const searchBitbucketTree = async ({projectKey, repoName, commit, searchTerm}: BitbucketOnPremRepoProps): Promise<string[]> => {
+    logger.debug("searching bitbucket tree", {projectKey, repoName, commit, searchTerm});
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const repoId = getRepoId({projectKey, repoName, commit});
+    // Check if the tree is already saved
+    const savedTree = currentCachedRepos[repoId];
+    return _.filter(savedTree, file => _.includes(file, searchTerm));
 };
 
 export const getFileTreePageLimit =

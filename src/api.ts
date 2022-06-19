@@ -15,7 +15,8 @@ import {
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
   getUserFromBitbucket,
-  saveFileTree
+  saveFileTree,
+  searchBitbucketTree
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
@@ -339,6 +340,8 @@ export const resolvers = {
         saveFileTree(args),
     isTreeSaved: async (parent: any, { args }: BitbucketOnPremTreeSavedInput): Promise<boolean> =>
         getIsTreeSaved(args),
+    searchTree: async (parent: any, { args }: BitbucketOnPremTreeSavedInput): Promise<string[]> =>
+        searchBitbucketTree(args),
     fileTreeByPath: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
         getFileTreeByPath(args),
     user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),
