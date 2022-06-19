@@ -49,7 +49,7 @@ export interface BitbucketOnPremTreeSavedInput {
 }
 
 const getRepoId = ({projectKey, repoName, commit}: {projectKey: string, repoName: string, commit: string}) => {
-    return `${projectKey}-${repoName}-${commit}`;
+    return `${projectKey}::${repoName}::${commit}`;
 };
 
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
