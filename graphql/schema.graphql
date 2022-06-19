@@ -63,6 +63,7 @@ input BitbucketTreeInput {
   repoName: String!
   commit: String!
   searchTerm: String
+  maxResults: Int
 }
 
 input GitRepo {
