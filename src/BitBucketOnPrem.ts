@@ -60,7 +60,7 @@ const getRepoId = ({projectKey, repoName, commit}: {projectKey: string, repoName
 };
 
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
-// Otherwise we get inconsistent results from bitbucket API with different tokens
+// Otherwise, we get inconsistent results from bitbucket API with different tokens
 const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     requestInit = requestInit || {};
     if (!requestInit?.cache) {
@@ -72,8 +72,18 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     return fetch(requestInfo.toString().replace("scm/", "").replace("scm%2F", ""), requestInit);
 };
 
+/**
+ * Fetch 5 pages of the tree in parallel
+ * If a page is beyond the amount of files the repo has, it will return an empty array (the behaviour of the bitbucket api)
+ * @param fileTreeUrl
+ * @param accessToken
+ * @param start
+ * @param limit
+ * @return Array of file arrays, each array is from a different page of the tree api call
+ */
 const fetchTreeParallel =
-    async ({fileTreeUrl, accessToken, start, limit}: {fileTreeUrl: string; accessToken: string; start: number; limit: number}): Promise<string[]> => {
+    async ({fileTreeUrl, accessToken, start, limit}: {fileTreeUrl: string; accessToken: string; start: number; limit: number}):
+        Promise<string[][]> => {
     const requests = _.map([1, 2, 3, 4, 5], async reqIndex => {
         const currentStart = start + reqIndex * limit;
         const res = await fetchNoCache(`${fileTreeUrl}&start=${currentStart}&limit=${limit}`, {
