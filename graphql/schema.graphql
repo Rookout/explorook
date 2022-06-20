@@ -134,9 +134,9 @@ type BitbucketOnPrem {
   fileTree(args: BitbucketInput!): [String]
   fileTreePageLimit(args: BitbucketInput!): Int
   isTreeLargerThan(args: BitbucketInput!): Boolean
-  saveTree(args: BitbucketInput!): Boolean
-  cancelSaveTree: Boolean
-  isTreeSaved(args: BitbucketTreeInput!): Boolean
+  cacheTree(args: BitbucketInput!): Boolean
+  cancelCacheTree: Boolean
+  isTreeCached(args: BitbucketTreeInput!): Boolean
   searchTree(args: BitbucketTreeInput!): [String]
   repoBeingCached: BitbucketRepoBeingCached
   fileTreeByPath(args: BitbucketInput!): [String]
