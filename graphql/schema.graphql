@@ -139,6 +139,7 @@ type BitbucketOnPrem {
   removeTreeFromCache(args: BitbucketTreeInput!): Boolean
   cleanTreeCache: Boolean
   isTreeCached(args: BitbucketTreeInput!): Boolean
+  allCachedRepos: [BitbucketRepoBeingCached]
   searchTree(args: BitbucketTreeInput!): [String]
   repoBeingCached: BitbucketRepoBeingCached
   fileTreeByPath(args: BitbucketInput!): [String]

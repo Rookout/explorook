@@ -59,6 +59,15 @@ const getRepoId = ({projectKey, repoName, commit}: {projectKey: string, repoName
     return `${projectKey}::${repoName}::${commit}`;
 };
 
+const getRepoFromId = (id: string): BitbucketOnPremRepoProps => {
+    const parts = _.split(id, "::");
+    return {
+        projectKey: parts[0],
+        repoName: parts[1],
+        commit: parts[2]
+    };
+};
+
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
 // Otherwise, we get inconsistent results from bitbucket API with different tokens
 const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
@@ -251,6 +260,16 @@ export const getIsTreeCached = async ({projectKey, repoName, commit}: BitbucketO
     const repoId = getRepoId({projectKey, repoName, commit});
     // Check if the tree is already cached
     return currentCachedRepos[repoId] !== undefined;
+};
+
+export const idsOfAllCachedTrees = async (): Promise<BitbucketOnPremRepoProps[]> => {
+    logger.debug("Getting all the ids of the cached trees");
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const ids: BitbucketOnPremRepoProps[] = [];
+    _.each(currentCachedRepos, (tree, id) => {
+        ids.push(getRepoFromId(id));
+    });
+    return ids;
 };
 
 export const removeFileTreeFromCache = async ({projectKey, repoName, commit}: BitbucketOnPremRepoProps): Promise<boolean> => {
