@@ -7,6 +7,7 @@ import {
   BitbucketOnPremTreeInput,
   cacheFileTree,
   cancelCacheBitbucketTree,
+  cleanBitbucketTreeCache,
   getBranchesForRepoFromBitbucket,
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
@@ -20,6 +21,7 @@ import {
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
   getUserFromBitbucket,
+  removeFileTreeFromCache,
   searchBitbucketTree
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
@@ -346,6 +348,10 @@ export const resolvers = {
         cacheFileTree(args),
     cancelCacheTree: async (parent: any): Promise<boolean> =>
         cancelCacheBitbucketTree(),
+    removeTreeFromCache: async (parent: any, { args }: BitbucketOnPremTreeInput): Promise<boolean> =>
+        removeFileTreeFromCache(args),
+    cleanTreeCache: async (parent: any): Promise<boolean> =>
+        cleanBitbucketTreeCache(),
     isTreeCached: async (parent: any, { args }: BitbucketOnPremTreeInput): Promise<boolean> =>
         getIsTreeCached(args),
     searchTree: async (parent: any, { args }: BitbucketOnPremTreeInput): Promise<string[]> =>

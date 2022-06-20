@@ -136,6 +136,8 @@ type BitbucketOnPrem {
   isTreeLargerThan(args: BitbucketInput!): Boolean
   cacheTree(args: BitbucketInput!): Boolean
   cancelCacheTree: Boolean
+  removeTreeFromCache(args: BitbucketTreeInput!): Boolean
+  cleanTreeCache: Boolean
   isTreeCached(args: BitbucketTreeInput!): Boolean
   searchTree(args: BitbucketTreeInput!): [String]
   repoBeingCached: BitbucketRepoBeingCached

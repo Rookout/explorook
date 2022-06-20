@@ -253,6 +253,27 @@ export const getIsTreeCached = async ({projectKey, repoName, commit}: BitbucketO
     return currentCachedRepos[repoId] !== undefined;
 };
 
+export const removeFileTreeFromCache = async ({projectKey, repoName, commit}: BitbucketOnPremRepoProps): Promise<boolean> => {
+    logger.debug("Trying to remove tree from cache", {projectKey, repoName, commit});
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const repoId = getRepoId({projectKey, repoName, commit});
+    // Check if the tree is already cached
+    if (!currentCachedRepos[repoId]) {
+        logger.debug("Tree is not in cache", {projectKey, repoName, commit});
+        return false;
+    }
+    delete currentCachedRepos[repoId];
+    store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
+    logger.debug("Successfully removed tree from cache", {projectKey, repoName, commit})
+    return true;
+};
+
+export const cleanBitbucketTreeCache = async (): Promise<boolean> => {
+    logger.debug("Cleaning tree cache");
+    store.set("bitbucketTrees", "{}");
+    return true;
+};
+
 export const getCurrentlyCachedRepo = async (): Promise<BitbucketOnPremRepoProps> => {
     logger.debug("Checking if a tree is currently being cached");
     return repoCurrentlyBeingCached;
