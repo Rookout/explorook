@@ -264,7 +264,7 @@ export const removeFileTreeFromCache = async ({projectKey, repoName, commit}: Bi
     }
     delete currentCachedRepos[repoId];
     store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
-    logger.debug("Successfully removed tree from cache", {projectKey, repoName, commit})
+    logger.debug("Successfully removed tree from cache", {projectKey, repoName, commit});
     return true;
 };
 
@@ -285,7 +285,7 @@ export const searchBitbucketTree = async ({projectKey, repoName, commit, searchT
     const repoId = getRepoId({projectKey, repoName, commit});
     // Check if the tree is already cached
     const cachedTree = currentCachedRepos[repoId];
-    const results = _.filter(cachedTree, file => _.includes(file, searchTerm));
+    const results = _.filter(cachedTree, file => _.includes(file?.toLowerCase(), searchTerm?.toLowerCase()));
     // If maxResults is specified, return the first n results (n being maxResults)
     if (maxResults) {
         return _.slice(results, 0, maxResults);
