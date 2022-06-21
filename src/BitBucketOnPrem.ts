@@ -224,11 +224,11 @@ export const cacheFileTree = async ({url, accessToken, projectKey, repoName, com
                 logger.debug("Cache aborted via api");
                 return false;
             }
-            files = _.concat(files, filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
-            if (filesBatch[0]?.length && filesBatch[1]?.length && filesBatch[2]?.length && filesBatch[3]?.length && filesBatch[4]?.length) {
+            const flatFiles = _.flatten(filesBatch);
+            files = _.concat(files, flatFiles);
+            isLastPage = flatFiles?.length !== limit * 5;
+            if (!isLastPage) {
                 start = start + 5 * limit;
-            } else {
-                isLastPage = true;
             }
         }
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
