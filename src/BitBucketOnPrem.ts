@@ -93,7 +93,7 @@ const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
 const fetchTreeParallel =
     async ({fileTreeUrl, accessToken, start, limit}: {fileTreeUrl: string; accessToken: string; start: number; limit: number}):
         Promise<string[][]> => {
-    const requests = _.map([1, 2, 3, 4, 5], async reqIndex => {
+    const requests = _.map([0, 1, 2, 3, 4], async reqIndex => {
         const currentStart = start + reqIndex * limit;
         const res = await fetchNoCache(`${fileTreeUrl}&start=${currentStart}&limit=${limit}`, {
             headers: {
@@ -201,47 +201,47 @@ export const cacheFileTree = async ({url, accessToken, projectKey, repoName, com
         logger.warn("Cannot cache two repos at the same time");
         return false;
     }
+    try {
+        // This allows to query explorook about the repo currently being cached
+        repoCurrentlyBeingCached = {projectKey, repoName, commit};
+        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+            projectKey,
+            repoName
+        }).query({
+            at: commit
+        }).toString();
 
-    // This allows to query explorook about the repo currently being cached
-    repoCurrentlyBeingCached = {projectKey, repoName, commit};
-    const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
-        projectKey,
-        repoName
-    }).query({
-        at: commit
-    }).toString();
-
-    logger.debug("Getting files for", {projectKey, repoName, url, commit});
-    let isLastPage = false;
-    let start = 0;
-    let files: string[] = [];
-    const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName});
-    while (!isLastPage) {
-        const filesBatch = await fetchTreeParallel({fileTreeUrl, accessToken, start, limit});
-        if (abortCache) {
-            logger.debug("Cache aborted via api");
-            // Next cache should not be aborted
-            abortCache = false;
-            // Nothing is being fetched
-            repoCurrentlyBeingCached = null;
-            return false;
+        logger.debug("Getting files for", {projectKey, repoName, url, commit});
+        let isLastPage = false;
+        let start = 0;
+        let files: string[] = [];
+        const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName});
+        while (!isLastPage) {
+            const filesBatch = await fetchTreeParallel({fileTreeUrl, accessToken, start, limit});
+            if (abortCache) {
+                logger.debug("Cache aborted via api");
+                return false;
+            }
+            files = files.concat(filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
+            if (filesBatch[0]?.length && filesBatch[1]?.length && filesBatch[2]?.length && filesBatch[3]?.length && filesBatch[4]?.length) {
+                start = start + 5 * limit;
+            } else {
+                isLastPage = true;
+            }
         }
-        files = files.concat(filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
-        if (filesBatch[0]?.length && filesBatch[1]?.length && filesBatch[2]?.length && filesBatch[3]?.length && filesBatch[4]?.length) {
-            start = start + 5 * limit;
-        } else {
-            isLastPage = true;
-        }
+        logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
+        // Cache the tree
+        const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+        const repoId = getRepoId({projectKey, repoName, commit});
+        currentCachedRepos[repoId] = files;
+        store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
+        return true;
+    } finally {
+        // Next cache should not be aborted
+        abortCache = false;
+        // This signals that no repo is currently being cached
+        repoCurrentlyBeingCached = null;
     }
-    logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
-    // Cache the tree
-    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
-    const repoId = getRepoId({projectKey, repoName, commit});
-    currentCachedRepos[repoId] = files;
-    store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
-    // This signals that no repo is currently being cached
-    repoCurrentlyBeingCached = null;
-    return true;
 };
 
 export const cancelCacheBitbucketTree = async (): Promise<boolean> => {
