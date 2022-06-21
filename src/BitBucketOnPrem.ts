@@ -215,7 +215,7 @@ export const cacheFileTree = async ({url, accessToken, projectKey, repoName, com
         let isLastPage = false;
         let start = 0;
         let files: string[] = [];
-        const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName});
+        const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName, commit});
         while (!isLastPage) {
             const filesBatch = await fetchTreeParallel({fileTreeUrl, accessToken, start, limit});
             if (abortCache) {
@@ -315,11 +315,12 @@ export const searchBitbucketTree = async ({projectKey, repoName, commit, searchT
 };
 
 export const getFileTreePageLimit =
-    async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem): Promise<number> => {
+    async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<number> => {
         const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
             projectKey,
             repoName
         }).query({
+            at: commit,
             limit: DEFAULT_TREE_FETCH_LIMIT
         }).toString();
 
