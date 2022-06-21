@@ -22,6 +22,8 @@ const FETCH_LIMIT = 30000;
 // Configuration's name: page.max.directory.recursive.children
 const DEFAULT_TREE_FETCH_LIMIT = 100_000;
 
+const FILES_API_TEMPLATE = "/rest/api/1.0/projects/:projectKey/repos/:repoName/files";
+
 enum FILE_TYPE {
     DIRECTORY = "DIRECTORY",
     FILE = "FILE"
@@ -94,7 +96,7 @@ const fetchTreeParallel =
     async ({fileTreeUrl, accessToken, start, limit}: {fileTreeUrl: string; accessToken: string; start: number; limit: number}):
         Promise<string[][]> => {
     const requests = _.map([0, 1, 2, 3, 4], async reqIndex => {
-        const currentStart = start + reqIndex * limit;
+        const currentStart = start + (reqIndex * limit);
         const res = await fetchNoCache(`${fileTreeUrl}&start=${currentStart}&limit=${limit}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
@@ -158,7 +160,7 @@ export const getFileTreeByPath =
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
 
-        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
             projectKey,
             repoName
         }).query({
@@ -204,7 +206,7 @@ export const cacheFileTree = async ({url, accessToken, projectKey, repoName, com
     try {
         // This allows to query explorook about the repo currently being cached
         repoCurrentlyBeingCached = {projectKey, repoName, commit};
-        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
             projectKey,
             repoName
         }).query({
@@ -222,7 +224,7 @@ export const cacheFileTree = async ({url, accessToken, projectKey, repoName, com
                 logger.debug("Cache aborted via api");
                 return false;
             }
-            files = files.concat(filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
+            files = _.concat(files, filesBatch[0], filesBatch[1], filesBatch[2], filesBatch[3], filesBatch[4]);
             if (filesBatch[0]?.length && filesBatch[1]?.length && filesBatch[2]?.length && filesBatch[3]?.length && filesBatch[4]?.length) {
                 start = start + 5 * limit;
             } else {
@@ -316,7 +318,7 @@ export const searchBitbucketTree = async ({projectKey, repoName, commit, searchT
 
 export const getFileTreePageLimit =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<number> => {
-        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
             projectKey,
             repoName
         }).query({
@@ -341,7 +343,7 @@ export const getFileTreeLargerThan =
 
         // Check if we get any results when starting from the tree size we check. If values is empty, it means tree is smaller than treeSize
         // Otherwise, tree is larger than treeSize
-        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
                 projectKey,
                 repoName
             }).query({
