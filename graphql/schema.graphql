@@ -56,6 +56,15 @@ input BitbucketInput {
   commit: String
   branch: String
   filePath: String
+  treeSize: Int
+}
+
+input BitbucketTreeInput {
+  projectKey: String!
+  repoName: String!
+  commit: String!
+  searchTerm: String
+  maxResults: Int
 }
 
 input GitRepo {
@@ -124,6 +133,15 @@ enum OnPremSourceProvider {
 type BitbucketOnPrem {
   fileTree(args: BitbucketInput!): [String]
   fileTreePageLimit(args: BitbucketInput!): Int
+  isTreeLargerThan(args: BitbucketInput!): Boolean
+  cacheTree(args: BitbucketInput!): Boolean
+  cancelCacheTree: Boolean
+  removeTreeFromCache(args: BitbucketTreeInput!): Boolean
+  cleanTreeCache: Boolean
+  isTreeCached(args: BitbucketTreeInput!): Boolean
+  allCachedRepos: [BitbucketRepoBeingCached]
+  searchTree(args: BitbucketTreeInput!): [String]
+  repoBeingCached: BitbucketRepoBeingCached
   fileTreeByPath(args: BitbucketInput!): [String]
   user(args: BitbucketInput!): BitbucketUser
   projects(args: BitbucketInput!): [BitbucketProject]
@@ -153,6 +171,12 @@ type BitbucketRepo {
   id: Int!
   project: BitbucketProject!
   name: String!
+}
+
+type BitbucketRepoBeingCached {
+  projectKey: String!
+  repoName: String!
+  commit: String!
 }
 
 type BitbucketCommit {

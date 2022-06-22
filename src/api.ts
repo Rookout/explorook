@@ -3,16 +3,27 @@ import _ = require("lodash");
 import {posix} from "path";
 import {
   BitBucketOnPremInput,
+  BitbucketOnPremRepoProps,
+  BitbucketOnPremTreeInput,
+  cacheFileTree,
+  cancelCacheBitbucketTree,
+  cleanBitbucketTreeCache,
   getBranchesForRepoFromBitbucket,
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
+  getCurrentlyCachedRepo,
   getFileContentFromBitbucket,
   getFileTreeByPath,
   getFileTreeFromBitbucket,
+  getFileTreeLargerThan,
   getFileTreePageLimit,
+  getIsTreeCached,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
-  getUserFromBitbucket
+  getUserFromBitbucket,
+  idsOfAllCachedTrees,
+  removeFileTreeFromCache,
+  searchBitbucketTree
 } from "./BitBucketOnPrem";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
@@ -332,6 +343,24 @@ export const resolvers = {
       getFileTreeFromBitbucket(args),
     fileTreePageLimit: async (parent: any, { args }: BitBucketOnPremInput): Promise<number> =>
       getFileTreePageLimit(args),
+    isTreeLargerThan: async (parent: any, { args }: BitBucketOnPremInput): Promise<boolean> =>
+        getFileTreeLargerThan(args),
+    cacheTree: async (parent: any, { args }: BitBucketOnPremInput): Promise<boolean> =>
+        cacheFileTree(args),
+    cancelCacheTree: async (parent: any): Promise<boolean> =>
+        cancelCacheBitbucketTree(),
+    removeTreeFromCache: async (parent: any, { args }: BitbucketOnPremTreeInput): Promise<boolean> =>
+        removeFileTreeFromCache(args),
+    cleanTreeCache: async (parent: any): Promise<boolean> =>
+        cleanBitbucketTreeCache(),
+    isTreeCached: async (parent: any, { args }: BitbucketOnPremTreeInput): Promise<boolean> =>
+        getIsTreeCached(args),
+    allCachedRepos: async (parent: any): Promise<BitbucketOnPremRepoProps[]> =>
+        idsOfAllCachedTrees(),
+    searchTree: async (parent: any, { args }: BitbucketOnPremTreeInput): Promise<string[]> =>
+        searchBitbucketTree(args),
+    repoBeingCached: async (parent: any): Promise<BitbucketOnPremRepoProps> =>
+        getCurrentlyCachedRepo(),
     fileTreeByPath: async (parent: any, { args }: BitBucketOnPremInput): Promise<string[]> =>
         getFileTreeByPath(args),
     user: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getUserFromBitbucket(args),
