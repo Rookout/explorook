@@ -172,7 +172,6 @@ const getLaunchLanguageServerFuncByLangName = (langName: string): ((socket: rpc.
       return launchPythonLanguageServer;
     case "go":
       return launchGoLanguageServer;
-    case "javascript":
     case "typescript":
       return launchTypescriptLanguageServer;
   }

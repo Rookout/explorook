@@ -41,9 +41,9 @@ import {
 } from "./git";
 import {
   langServerConfigStore,
-  minimumGoVersion,
-  minimumJavaVersionRequired,
-  minimumPythonVersion
+  maximumLanguageVersions,
+  minimumLanguageVersions,
+  supportedLanguageServers
 } from "./langauge-servers/configStore";
 import Log from "./logData";
 import {getLogger} from "./logger";
@@ -380,41 +380,20 @@ export const resolvers = {
         getFileContentFromBitbucket(args)
   },
   LangServerConfig: {
-    allLangServerConfigs: async (parent: any): Promise<LangServerConfigs> => {
-      return {
-        java: {
-          executableLocation: langServerConfigStore.jdkLocation,
-          minVersionRequired: minimumJavaVersionRequired,
-          maxVersionRequired: ""
-        },
-        python: {
-          executableLocation: langServerConfigStore.pythonLocation,
-          minVersionRequired: minimumPythonVersion,
-          maxVersionRequired: ""
-        },
-        go: {
-          executableLocation: langServerConfigStore.goLocation,
-          minVersionRequired: minimumGoVersion,
-          maxVersionRequired: ""
-        }
-      };
+    allLangServerConfigs: async (parent: any): Promise<LangServerConfig[]> => {
+      return _.map(supportedLanguageServers, language => ({
+        language,
+        enabled: langServerConfigStore.enabledServers[language],
+        executableLocation: langServerConfigStore.serverLocations[language],
+        minVersionRequired: minimumLanguageVersions[language],
+        maxVersionRequired: maximumLanguageVersions[language]
+      }));
     },
-    enabledLangServers: async (parent: any): Promise<EnabledLanguageServers> => {
-      return {
-        java: langServerConfigStore.enableJavaServer,
-        python: langServerConfigStore.enablePythonServer,
-        go: langServerConfigStore.enableGoServer,
-        javascript: langServerConfigStore.enableTypescriptServer,
-        typescript: langServerConfigStore.enableTypescriptServer
-      };
-    }
   },
   LangServerOps: {
-    setLangServerConfig: async (parent: any, args: { config: InputLangServerConfigs }): Promise<OperationStatus> => {
+    setLangServerConfig: async (parent: any, args: { config: [InputLangServerConfigs] }): Promise<OperationStatus> => {
       try {
-        langServerConfigStore.setJdkLocation(args.config.jdkLocation);
-        langServerConfigStore.setPythonLocation(args.config.pythonExecLocation);
-        langServerConfigStore.setGoLocation(args.config.goExecLocation);
+        langServerConfigStore.setLocations(args.config);
       } catch (e) {
         logger.error("Failed to setLangServerConfig", e);
         return {
@@ -424,14 +403,11 @@ export const resolvers = {
       }
       return { isSuccess: true };
     },
-    enableOrDisableLangServers: async (parent: any, args: { config: InputEnabledLanguageServers }): Promise<OperationStatus> => {
+    enableOrDisableLanguageServer: async (parent: any, args: { config: EnableOrDisableSingleLanguageServer }): Promise<OperationStatus> => {
       try {
-        await langServerConfigStore.setIsLanguageServerEnabled("java", args.config.java);
-        await langServerConfigStore.setIsLanguageServerEnabled("python", args.config.python);
-        await langServerConfigStore.setIsLanguageServerEnabled("go", args.config.go);
-        await langServerConfigStore.setIsLanguageServerEnabled("typescript", args.config.typescript);
+        await langServerConfigStore.setIsLanguageServerEnabled(args.config.language, args.config.enable);
       } catch (e) {
-        logger.error("Failed to enableLangServers", e);
+        logger.error(`Failed to enable or disable language server for ${args.config.language}`, e);
         return {
           isSuccess: false,
           reason: e.message

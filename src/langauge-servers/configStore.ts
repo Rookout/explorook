@@ -22,9 +22,22 @@ export const langServersNpmInstallationLocation = path.join(langServerExecFolder
 export const javascriptLangServerExecLocation = path.join(langServersNpmInstallationLocation, "node_modules", "quick-lint-js", "quick-lint-js.exe");
 export const typescriptLangServerExecLocation = path.join(
     langServersNpmInstallationLocation, "node_modules", "typescript-language-server", "lib", "cli.js");
-export const minimumJavaVersionRequired = "13";
-export const minimumPythonVersion = "3.7";
-export const minimumGoVersion = "1.17";
+
+export const supportedLanguageServers: string[] = ["java", "python", "go", "typescript"];
+
+export const minimumLanguageVersions: {[language: string]: string} = {
+    java: "13",
+    python: "3.7",
+    go: "1.17"
+};
+const languageToGetVersionFunction: {[language: string]: (location: string) => string} = {
+    java: getJavaVersion,
+    python: getPythonVersion,
+    go: getGoVersion
+};
+
+export const maximumLanguageVersions: {[language: string]: string} = {
+};
 
 const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
     java: "enable-java-server",
@@ -33,62 +46,46 @@ const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
     typescript: "enable-typescript-server"
 };
 
+const LANGUAGE_STORE_LOCATION_KEYS: {[language: string]: string} = {
+    java: "java-home-location",
+    python: "python-location",
+    go: "go-location",
+};
+
 class LangServerConfigStore {
     private static installPythonLanguageServer(pythonLocation: string) {
         cp.execFileSync(PIP_FILENAME, ["install", "python-lsp-server[all]"], { cwd: pythonLocation, encoding: "utf-8" });
     }
 
-    public isDownloadingJavaJar: boolean = false;
-    public jdkLocation: string;
-    public pythonLocation: string;
-    public goLocation: string;
-    public jsServerInstalled: boolean = false;
-    public tsServerInstalled: boolean = false;
-    public enableJavaServer: boolean = true;
-    public enablePythonServer: boolean = false;
-    public enableGoServer: boolean = false;
-    public enableJavascriptServer: boolean = false;
-    public enableTypescriptServer: boolean = false;
+    public serverLocations: {[language: string]: string} = {
+        java: "",
+        python: "",
+        go: ""
+    };
+    public enabledServers: {[language: string]: boolean} = {
+        java: false,
+        python: false,
+        go: false,
+        typescript: false,
+        javascript: false
+    };
+
     private store: IStore;
 
     constructor() {
         this.store = getStoreSafe();
         this.ensureLangServerExecFolderExists();
 
-        this.jdkLocation = this.store.get("java-home-location", "");
-        this.enableJavaServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["java"], "true") === "true";
-        // Make sure the java enabled value is saved
-        if (this.enableJavaServer && this.store.get(LANGUAGE_STORE_ENABLE_KEYS["java"], "") === "") {
-            this.store.set(LANGUAGE_STORE_ENABLE_KEYS["java"], "true");
-        }
-        if (!this.jdkLocation && this.enableJavaServer) {
-            this.findJdkLocation();
-        }
+        this.serverLocations["java"] = this.store.get(LANGUAGE_STORE_LOCATION_KEYS["java"], "");
+        this.enabledServers["java"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["java"], "false") === "true";
 
-        this.pythonLocation = this.store.get("python-location", "");
-        this.enablePythonServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["python"], "false") === "true";
-        if (!this.pythonLocation && this.enablePythonServer) {
-            this.findPythonLocation();
-        }
+        this.serverLocations["python"] = this.store.get(LANGUAGE_STORE_LOCATION_KEYS["python"], "");
+        this.enabledServers["python"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["python"], "false") === "true";
 
-        this.goLocation = this.store.get("go-location", "");
-        this.enableGoServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["go"], "false") === "true" && isMacOrLinux;
-        if (!this.goLocation && this.enableGoServer) {
-            this.findGoLocation();
-        }
+        this.serverLocations["go"] = this.store.get(LANGUAGE_STORE_LOCATION_KEYS["go"], "");
+        this.enabledServers["go"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["go"], "false") === "true" && isMacOrLinux;
 
-        if (this.enablePythonServer) {
-            this.installPythonLanguageServerIfNeeded();
-        }
-        this.enableTypescriptServer = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["typescript"], "false") === "true" && isMacOrLinux;
-        if (this.enableTypescriptServer) {
-            this.ensureLangServerNpmFolderExists();
-            this.installTypescriptLanguageServerIfNeeded();
-        }
-
-        if (this.enableJavaServer && !this.doesJavaJarExist()) {
-            this.downloadJavaLangServer();
-        }
+        this.enabledServers["typescript"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["typescript"], "false") === "true" && isMacOrLinux;
     }
 
     public doesJavaJarExist(): boolean {
@@ -97,7 +94,7 @@ class LangServerConfigStore {
 
     public isPythonLanguageServerInstalled() {
         try {
-            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.pythonLocation, encoding: "utf-8" });
+            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.serverLocations["python"], encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
             return !trimmedOutput.includes("WARNING: Package(s) not found:");
         } catch (e) {
@@ -105,46 +102,64 @@ class LangServerConfigStore {
         }
     }
 
+    public async installJavaLanguageServer() {
+        if (!this.serverLocations["java"]) {
+            this.findJdkLocation();
+        }
+        if (!this.doesJavaJarExist()) {
+            return this.downloadJavaLangServer();
+        }
+    }
+
     public installPythonLanguageServerIfNeeded() {
-        if (!this.pythonLocation) {
-            return;
+        if (!this.serverLocations["python"]) {
+            this.findPythonLocation();
         }
         try {
-            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.pythonLocation, encoding: "utf-8" });
+            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.serverLocations["python"], encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
-                LangServerConfigStore.installPythonLanguageServer(this.pythonLocation);
+                LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
             }
         } catch (e) {
             const trimmedError = _.trim(e.message);
             console.error(trimmedError);
             if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
-                LangServerConfigStore.installPythonLanguageServer(this.pythonLocation);
+                LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
             }
         }
     }
 
+    public installGoLanguageServerIfNeeded() {
+        if (!this.serverLocations["go"]) {
+            this.findGoLocation();
+        }
+        cp.execFileSync("go", ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
+    }
+
     public installJavascriptLanguageServerIfNeeded() {
+        this.ensureLangServerNpmFolderExists();
         try {
             const stdout = cp.execSync("npm list quick-lint-js", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.includes("(empty)")) {
                 cp.execSync(`npm install quick-lint-js`, { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
             }
-            this.jsServerInstalled = true;
         } catch (e) {
             const trimmedError = _.trim(e.stdout?.toString());
             console.error(trimmedError);
             if (trimmedError.includes("(empty)")) {
                 cp.execSync("npm install quick-lint-js", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
-                this.jsServerInstalled = true;
             } else {
                 logger.error(trimmedError);
+                // Make sure server is not enabled
+                throw e;
             }
         }
     }
 
     public installTypescriptLanguageServerIfNeeded() {
+        this.ensureLangServerNpmFolderExists();
         try {
             const stdout = cp.execSync("npm list typescript-language-server", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
             const trimmedOutput = _.trim(stdout);
@@ -152,136 +167,78 @@ class LangServerConfigStore {
                 // Windows might need npm.cmd
                 cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
             }
-            this.tsServerInstalled = true;
         } catch (e) {
             const trimmedError = _.trim(e.stdout?.toString());
             console.error(trimmedError);
             if (trimmedError.includes("(empty)")) {
                 cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
-                this.tsServerInstalled = true;
             } else {
                 logger.error(trimmedError);
+                // Make sure server is not enabled
+                throw e;
             }
-        }
-    }
-
-    public setJdkLocation = (location: string) => {
-        if (_.isEmpty(location) || _.isEmpty(location.trim())) {
-            this.jdkLocation = "";
-            this.store.set("java-home-location", "");
-            return;
-        }
-        const javaVersion = getJavaVersion(location);
-        if (compare(javaVersion.toString(), minimumJavaVersionRequired, ">=")) {
-            this.jdkLocation = location;
-            this.store.set("java-home-location", this.jdkLocation);
-            return;
-        } else if (javaVersion) {
-            throw new Error("The submitted JRE's version is lower than required JDK " + minimumJavaVersionRequired);
-        } else {
-            throw new Error("This location is an invalid JRE location");
         }
     }
 
     public setIsLanguageServerEnabled = async (language: string, isEnabled: boolean) => {
         const languageStoreKey = LANGUAGE_STORE_ENABLE_KEYS[language];
         if (languageStoreKey) {
+            if (this.enabledServers[language] === isEnabled) {
+                return;
+            }
             if (language === "java") {
-                if (isEnabled === this.enableJavaServer) {
-                    return;
-                }
                 if (isEnabled) {
-                    if (!this.jdkLocation) {
-                        this.findJdkLocation();
-                    }
-                    if (!this.doesJavaJarExist()) {
-                        await this.downloadJavaLangServer();
-                        // If it was not downloaded successfully
-                        if (!this.doesJavaJarExist()) {
-                            logger.error("Failed to download java server");
-                            throw new Error("Failed to download java server");
-                        }
-                    }
+                    await this.installJavaLanguageServer();
                 }
-                this.enableJavaServer = isEnabled;
-                const isEnabledString = isEnabled ? "true" : "false";
-                this.store.set(languageStoreKey, isEnabledString);
+
             } else if (language === "typescript") {
                 const newIsEnabled = isEnabled && isMacOrLinux;
-                if (newIsEnabled === this.enableTypescriptServer) {
-                    return;
-                }
                 if (newIsEnabled) {
-                    this.ensureLangServerNpmFolderExists();
                     this.installTypescriptLanguageServerIfNeeded();
                 }
-                this.enableTypescriptServer = newIsEnabled;
-                const isEnabledString = newIsEnabled ? "true" : "false";
-                this.store.set(languageStoreKey, isEnabledString);
             } else if (language === "python") {
-                if (isEnabled === this.enablePythonServer) {
-                    return;
-                }
                 if (isEnabled) {
-                    if (!this.pythonLocation) {
-                        this.findPythonLocation();
-                    }
                     this.installPythonLanguageServerIfNeeded();
                 }
-                this.enablePythonServer = isEnabled;
-                const isEnabledString = isEnabled ? "true" : "false";
-                this.store.set(languageStoreKey, isEnabledString);
             } else if (language === "go") {
                 const newIsEnabled = isEnabled && isMacOrLinux;
-                if (newIsEnabled === this.enableGoServer) {
-                    return;
+                if (newIsEnabled) {
+                    this.installGoLanguageServerIfNeeded();
                 }
-                if (newIsEnabled && !this.goLocation) {
-                    this.findGoLocation();
-                }
-                this.enableGoServer = newIsEnabled;
-                const isEnabledString = newIsEnabled ? "true" : "false";
-                this.store.set(languageStoreKey, isEnabledString);
             }
+            // Save the result if nothing failed
+            this.enabledServers[language] = isEnabled;
+            const isEnabledString = isEnabled ? "true" : "false";
+            this.store.set(languageStoreKey, isEnabledString);
         }
     }
 
-    public setPythonLocation = (location: string) => {
-        if (_.isEmpty(location) || _.isEmpty(location.trim())) {
-            this.pythonLocation = "";
-            this.store.set("python-location", "");
-            return;
+    public validateLanguageLocation = (language: string, location: string) => {
+        if (!_.has(this.serverLocations, language)) {
+            throw new Error("Language not supported for setting a location");
         }
-        const pythonVersion = getPythonVersion(location);
-        if (compare(pythonVersion, minimumPythonVersion, ">=")) {
-            this.pythonLocation = location;
-            this.store.set("python-location", this.pythonLocation);
+
+        const version = languageToGetVersionFunction[language](location);
+        if (compare(version, minimumLanguageVersions[language], ">=")) {
             return;
-        } else if (pythonVersion && pythonVersion !== "0") {
-            const errorMsg = `The submitted Python version is lower than: ${minimumPythonVersion}`;
+        } else if (version && version !== "0") {
+            const errorMsg = `The location requested for ${language} has a version lower than: ${minimumLanguageVersions[language]}`;
             throw new Error(errorMsg);
         } else {
-            throw new Error("This location is an invalid Python executable location");
+            throw new Error(`Not a valid location for ${language}`);
         }
     }
 
-    public setGoLocation = (location: string) => {
-        if (_.isEmpty(location) || _.isEmpty(location.trim())) {
-            this.goLocation = "";
-            this.store.set("go-location", "");
-            return;
-        }
-        const goVersion = getGoVersion(location);
-        if (goVersion && compare(goVersion, minimumGoVersion, ">=")) {
-            this.goLocation = location;
-            this.store.set("go-location", this.pythonLocation);
-            return;
-        } else if (goVersion && goVersion !== "0") {
-            const errorMsg = `The submitted Go version is lower than: ${minimumGoVersion}`;
-            throw new Error(errorMsg);
-        } else {
-            throw new Error("This location is an invalid Go executable location");
-        }
+    public setLocations = (languageLocations: [InputLangServerConfigs]) => {
+        _.each(languageLocations, langLocation => {
+            this.validateLanguageLocation(langLocation.language, langLocation.location);
+        });
+
+        // If we reached here, all locations are valid, so save the values
+        _.each(languageLocations, langLocation => {
+            this.serverLocations[langLocation.language] = langLocation.location;
+            this.store.set(LANGUAGE_STORE_LOCATION_KEYS[langLocation.language], langLocation.location);
+        });
     }
 
     // Since we use fs.createWriteStream() in order to write the downloaded langserver file, it will not
@@ -300,57 +257,60 @@ class LangServerConfigStore {
 
     // Java ls is about 2.1MB, so expecting a very quick download time
     private downloadJavaLangServer = async () => {
-        this.isDownloadingJavaJar = true;
+        logger.info(`downloading Java LS from ${JavaLangServerDownloadURL}`);
 
-        logger.info("downloading Java LS from " + JavaLangServerDownloadURL);
+        return new Promise((resolve, reject) => {
+            https.get(JavaLangServerDownloadURL, (response) => {
 
-        const file = fs.createWriteStream(javaLangServerJarLocation);
-        https.get(JavaLangServerDownloadURL, (response) => {
-
-            if (response.statusCode !== 200) {
-                logger.error("Failed to download Java Langserver", response);
-                return false;
-            }
-
-            response.pipe(file);
-            file.on("finish", () => file.close());
-            this.isDownloadingJavaJar = false;
-            logger.info("Java - Langserver downloaded successfully");
-          
-
-            return true;
+                if (response.statusCode !== 200) {
+                    logger.error("Failed to download Java Language server", {message: response.statusMessage});
+                    reject("Failed to download Java Language server");
+                } else {
+                    const file = fs.createWriteStream(javaLangServerJarLocation);
+                    response.pipe(file);
+                    file.on("finish", () => {
+                        logger.info("Java - Langserver downloaded successfully");
+                        resolve();
+                    });
+                    file.on("error", (error) => reject(error));
+                }
+            });
         });
     }
 
     private findJdkLocation = () => {
         const jreLocations = findJavaHomes();
 
-        const foundJre = _.find(jreLocations, jre => compare(jre.version.toString(), minimumJavaVersionRequired, ">="));
+        const foundJre = _.find(jreLocations, jre => compare(jre.version, minimumLanguageVersions["java"], ">="));
 
         if (foundJre) {
-            this.jdkLocation = foundJre.location;
-            this.store.set("java-home-location", this.jdkLocation);
+            this.serverLocations["java"] = foundJre.location;
+            this.store.set(LANGUAGE_STORE_LOCATION_KEYS["java"], this.serverLocations["java"]);
         }
     }
 
     private findPythonLocation = () => {
         const pythonLocations = findPythonLocation();
-        const foundPython = _.find(pythonLocations, python => compare(python.version, minimumPythonVersion, ">="));
+        const foundPython = _.find(pythonLocations, python => compare(python.version, minimumLanguageVersions["python"], ">="));
 
         if (foundPython) {
-            this.pythonLocation = foundPython.location;
-            this.store.set("python-location", this.pythonLocation);
+            this.serverLocations["python"] = foundPython.location;
+            this.store.set(LANGUAGE_STORE_LOCATION_KEYS["python"], this.serverLocations["python"]);
+        } else {
+            throw new Error("Did not find any suitable python installations");
         }
     }
 
     private findGoLocation = () => {
         const goLocations = findGoLocation();
 
-        const foundGo = _.find(goLocations, go => compare(go.version, minimumGoVersion, ">="));
+        const foundGo = _.find(goLocations, go => compare(go.version, minimumLanguageVersions["go"], ">="));
 
         if (foundGo) {
-            this.goLocation = foundGo.location;
-            this.store.set("go-location", this.goLocation);
+            this.serverLocations["go"] = foundGo.location;
+            this.store.set(LANGUAGE_STORE_LOCATION_KEYS["go"], this.serverLocations["go"]);
+        } else {
+            throw new Error("Did not find any suitable go installations");
         }
     }
 }

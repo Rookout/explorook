@@ -32,7 +32,7 @@ export const launchLanguageServer = (socket: rpc.IWebSocket, startConfig: LangSe
     const writer = new rpc.WebSocketMessageWriter(socket);
     let repoFullpath: string = null;
 
-    const langserverProcessName = "Rookout-" + startConfig.LanguageName + "-LangServer";
+    const langserverProcessName = `Rookout-${startConfig.LanguageName}-LangServer`;
     const serverConnection = bridgeServer.createServerProcess(
         langserverProcessName, startConfig.langserverCommand, startConfig.langserverCommandArgs);
     const socketConnection = bridgeServer.createConnection(reader, writer, () => { socket.dispose(); serverConnection.dispose(); });

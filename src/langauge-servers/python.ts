@@ -5,8 +5,12 @@ import { launchLanguageServer } from "./langaugeServer";
 import { PYTHON_FILENAME } from "./pythonUtils";
 
 export const launchPythonLanguageServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.enablePythonServer && langServerConfigStore.isPythonLanguageServerInstalled() && langServerConfigStore.pythonLocation) {
-        const pythonExecutable = path.join(langServerConfigStore.pythonLocation, PYTHON_FILENAME);
+    if (
+        langServerConfigStore.enabledServers["python"] &&
+        langServerConfigStore.isPythonLanguageServerInstalled() &&
+        langServerConfigStore.serverLocations["python"]
+    ) {
+        const pythonExecutable = path.join(langServerConfigStore.serverLocations["python"], PYTHON_FILENAME);
         const args = ["-m", "pylsp"];
         launchLanguageServer(socket, { LanguageName: "Python", langserverCommand: pythonExecutable, langserverCommandArgs: args });
     }

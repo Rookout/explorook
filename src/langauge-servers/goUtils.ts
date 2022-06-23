@@ -89,7 +89,7 @@ const checkVersionByCLI = (goLocation: string): string => {
 
     let stdout = "0";
     try {
-        stdout = cp.execFileSync(goLocation, ["version"]);
+        stdout = cp.execFileSync(goLocation, ["version"], {encoding: "utf-8"});
     } catch (e) {
         throw new Error("Go install location is invalid");
     }

@@ -90,12 +90,20 @@ input SettingsInput {
   OverrideGlobal: Boolean @deprecated(reason: "Unused")
 }
 
-type LangServerConfig {
-  allLangServerConfigs: LanguageServerConfigs
-  enabledLangServers: EnabledLangServers
+enum LanguageServer {
+  java
+  python
+  go
+  typescript
 }
 
 type LangServerConfig {
+  allLangServerConfigs: [LangServerConfig]
+}
+
+type LangServerConfig {
+  language: LanguageServer!
+  enabled: Boolean
   executableLocation: String
   minVersionRequired: String
   maxVersionRequired: String
@@ -105,14 +113,7 @@ type LanguageServerConfigs {
   java: LangServerConfig
   python: LangServerConfig
   go: LangServerConfig
-}
-
-type EnabledLangServers {
-  java: Boolean
-  python: Boolean
-  go: Boolean
-  javascript: Boolean
-  typescript: Boolean
+  typescript: LangServerConfig
 }
 
 type OperationStatus {
@@ -135,22 +136,18 @@ type Mutation {
 }
 
 type LangServerOps {
-  setLangServerConfig(config: LangServerConfigInput): OperationStatus!
-  enableOrDisableLangServers(config: EnabledLanguageServersInput): OperationStatus!
+  setLangServerConfig(config: [LangServerConfigInput!]!): OperationStatus!
+  enableOrDisableLanguageServer(config: EnableSingleLanguageServerInput): OperationStatus!
 }
 
 input LangServerConfigInput {
-  jdkLocation: String
-  pythonExecLocation: String
-  goExecLocation: String
+  language: LanguageServer!
+  location: String
 }
 
-input EnabledLanguageServersInput {
-  java: Boolean
-  python: Boolean
-  go: Boolean
-  javascript: Boolean
-  typescript: Boolean
+input EnableSingleLanguageServerInput {
+  language: LanguageServer!
+  enable: Boolean
 }
 
 enum OnPremSourceProvider {

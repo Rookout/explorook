@@ -13,7 +13,7 @@ export const JAVA_FILENAME = isWindows ? 'java.exe' : 'java';
 
 export interface JavaRuntime {
     location: string;
-    version: number;
+    version: string;
 }
 
 /**
@@ -123,28 +123,27 @@ const fromCommonPlaces = (): string[] => {
 
 export const getJavaVersion = (javaPath: string) => checkVersionInReleaseFile(javaPath) || checkVersionByCLI(javaPath);
 
-const checkVersionInReleaseFile = (javaPath: string): number => {
+const checkVersionInReleaseFile = (javaPath: string): string => {
     if (!javaPath) {
-        return 0;
+        return "0";
     }
     const releaseFile = path.join(javaPath, "release");
     if (!fs.existsSync(releaseFile)) {
-        return 0;
+        return "0";
     }
 
-    const content = fs.readFileSync(releaseFile, { encoding: 'utf-8' });
+    const content = fs.readFileSync(releaseFile, { encoding: "utf-8" });
     const regexp = /^JAVA_VERSION="(.*)"/gm;
     const match = regexp.exec(content.toString());
     if (!match) {
-        return 0;
+        return "0";
     }
-    const majorVersion = parseMajorVersion(match[1]);
-    return majorVersion;
-}
+    return parseMajorVersion(match[1]);
+};
 
-const parseMajorVersion = (version: string): number => {
+const parseMajorVersion = (version: string): string => {
     if (!version) {
-        return 0;
+        return "0";
     }
     // Ignore '1.' prefix for legacy Java versions
     if (version.startsWith("1.")) {
@@ -159,23 +158,23 @@ const parseMajorVersion = (version: string): number => {
         if (match) {
             javaVersion = parseInt(match[0]);
         }
-        return javaVersion;
+        return javaVersion.toString();
     } catch (e) {
         logger.error('version cannot be parsed', { version })
-        return 0;
+        return "0";
     }
-}
+};
 
-const checkVersionByCLI = (javaHome: string): number => {
+const checkVersionByCLI = (javaHome: string): string => {
     if (!javaHome) {
-        return 0;
+        return "0";
     }
 
     const javaBin = path.join(javaHome, "bin", JAVA_FILENAME);
-    let stdout = ""
-    try{
+    let stdout = "";
+    try {
         // This is run sync as it is being run during the app's initialization, it is a quick operation and we want the init op to be sync
-        stdout = cp.execFileSync(javaBin, ["-version"], {encoding: "utf-8"})
+        stdout = cp.execFileSync(javaBin, ["-version"], {encoding: "utf-8"});
     } catch (e) {
         throw new Error("Java home location is invalid");
     }
@@ -183,7 +182,7 @@ const checkVersionByCLI = (javaHome: string): number => {
     const regexp = /version "(.*)"/g;
     const match = regexp.exec(stdout);
     if (!match) {
-        return 0;
+        return "0";
     }
     return parseMajorVersion(match[1]);
 };

@@ -100,7 +100,7 @@ const checkVersionByCLI = (pythonLocation: string): string => {
 
     let stdout = "";
     try {
-        stdout = cp.execFileSync(pythonExecutable, ["--version"]);
+        stdout = cp.execFileSync(pythonExecutable, ["--version"], {encoding: "utf-8"});
     } catch (e) {
         throw new Error("Python install location is invalid");
     }
