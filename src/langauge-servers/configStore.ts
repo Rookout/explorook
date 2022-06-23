@@ -50,16 +50,15 @@ class LangServerConfigStore {
     }
 
     public serverLocations: {[language: string]: string} = {
-        java: "",
-        python: "",
-        go: ""
+        [SupportedServerLanguage.java]: "",
+        [SupportedServerLanguage.python]: "",
+        [SupportedServerLanguage.go]: ""
     };
     public enabledServers: {[language: string]: boolean} = {
-        java: false,
-        python: false,
-        go: false,
-        typescript: false,
-        javascript: false
+        [SupportedServerLanguage.java]: false,
+        [SupportedServerLanguage.python]: false,
+        [SupportedServerLanguage.go]: false,
+        [SupportedServerLanguage.typescript]: false
     };
 
     private store: IStore;
@@ -68,16 +67,10 @@ class LangServerConfigStore {
         this.store = getStoreSafe();
         this.ensureLangServerExecFolderExists();
 
-        this.serverLocations["java"] = this.store.get(getLanguageLocationKey("java"), "");
-        this.enabledServers["java"] = this.store.get(getLanguageEnableKey("java"), "false") === "true";
-
-        this.serverLocations["python"] = this.store.get(getLanguageLocationKey("python"), "");
-        this.enabledServers["python"] = this.store.get(getLanguageEnableKey("python"), "false") === "true";
-
-        this.serverLocations["go"] = this.store.get(getLanguageLocationKey("go"), "");
-        this.enabledServers["go"] = this.store.get(getLanguageEnableKey("go"), "false") === "true";
-
-        this.enabledServers["typescript"] = this.store.get(getLanguageEnableKey("typescript"), "false") === "true";
+        _.each(_.values(SupportedServerLanguage), (language: string) => {
+            this.serverLocations[language] = this.store.get(getLanguageLocationKey(language), "");
+            this.enabledServers[language] = this.store.get(getLanguageEnableKey(language), "false") === "true";
+        });
     }
 
     public doesJavaJarExist(): boolean {
@@ -278,15 +271,15 @@ class LangServerConfigStore {
         }
     }
 
-    private installLanguageServer = async (language: string) => {
+    private installLanguageServer = async (language: SupportedServerLanguage) => {
         switch (language) {
-            case "java":
+            case SupportedServerLanguage.java:
                 return this.installJavaLanguageServer();
-            case "python":
+            case SupportedServerLanguage.python:
                 return this.installPythonLanguageServerIfNeeded();
-            case "go":
+            case SupportedServerLanguage.go:
                 return this.installGoLanguageServerIfNeeded();
-            case "typescript":
+            case SupportedServerLanguage.typescript:
                 return this.installTypescriptLanguageServerIfNeeded();
             default:
                 throw new Error("Unsupported language server");
