@@ -20,7 +20,6 @@ const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
 const JavaLangServerDownloadURL = "https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar";
 export const javaLangServerJarLocation = path.join(langServerExecFolder, "Rookout-Java-Language-Server.jar");
 export const langServersNpmInstallationLocation = path.join(langServerExecFolder, "npm_modules");
-export const javascriptLangServerExecLocation = path.join(langServersNpmInstallationLocation, "node_modules", "quick-lint-js", "quick-lint-js.exe");
 export const typescriptLangServerExecLocation = path.join(
     langServersNpmInstallationLocation, "node_modules", "typescript-language-server", "lib", "cli.js");
 
@@ -220,30 +219,6 @@ class LangServerConfigStore {
             this.findGoLocation();
         }
         cp.execFileSync("go", ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
-    }
-
-    private installJavascriptLanguageServerIfNeeded() {
-        if (isWindows) {
-            throw new Error("Javascript language server is not currently supported on Windows");
-        }
-        this.ensureLangServerNpmFolderExists();
-        try {
-            const stdout = cp.execSync("npm list quick-lint-js", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
-            const trimmedOutput = _.trim(stdout);
-            if (trimmedOutput.includes("(empty)")) {
-                cp.execSync(`npm install quick-lint-js`, { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
-            }
-        } catch (e) {
-            const trimmedError = _.trim(e.stdout?.toString());
-            console.error(trimmedError);
-            if (trimmedError.includes("(empty)")) {
-                cp.execSync("npm install quick-lint-js", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
-            } else {
-                logger.error(trimmedError);
-                // Make sure server is not enabled
-                throw e;
-            }
-        }
     }
 
     private installTypescriptLanguageServerIfNeeded() {
