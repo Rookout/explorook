@@ -89,17 +89,8 @@ class LangServerConfigStore {
     }
 
     public doesJavaJarExist(): boolean {
-        return fs.existsSync(javaLangServerJarLocation);
-    }
-
-    public isPythonLanguageServerInstalled() {
-        try {
-            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.serverLocations["python"], encoding: "utf-8" });
-            const trimmedOutput = _.trim(stdout);
-            return !trimmedOutput.includes("WARNING: Package(s) not found:");
-        } catch (e) {
-            return false;
-        }
+        // Make sure the file exists and is not empty (thus invalid)
+        return fs.existsSync(javaLangServerJarLocation) && fs.statSync(javaLangServerJarLocation).size > 0;
     }
 
     public setIsLanguageServerEnabled = async (language: string, isEnabled: boolean) => {
@@ -228,6 +219,10 @@ class LangServerConfigStore {
             console.error(trimmedError);
             if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
                 LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
+            } else {
+                logger.error(trimmedError);
+                // Make sure server is not enabled
+                throw e;
             }
         }
     }

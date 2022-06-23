@@ -5,7 +5,7 @@ import { JAVA_FILENAME } from "./javaUtils";
 import { launchLanguageServer } from "./langaugeServer";
 
 export const launchJavaLanguageServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.enabledServers["java"] && langServerConfigStore.doesJavaJarExist() && langServerConfigStore.serverLocations["java"]) {
+    if (langServerConfigStore.enabledServers["java"] && langServerConfigStore.serverLocations["java"]) {
         const args = ["-jar", javaLangServerJarLocation];
 
         const javaBin = path.join(langServerConfigStore.serverLocations["java"], "bin", JAVA_FILENAME);
