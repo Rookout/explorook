@@ -1,11 +1,14 @@
 import * as cp from "child_process";
 import * as fs from "fs";
 import _ = require("lodash");
+import * as path from "path";
 import { getLogger } from "../logger";
 
 const logger = getLogger("langserver");
 const isMac = process.platform.match("darwin");
 const isLinux = process.platform.match("linux");
+
+export const GO_FILENAME = "go";
 
 // -----Windows is not supported as of now
 
@@ -29,7 +32,8 @@ export const findGoLocation = (): GoRuntime[] => {
         logger.debug("Go - found candidate installation location", { goLocation });
         console.log("Go - found candidate installation location", { goLocation });
 
-        if (fs.existsSync(goLocation)) {
+        const goExecutable = path.join(goLocation, GO_FILENAME);
+        if (fs.existsSync(goExecutable)) {
             const version = checkVersionByCLI(goLocation);
 
             if (version) {
@@ -59,7 +63,7 @@ const fromCommonPlaces = (): string[] => {
         const locations = _.split(trimmedOutput, /[\n\r]+/);
         locations?.forEach(goLocation => {
             if (fs.existsSync(goLocation)) {
-                goLocations.push(goLocation);
+                goLocations.push(path.dirname(goLocation));
             }
         });
 
@@ -88,8 +92,9 @@ const checkVersionByCLI = (goLocation: string): string => {
     }
 
     let stdout;
+    const goExecutable = path.join(goLocation, GO_FILENAME);
     try {
-        stdout = cp.execFileSync(goLocation, ["version"], {encoding: "utf-8"});
+        stdout = cp.execFileSync(goExecutable, ["version"], {encoding: "utf-8"});
     } catch (e) {
         throw new Error("Go install location is invalid");
     }

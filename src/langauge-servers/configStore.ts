@@ -8,7 +8,7 @@ import {InputLangServerConfigs, SupportedServerLanguage} from "../common";
 import { getStoreSafe, IStore } from "../explorook-store";
 import { getLogger } from "../logger";
 import { getLibraryFolder } from "../utils";
-import {findGoLocation, getGoVersion} from "./goUtils";
+import {findGoLocation, getGoVersion, GO_FILENAME} from "./goUtils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
 import {findPythonLocation, getPythonVersion, PIP_FILENAME} from "./pythonUtils";
 
@@ -170,7 +170,7 @@ class LangServerConfigStore {
 
         if (foundGo) {
             this.serverLocations["go"] = foundGo.location;
-            this.store.set(getLanguageLocationKey("go"), this.serverLocations["go"]);
+            this.store.set(getLanguageLocationKey("go"), foundGo.location);
         } else {
             throw new Error("Did not find any suitable go installations");
         }
@@ -215,7 +215,7 @@ class LangServerConfigStore {
         if (!this.serverLocations["go"]) {
             this.findGoLocation();
         }
-        cp.execFileSync("go", ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
+        cp.execFileSync(GO_FILENAME, ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
     }
 
     private installTypescriptLanguageServerIfNeeded() {
