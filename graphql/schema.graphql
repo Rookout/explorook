@@ -90,7 +90,7 @@ input SettingsInput {
   OverrideGlobal: Boolean @deprecated(reason: "Unused")
 }
 
-enum LanguageServer {
+enum SupportedServerLanguage {
   java
   python
   go
@@ -102,7 +102,7 @@ type LangServerConfig {
 }
 
 type LangServerConfig {
-  language: LanguageServer!
+  language: SupportedServerLanguage!
   enabled: Boolean
   executableLocation: String
   minVersionRequired: String
@@ -141,12 +141,12 @@ type LangServerOps {
 }
 
 input LangServerConfigInput {
-  language: LanguageServer!
+  language: SupportedServerLanguage!
   location: String
 }
 
 input EnableSingleLanguageServerInput {
-  language: LanguageServer!
+  language: SupportedServerLanguage!
   enable: Boolean
 }
 
