@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as https from "https";
 import _ = require("lodash");
 import * as path from "path";
+import {InputLangServerConfigs, SupportedServerLanguage} from "../common";
 import { getStoreSafe, IStore } from "../explorook-store";
 import { getLogger } from "../logger";
 import { getLibraryFolder } from "../utils";
@@ -23,7 +24,7 @@ export const javascriptLangServerExecLocation = path.join(langServersNpmInstalla
 export const typescriptLangServerExecLocation = path.join(
     langServersNpmInstallationLocation, "node_modules", "typescript-language-server", "lib", "cli.js");
 
-export const supportedLanguageServers: string[] = ["java", "python", "go", "typescript"];
+export const isLanguageSupported = (language: string) => _.includes(_.values(SupportedServerLanguage), language);
 
 export const minimumLanguageVersions: {[language: string]: string} = {
     java: "13",
@@ -39,18 +40,9 @@ const languageToGetVersionFunction: {[language: string]: (location: string) => s
 export const maximumLanguageVersions: {[language: string]: string} = {
 };
 
-const LANGUAGE_STORE_ENABLE_KEYS: {[language: string]: string} = {
-    java: "enable-java-server",
-    python: "enable-python-server",
-    go: "enable-go-server",
-    typescript: "enable-typescript-server"
-};
+const getLanguageEnableKey = (language: string): string => `enable-${language}-server`;
 
-const LANGUAGE_STORE_LOCATION_KEYS: {[language: string]: string} = {
-    java: "java-home-location",
-    python: "python-location",
-    go: "go-location",
-};
+const getLanguageLocationKey = (language: string): string => `${language}-location`;
 
 class LangServerConfigStore {
     private static installPythonLanguageServer(pythonLocation: string) {
@@ -76,16 +68,16 @@ class LangServerConfigStore {
         this.store = getStoreSafe();
         this.ensureLangServerExecFolderExists();
 
-        this.serverLocations["java"] = this.store.get(LANGUAGE_STORE_LOCATION_KEYS["java"], "");
-        this.enabledServers["java"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["java"], "false") === "true";
+        this.serverLocations["java"] = this.store.get(getLanguageLocationKey("java"), "");
+        this.enabledServers["java"] = this.store.get(getLanguageEnableKey("java"), "false") === "true";
 
-        this.serverLocations["python"] = this.store.get(LANGUAGE_STORE_LOCATION_KEYS["python"], "");
-        this.enabledServers["python"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["python"], "false") === "true";
+        this.serverLocations["python"] = this.store.get(getLanguageLocationKey("python"), "");
+        this.enabledServers["python"] = this.store.get(getLanguageEnableKey("python"), "false") === "true";
 
-        this.serverLocations["go"] = this.store.get(LANGUAGE_STORE_LOCATION_KEYS["go"], "");
-        this.enabledServers["go"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["go"], "false") === "true";
+        this.serverLocations["go"] = this.store.get(getLanguageLocationKey("go"), "");
+        this.enabledServers["go"] = this.store.get(getLanguageEnableKey("go"), "false") === "true";
 
-        this.enabledServers["typescript"] = this.store.get(LANGUAGE_STORE_ENABLE_KEYS["typescript"], "false") === "true";
+        this.enabledServers["typescript"] = this.store.get(getLanguageEnableKey("typescript"), "false") === "true";
     }
 
     public doesJavaJarExist(): boolean {
@@ -93,11 +85,11 @@ class LangServerConfigStore {
         return fs.existsSync(javaLangServerJarLocation) && fs.statSync(javaLangServerJarLocation).size > 0;
     }
 
-    public setIsLanguageServerEnabled = async (language: string, isEnabled: boolean) => {
-        if (!supportedLanguageServers.includes(language)) {
+    public setIsLanguageServerEnabled = async (language: SupportedServerLanguage, isEnabled: boolean) => {
+        if (!isLanguageSupported(language)) {
             throw new Error("We do not currently support for a language server for the requested language");
         }
-        const languageStoreKey = LANGUAGE_STORE_ENABLE_KEYS[language];
+        const languageStoreKey = getLanguageEnableKey(language);
         if (this.enabledServers[language] === isEnabled) {
             return;
         }
@@ -118,7 +110,7 @@ class LangServerConfigStore {
         // If we reached here, all locations are valid, so save the values
         _.each(languageLocations, langLocation => {
             this.serverLocations[langLocation.language] = langLocation.location;
-            this.store.set(LANGUAGE_STORE_LOCATION_KEYS[langLocation.language], langLocation.location);
+            this.store.set(getLanguageLocationKey(langLocation.language), langLocation.location);
         });
     }
 
@@ -166,7 +158,7 @@ class LangServerConfigStore {
 
         if (foundJre) {
             this.serverLocations["java"] = foundJre.location;
-            this.store.set(LANGUAGE_STORE_LOCATION_KEYS["java"], this.serverLocations["java"]);
+            this.store.set(getLanguageLocationKey("java"), this.serverLocations["java"]);
         }
     }
 
@@ -176,7 +168,7 @@ class LangServerConfigStore {
 
         if (foundPython) {
             this.serverLocations["python"] = foundPython.location;
-            this.store.set(LANGUAGE_STORE_LOCATION_KEYS["python"], this.serverLocations["python"]);
+            this.store.set(getLanguageLocationKey("python"), this.serverLocations["python"]);
         } else {
             throw new Error("Did not find any suitable python installations");
         }
@@ -189,7 +181,7 @@ class LangServerConfigStore {
 
         if (foundGo) {
             this.serverLocations["go"] = foundGo.location;
-            this.store.set(LANGUAGE_STORE_LOCATION_KEYS["go"], this.serverLocations["go"]);
+            this.store.set(getLanguageLocationKey("go"), this.serverLocations["go"]);
         } else {
             throw new Error("Did not find any suitable go installations");
         }
@@ -301,7 +293,7 @@ class LangServerConfigStore {
         }
     }
 
-    private validateLanguageLocation = (language: string, location: string) => {
+    private validateLanguageLocation = (language: SupportedServerLanguage, location: string) => {
         if (!_.has(this.serverLocations, language)) {
             throw new Error("Language not supported for setting a location");
         }

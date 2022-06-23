@@ -1,4 +1,5 @@
 import * as path from "path";
+import {Settings} from "./common";
 import {getStoreSafe} from "./explorook-store";
 
 const store = getStoreSafe();

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 const http = process?.env?.headless_mode === "true" ? require("isomorphic-git/http/node") : require("isomorphic-git/http/web");
 import * as igit from 'isomorphic-git';
 import * as path from 'path'
+import {LangServerInitParams} from "../common";
 import parseRepo = require("parse-repo");
 import _ = require('lodash');
 import { GIT_ROOT } from '../git';

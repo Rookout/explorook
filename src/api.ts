@@ -25,6 +25,15 @@ import {
   removeFileTreeFromCache,
   searchBitbucketTree
 } from "./BitBucketOnPrem";
+import {
+  CanQueryRepoStatus,
+  EnableOrDisableSingleLanguageServer,
+  InputLangServerConfigs,
+  LangServerConfig,
+  OperationStatus,
+  Settings,
+  SupportedServerLanguage
+} from "./common";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
@@ -42,8 +51,7 @@ import {
 import {
   langServerConfigStore,
   maximumLanguageVersions,
-  minimumLanguageVersions,
-  supportedLanguageServers
+  minimumLanguageVersions
 } from "./langauge-servers/configStore";
 import Log from "./logData";
 import {getLogger} from "./logger";
@@ -381,7 +389,7 @@ export const resolvers = {
   },
   LangServerConfig: {
     allLangServerConfigs: async (parent: any): Promise<LangServerConfig[]> => {
-      return _.map(supportedLanguageServers, language => ({
+      return _.map(SupportedServerLanguage, (language) => ({
         language,
         enabled: langServerConfigStore.enabledServers[language],
         executableLocation: langServerConfigStore.serverLocations[language],

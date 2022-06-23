@@ -1,39 +1,46 @@
-interface OperationStatus {
+export interface OperationStatus {
   isSuccess: boolean;
   reason?: string;
 }
 
-interface Settings {
+export interface Settings {
   OverrideGlobal?: boolean;
   BitbucketOnPremServers?: string[];
 }
 
-interface CanQueryRepoStatus {
+export interface CanQueryRepoStatus {
   repoUrl: string;
   isSuccess: boolean;
   protocol: string;
   reason?: string;
 }
 
-interface LangServerConfig {
-  language: string;
+export enum SupportedServerLanguage {
+  java = "java",
+  python = "python",
+  go = "go",
+  typescript = "typescript"
+}
+
+export interface LangServerConfig {
+  language: SupportedServerLanguage;
   enabled: boolean;
   executableLocation?: string;
   minVersionRequired?: string;
   maxVersionRequired?: string;
 }
 
-interface EnableOrDisableSingleLanguageServer {
-  language: string;
+export interface EnableOrDisableSingleLanguageServer {
+  language: SupportedServerLanguage;
   enable: boolean;
 }
 
-interface InputLangServerConfigs {
-  language: string;
+export interface InputLangServerConfigs {
+  language: SupportedServerLanguage;
   location: string;
 }
 
-interface LangServerInitParams {
+export interface LangServerInitParams {
   isGitRepo: boolean;
   gitURL?: string;
   gitCommit?: string;

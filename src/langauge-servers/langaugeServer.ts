@@ -5,6 +5,7 @@ import * as lsp from "vscode-languageserver";
  * ------------------------------------------------------------------------------------------ */
 import * as rpc from "vscode-ws-jsonrpc";
 import * as bridgeServer from "vscode-ws-jsonrpc/lib/server";
+import {LangServerInitParams} from "../common";
 import { repStore } from "../repoStore";
 import { syncGitRepository } from "./git-handler";
 import { isWindows } from "./javaUtils";
