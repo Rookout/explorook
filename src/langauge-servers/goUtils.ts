@@ -87,7 +87,7 @@ const checkVersionByCLI = (goLocation: string): string => {
         return "0";
     }
 
-    let stdout = "0";
+    let stdout;
     try {
         stdout = cp.execFileSync(goLocation, ["version"], {encoding: "utf-8"});
     } catch (e) {
