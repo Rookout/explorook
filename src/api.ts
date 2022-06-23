@@ -50,7 +50,6 @@ import {
 } from "./git";
 import {
   langServerConfigStore,
-  maximumLanguageVersions,
   minimumLanguageVersions
 } from "./langauge-servers/configStore";
 import Log from "./logData";
@@ -393,8 +392,7 @@ export const resolvers = {
         language,
         enabled: langServerConfigStore.enabledServers[language],
         executableLocation: langServerConfigStore.serverLocations[language],
-        minVersionRequired: minimumLanguageVersions[language],
-        maxVersionRequired: maximumLanguageVersions[language]
+        minVersionRequired: minimumLanguageVersions[language]
       }));
     },
   },

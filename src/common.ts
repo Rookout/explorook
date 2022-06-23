@@ -27,7 +27,6 @@ export interface LangServerConfig {
   enabled: boolean;
   executableLocation?: string;
   minVersionRequired?: string;
-  maxVersionRequired?: string;
 }
 
 export interface EnableOrDisableSingleLanguageServer {

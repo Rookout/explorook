@@ -106,7 +106,6 @@ type LangServerConfig {
   enabled: Boolean
   executableLocation: String
   minVersionRequired: String
-  maxVersionRequired: String
 }
 
 type OperationStatus {

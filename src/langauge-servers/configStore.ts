@@ -36,9 +36,6 @@ const languageToGetVersionFunction: {[language: string]: (location: string) => s
     go: getGoVersion
 };
 
-export const maximumLanguageVersions: {[language: string]: string} = {
-};
-
 const getLanguageEnableKey = (language: string): string => `enable-${language}-server`;
 
 const getLanguageLocationKey = (language: string): string => `${language}-location`;
