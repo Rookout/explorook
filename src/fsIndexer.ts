@@ -1,7 +1,6 @@
+import { ipcRenderer } from "electron";
 import path = require("path");
 import slash = require("slash");
-import { notify } from "./exceptionManager";
-import { ipcRenderer } from 'electron';
 const walk = require("walk");
 
 

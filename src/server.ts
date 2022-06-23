@@ -1,10 +1,10 @@
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { ApolloServer } from "apollo-server-express";
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import * as express from "express";
 import { readFileSync } from "fs";
 import { applyMiddleware } from "graphql-middleware";
-import { makeExecutableSchema } from "graphql-tools";
 import * as http from "http";
 import * as net from "net";
 import { join } from "path";
@@ -60,7 +60,7 @@ const corsOptions = {
   origin: corsDomainWhitelist
 };
 
-export const start = (options: StartOptions) => {
+export const start = async (options: StartOptions) => {
   const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
   const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: "utf8" });
@@ -74,6 +74,8 @@ export const start = (options: StartOptions) => {
   const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal);
 
   const app = express();
+  const httpServer = http.createServer(app);
+
   const apolloServer = new ApolloServer({
     context: () => ({
       onAddRepoRequest: settings.onAddRepoRequest,
@@ -81,7 +83,6 @@ export const start = (options: StartOptions) => {
       updateGitLoadingState: settings.updateGitLoadingState
     }),
     schema: schemaWithMiddleware,
-    subscriptions: false,
     introspection: true,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
@@ -105,9 +106,10 @@ export const start = (options: StartOptions) => {
     app.use(authorizationMiddleware(settings.accessToken));
   }
 
+  await apolloServer.start();
   apolloServer.applyMiddleware({ app, path: "/" });
+  httpServer.listen(settings.port);
 
-  const httpServer = http.createServer(app).listen(settings.port);
 
   startWebSocketServer(httpServer);
 

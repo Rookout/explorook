@@ -174,7 +174,8 @@ const checkVersionByCLI = (javaHome: string): number => {
     const javaBin = path.join(javaHome, "bin", JAVA_FILENAME);
     let stdout = ""
     try{
-        stdout = cp.execFileSync(javaBin, ["-version"])
+        // This is run sync as it is being run during the app's initialization, it is a quick operation and we want the init op to be sync
+        stdout = cp.execFileSync(javaBin, ["-version"], {encoding: "utf-8"})
     } catch (e) {
         throw new Error("Java home location is invalid");
     }
@@ -185,5 +186,4 @@ const checkVersionByCLI = (javaHome: string): number => {
         return 0;
     }
     return parseMajorVersion(match[1]);
-
 };

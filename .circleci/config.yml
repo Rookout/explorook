@@ -8,7 +8,7 @@ references:
 jobs:
   publish:
     macos:
-      xcode: "12.4.0"
+      xcode: "13.3.1"
     steps:
       - checkout
       - restore_cache:
@@ -47,7 +47,7 @@ jobs:
             # install dependencies
             yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
-            echo $WIN_EV_CERT_BASE64 | base64 --decode > rookout.crt
+            echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
@@ -59,7 +59,7 @@ jobs:
             - /usr/local/Homebrew
   version_validation:
     macos:
-      xcode: "12.4.0"
+      xcode: "13.3.1"
     steps:
       - checkout
       - run:
@@ -67,7 +67,7 @@ jobs:
           command: sh ./validate_version.sh
   publish_release_notes:
     docker:
-      - image: node:14.18.0
+      - image: node:16.14.2
     steps:
       - checkout
       - run:

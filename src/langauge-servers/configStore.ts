@@ -316,6 +316,7 @@ class LangServerConfigStore {
             file.on("finish", () => file.close());
             this.isDownloadingJavaJar = false;
             logger.info("Java - Langserver downloaded successfully");
+          
 
             return true;
         });

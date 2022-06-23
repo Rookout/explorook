@@ -1,18 +1,32 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
 import {notify} from "./exceptionManager";
+import { getStoreSafe } from "./explorook-store";
 import {getLogger} from "./logger";
 
 const logger = getLogger("bitbucket");
 const isNode = () => !(typeof window !== "undefined" && window !== null);
-const fetch = isNode() ? require('node-fetch') : window.fetch;
+const fetch = isNode() ? require("node-fetch") : window.fetch;
+const store = getStoreSafe();
+
+// An id of the repo that is currently being cached (empty if nothing is being cached)
+let repoCurrentlyBeingCached: {projectKey: string, repoName: string, commit: string} | null = null;
+let abortCache = false;
+
+
 // So, BitBucket can really perform well when asked for large datasets.
 // This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
 const FETCH_LIMIT = 30000;
+// Used to check the bitbucket instance's configured limit in comparison to the default limit, which is 100K
+// Documentation: https://confluence.atlassian.com/bitbucketserver070/bitbucket-server-config-properties-996644784.html
+// Configuration's name: page.max.directory.recursive.children
+const DEFAULT_TREE_FETCH_LIMIT = 100_000;
+
+const FILES_API_TEMPLATE = "/rest/api/1.0/projects/:projectKey/repos/:repoName/files";
 
 enum FILE_TYPE {
-    DIRECTORY = 'DIRECTORY',
-    FILE = 'FILE'
+    DIRECTORY = "DIRECTORY",
+    FILE = "FILE"
 }
 
 export interface BitbucketOnPrem {
@@ -24,28 +38,79 @@ export interface BitbucketOnPrem {
     branch?: string;
     fileTree?: string[];
     filePath?: string;
+    treeSize?: number;
+}
+
+export interface BitbucketOnPremRepoProps {
+    projectKey: string;
+    repoName: string;
+    commit: string;
+    searchTerm?: string;
+    maxResults?: number;
 }
 
 export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
 
+export interface BitbucketOnPremTreeInput {
+    args: BitbucketOnPremRepoProps;
+}
+
+const getRepoId = ({projectKey, repoName, commit}: {projectKey: string, repoName: string, commit: string}) => {
+    return `${projectKey}::${repoName}::${commit}`;
+};
+
+const getRepoFromId = (id: string): BitbucketOnPremRepoProps => {
+    const parts = _.split(id, "::");
+    return {
+        projectKey: parts[0],
+        repoName: parts[1],
+        commit: parts[2]
+    };
+};
+
 // fetchNoCache fetches a resource without loading/saving cache and also avoids using cookies.
-// Otherwise we get inconsistent results from bitbucket API with different tokens
+// Otherwise, we get inconsistent results from bitbucket API with different tokens
 const fetchNoCache = (requestInfo: RequestInfo, requestInit: RequestInit) => {
     requestInit = requestInit || {};
     if (!requestInit?.cache) {
-        requestInit.cache = 'no-store';
+        requestInit.cache = "no-store";
     }
     if (!requestInit?.credentials) {
-        requestInit.credentials = 'omit';
+        requestInit.credentials = "omit";
     }
-    return fetch(requestInfo.toString().replace('scm/', '').replace('scm%2F', ''), requestInit);
+    return fetch(requestInfo.toString().replace("scm/", "").replace("scm%2F", ""), requestInit);
+};
+
+/**
+ * Fetch 5 pages of the tree in parallel
+ * If a page is beyond the amount of files the repo has, it will return an empty array (the behaviour of the bitbucket api)
+ * @param fileTreeUrl
+ * @param accessToken
+ * @param start
+ * @param limit
+ * @return Array of file arrays, each array is from a different page of the tree api call
+ */
+const fetchTreeParallel =
+    async ({fileTreeUrl, accessToken, start, limit}: {fileTreeUrl: string; accessToken: string; start: number; limit: number}):
+        Promise<string[][]> => {
+    const requests = _.map([0, 1, 2, 3, 4], async reqIndex => {
+        const currentStart = start + (reqIndex * limit);
+        const res = await fetchNoCache(`${fileTreeUrl}&start=${currentStart}&limit=${limit}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const fileList: any = await res.json();
+        return fileList.values;
+    });
+    return Promise.all(requests);
 };
 
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
-        const templateUrl: string = addSlugToUrl('rest/api/1.0/projects/:projectKey/repos/:repoName/browse', filePath);
+        const templateUrl: string = addSlugToUrl("rest/api/1.0/projects/:projectKey/repos/:repoName/browse", filePath);
         const fileTreeUrl = UrlAssembler(url).template(templateUrl)
             .param({
                 projectKey,
@@ -91,10 +156,11 @@ export const getFileTreeByPath =
         }
         return files;
     };
+
 export const getFileTreeFromBitbucket =
     async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<string[]> => {
 
-        const fileTreeUrl = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/files").param({
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
             projectKey,
             repoName
         }).query({
@@ -129,6 +195,173 @@ export const getFileTreeFromBitbucket =
         }
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
         return files;
+    };
+
+export const cacheFileTree = async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<boolean> => {
+    // If a repo is currently being cached, don't cache another one (log a warning and return false)
+    if (repoCurrentlyBeingCached) {
+        logger.warn("Cannot cache two repos at the same time");
+        return false;
+    }
+    try {
+        // This allows to query explorook about the repo currently being cached
+        repoCurrentlyBeingCached = {projectKey, repoName, commit};
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
+            projectKey,
+            repoName
+        }).query({
+            at: commit
+        }).toString();
+
+        logger.debug("Getting files for", {projectKey, repoName, url, commit});
+        let isLastPage = false;
+        let start = 0;
+        let files: string[] = [];
+        const limit: number = await getFileTreePageLimit({url, accessToken, projectKey, repoName, commit});
+        while (!isLastPage) {
+            const filesBatch = await fetchTreeParallel({fileTreeUrl, accessToken, start, limit});
+            if (abortCache) {
+                logger.debug("Cache aborted via api");
+                return false;
+            }
+            const flatFiles = _.flatten(filesBatch);
+            files = _.concat(files, flatFiles);
+            isLastPage = flatFiles?.length !== limit * 5;
+            if (!isLastPage) {
+                start = start + 5 * limit;
+            }
+        }
+        logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
+        // Cache the tree
+        const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+        const repoId = getRepoId({projectKey, repoName, commit});
+        currentCachedRepos[repoId] = files;
+        store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
+        return true;
+    } finally {
+        // Next cache should not be aborted
+        abortCache = false;
+        // This signals that no repo is currently being cached
+        repoCurrentlyBeingCached = null;
+    }
+};
+
+export const cancelCacheBitbucketTree = async (): Promise<boolean> => {
+    if (repoCurrentlyBeingCached) {
+        abortCache = true;
+        return true;
+    } else {
+        // Nothing to abort
+        return false;
+    }
+};
+
+export const getIsTreeCached = async ({projectKey, repoName, commit}: BitbucketOnPremRepoProps): Promise<boolean> => {
+    logger.debug("Checking if tree is already cached", {projectKey, repoName, commit});
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const repoId = getRepoId({projectKey, repoName, commit});
+    // Check if the tree is already cached
+    return currentCachedRepos[repoId] !== undefined;
+};
+
+export const idsOfAllCachedTrees = async (): Promise<BitbucketOnPremRepoProps[]> => {
+    logger.debug("Getting all the ids of the cached trees");
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const ids: BitbucketOnPremRepoProps[] = [];
+    _.each(currentCachedRepos, (tree, id) => {
+        ids.push(getRepoFromId(id));
+    });
+    return ids;
+};
+
+export const removeFileTreeFromCache = async ({projectKey, repoName, commit}: BitbucketOnPremRepoProps): Promise<boolean> => {
+    logger.debug("Trying to remove tree from cache", {projectKey, repoName, commit});
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const repoId = getRepoId({projectKey, repoName, commit});
+    // Check if the tree is already cached
+    if (!currentCachedRepos[repoId]) {
+        logger.debug("Tree is not in cache", {projectKey, repoName, commit});
+        return false;
+    }
+    delete currentCachedRepos[repoId];
+    store.set("bitbucketTrees", JSON.stringify(currentCachedRepos));
+    logger.debug("Successfully removed tree from cache", {projectKey, repoName, commit});
+    return true;
+};
+
+export const cleanBitbucketTreeCache = async (): Promise<boolean> => {
+    logger.debug("Cleaning tree cache");
+    store.set("bitbucketTrees", "{}");
+    return true;
+};
+
+export const getCurrentlyCachedRepo = async (): Promise<BitbucketOnPremRepoProps> => {
+    logger.debug("Checking if a tree is currently being cached");
+    return repoCurrentlyBeingCached;
+};
+
+export const searchBitbucketTree = async ({projectKey, repoName, commit, searchTerm, maxResults}: BitbucketOnPremRepoProps): Promise<string[]> => {
+    logger.debug("searching bitbucket tree", {projectKey, repoName, commit, searchTerm});
+    const currentCachedRepos = JSON.parse(store.get("bitbucketTrees", "{}"));
+    const repoId = getRepoId({projectKey, repoName, commit});
+    // Check if the tree is already cached
+    const cachedTree = currentCachedRepos[repoId];
+    const results = _.filter(cachedTree, file => _.includes(file?.toLowerCase(), searchTerm?.toLowerCase()));
+    // If maxResults is specified, return the first n results (n being maxResults)
+    if (maxResults) {
+        return _.slice(results, 0, maxResults);
+    } else {
+        // Return all results
+        return results;
+    }
+};
+
+export const getFileTreePageLimit =
+    async ({url, accessToken, projectKey, repoName, commit}: BitbucketOnPrem): Promise<number> => {
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
+            projectKey,
+            repoName
+        }).query({
+            at: commit,
+            limit: DEFAULT_TREE_FETCH_LIMIT
+        }).toString();
+
+        logger.debug("Getting Bitbucket server's limit for tree fetching using", { fileTreeUrl });
+        const res = await fetchNoCache(fileTreeUrl, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const data: any = await res.json();
+        const limit = data.limit;
+        logger.debug("Got Bitbucket server's limit for tree fetching", { limit });
+        return limit;
+    };
+
+export const getFileTreeLargerThan =
+    async ({url, accessToken, projectKey, repoName, commit, treeSize}: BitbucketOnPrem): Promise<boolean> => {
+
+        // Check if we get any results when starting from the tree size we check. If values is empty, it means tree is smaller than treeSize
+        // Otherwise, tree is larger than treeSize
+        const fileTreeUrl = UrlAssembler(url).template(FILES_API_TEMPLATE).param({
+                projectKey,
+                repoName
+            }).query({
+                at: commit,
+                limit: 10,
+                start: treeSize
+            }).toString();
+
+        logger.debug("Getting Bitbucket server's limit for tree fetching using", { fileTreeUrl });
+        const res = await fetchNoCache(fileTreeUrl, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const data: any = await res.json();
+        const largerThanCheckedSize = !_.isEmpty(data.values);
+        logger.debug("Checked if tree is larger than specified size", { url, projectKey, repoName, treeSize, largerThanCheckedSize });
+        return largerThanCheckedSize;
     };
 
 export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {

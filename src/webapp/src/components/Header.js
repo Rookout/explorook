@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Close, Remove } from "@material-ui/icons";
-import { remote, ipcRenderer } from "electron";
+import { ipcRenderer } from "electron";
+import { app } from "@electron/remote";
 import { Menu, MenuItem } from "@material-ui/core";
 import { closeWindow } from "../utils";
 import * as Store from "electron-store";
 
-const EXPLOROOK_VERSION = remote.app.getVersion();
+const EXPLOROOK_VERSION = app.getVersion();
 
 export const Header = () => {
     const [anchorEl, setAnchorEl] = useState(null);
