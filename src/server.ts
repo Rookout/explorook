@@ -89,7 +89,8 @@ export const start = async (options: StartOptions) => {
         notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors } });
       }
       return errors;
-    }
+    },
+    cache: "bounded"
   });
 
   app.use(cors(corsOptions));
