@@ -90,13 +90,22 @@ input SettingsInput {
   OverrideGlobal: Boolean @deprecated(reason: "Unused")
 }
 
-type LangServerConfig {
-  java: javaLangServerConfig
+enum SupportedServerLanguage {
+  java
+  python
+  go
+  typescript
 }
 
-type javaLangServerConfig {
-  jdkLocation: String
-  jdkMinimumVersionRequired: String
+type LangServerConfig {
+  allLangServerConfigs: [LangServerConfig]
+}
+
+type LangServerConfig {
+  language: SupportedServerLanguage!
+  enabled: Boolean
+  executableLocation: String
+  minVersionRequired: String
 }
 
 type OperationStatus {
@@ -119,11 +128,18 @@ type Mutation {
 }
 
 type LangServerOps {
-  setJavaLangServerConfig(config: JavaLangServerConfigInput): OperationStatus!
+  setLangServerConfig(config: [LangServerConfigInput!]!): OperationStatus!
+  enableOrDisableLanguageServer(config: EnableSingleLanguageServerInput): OperationStatus!
 }
 
-input JavaLangServerConfigInput {
-  jdkLocation: String
+input LangServerConfigInput {
+  language: SupportedServerLanguage!
+  location: String
+}
+
+input EnableSingleLanguageServerInput {
+  language: SupportedServerLanguage!
+  enable: Boolean
 }
 
 enum OnPremSourceProvider {

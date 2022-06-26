@@ -25,6 +25,15 @@ import {
   removeFileTreeFromCache,
   searchBitbucketTree
 } from "./BitBucketOnPrem";
+import {
+  CanQueryRepoStatus,
+  EnableOrDisableSingleLanguageServer,
+  InputLangServerConfigs,
+  LangServerConfig,
+  OperationStatus,
+  Settings,
+  SupportedServerLanguage
+} from "./common";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
@@ -39,7 +48,10 @@ import {
   removeGitReposFromStore,
   TMP_DIR_PREFIX
 } from "./git";
-import { langServerConfigStore, minimumJavaVersionRequired } from "./langauge-servers/configStore";
+import {
+  langServerConfigStore,
+  minimumLanguageVersions
+} from "./langauge-servers/configStore";
 import Log from "./logData";
 import {getLogger} from "./logger";
 import LogsContainer from "./logsContainer";
@@ -375,21 +387,37 @@ export const resolvers = {
         getFileContentFromBitbucket(args)
   },
   LangServerConfig: {
-    java: async (parent: any): Promise<JavaLangServerConfig> => {
-      return {
-        jdkLocation: langServerConfigStore.jdkLocation,
-        jdkMinimumVersionRequired: minimumJavaVersionRequired.toString() };
-    }
+    allLangServerConfigs: async (parent: any): Promise<LangServerConfig[]> => {
+      return _.map(SupportedServerLanguage, (language) => ({
+        language,
+        enabled: langServerConfigStore.enabledServers[language],
+        executableLocation: langServerConfigStore.serverLocations[language],
+        minVersionRequired: minimumLanguageVersions[language]
+      }));
+    },
   },
   LangServerOps: {
-    setJavaLangServerConfig: async (parent: any, args: { config: JavaLangServerConfig }): Promise<OperationStatus> => {
+    setLangServerConfig: async (parent: any, args: { config: [InputLangServerConfigs] }): Promise<OperationStatus> => {
       try {
-        langServerConfigStore.setJdkLocation(args.config.jdkLocation);
+        langServerConfigStore.setLocations(args.config);
       } catch (e) {
         logger.error("Failed to setLangServerConfig", e);
         return {
           isSuccess: false,
-          reason: e.message };
+          reason: e.message
+        };
+      }
+      return { isSuccess: true };
+    },
+    enableOrDisableLanguageServer: async (parent: any, args: { config: EnableOrDisableSingleLanguageServer }): Promise<OperationStatus> => {
+      try {
+        await langServerConfigStore.setIsLanguageServerEnabled(args.config.language, args.config.enable);
+      } catch (e) {
+        logger.error(`Failed to enable or disable language server for ${args.config.language}`, e);
+        return {
+          isSuccess: false,
+          reason: e.message
+        };
       }
       return { isSuccess: true };
     }

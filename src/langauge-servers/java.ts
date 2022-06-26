@@ -1,15 +1,16 @@
-import { JAVA_FILENAME } from './javaUtils';
-import { langServerConfigStore, javaLangServerJarLocation } from './configStore';
-import { launchLangaugeServer } from './langaugeServer';
+import * as path from "path";
 import * as rpc from "vscode-ws-jsonrpc";
-import * as path from 'path'
+import {SupportedServerLanguage} from "../common";
+import { javaLangServerJarLocation, langServerConfigStore } from "./configStore";
+import { JAVA_FILENAME } from "./javaUtils";
+import { launchLanguageServer } from "./langaugeServer";
 
-export const launchJavaLangaugeServer = (socket: rpc.IWebSocket) => {
-    if (langServerConfigStore.doesJavaJarExist() && langServerConfigStore.jdkLocation) {
-        const args = ['-jar', javaLangServerJarLocation]
+export const launchJavaLanguageServer = (socket: rpc.IWebSocket) => {
+    if (langServerConfigStore.enabledServers[SupportedServerLanguage.java] && langServerConfigStore.serverLocations[SupportedServerLanguage.java]) {
+        const args = ["-jar", javaLangServerJarLocation];
 
-        const javaBin = path.join(langServerConfigStore.jdkLocation, 'bin', JAVA_FILENAME)
-    
-        launchLangaugeServer(socket, { LangaugeName: 'Java', langserverCommand: javaBin, langserverCommandArgs: args })
+        const javaBin = path.join(langServerConfigStore.serverLocations[SupportedServerLanguage.java], "bin", JAVA_FILENAME);
+
+        launchLanguageServer(socket, { LanguageName: "Java", langserverCommand: javaBin, langserverCommandArgs: args });
     }
-}
+};

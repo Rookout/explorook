@@ -1,95 +1,276 @@
-import { getLibraryFolder } from './../utils';
-import { getStoreSafe, IStore } from './../explorook-store';
-import { getLogger } from './../logger';
-import { findJavaHomes, getJavaVersion } from './javaUtils';
-import * as fs from 'fs'
-import * as https from 'https'
-import * as path from 'path'
-import _ = require('lodash')
+import * as cp from "child_process";
+import { compare } from "compare-versions";
+import * as fs from "fs";
+import * as https from "https";
+import _ = require("lodash");
+import * as path from "path";
+import {InputLangServerConfigs, SupportedServerLanguage} from "../common";
+import { getStoreSafe, IStore } from "../explorook-store";
+import { getLogger } from "../logger";
+import { getLibraryFolder } from "../utils";
+import {findGoLocation, getGoVersion, GO_FILENAME} from "./goUtils";
+import { findJavaHomes, getJavaVersion } from "./javaUtils";
+import {findPythonLocation, getPythonVersion, PIP_FILENAME} from "./pythonUtils";
 
-export const logger = getLogger('langServer')
-const langServerExecFolder = path.join(getLibraryFolder(), 'languageServers')
+const isWindows =  !_.isEmpty(process.platform.match("win32"));
 
-const JavaLangServerDownloadURL = 'https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar'
-export const javaLangServerJarLocation = path.join(langServerExecFolder, 'Rookout-Java-Language-Server.jar')
-export const minimumJavaVersionRequired = 13
+export const logger = getLogger("langServer");
+const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
+
+const JavaLangServerDownloadURL = "https://get.rookout.com/Language-Servers/Rookout-Java-Language-Server.jar";
+export const javaLangServerJarLocation = path.join(langServerExecFolder, "Rookout-Java-Language-Server.jar");
+export const langServersNpmInstallationLocation = path.join(langServerExecFolder, "npm_modules");
+export const typescriptLangServerExecLocation = path.join(
+    langServersNpmInstallationLocation, "node_modules", "typescript-language-server", "lib", "cli.js");
+
+export const isLanguageSupported = (language: string) => _.includes(_.values(SupportedServerLanguage), language);
+
+export const minimumLanguageVersions: {[language: string]: string} = {
+    java: "13",
+    python: "3.7",
+    go: "1.17"
+};
+const languageToGetVersionFunction: {[language: string]: (location: string) => string} = {
+    java: getJavaVersion,
+    python: getPythonVersion,
+    go: getGoVersion
+};
+
+const getLanguageEnableKey = (language: string): string => `enable-${language}-server`;
+
+const getLanguageLocationKey = (language: string): string => `${language}-location`;
 
 class LangServerConfigStore {
-    private store: IStore
-    public isDownloadingJavaJar: boolean = false
-    public jdkLocation: string
+    private static installPythonLanguageServer(pythonLocation: string) {
+        cp.execFileSync(PIP_FILENAME, ["install", "python-lsp-server[all]"], { cwd: pythonLocation, encoding: "utf-8" });
+    }
+
+    public serverLocations: {[language: string]: string} = {
+        [SupportedServerLanguage.java]: "",
+        [SupportedServerLanguage.python]: "",
+        [SupportedServerLanguage.go]: ""
+    };
+    public enabledServers: {[language: string]: boolean} = {
+        [SupportedServerLanguage.java]: false,
+        [SupportedServerLanguage.python]: false,
+        [SupportedServerLanguage.go]: false,
+        [SupportedServerLanguage.typescript]: false
+    };
+
+    private store: IStore;
 
     constructor() {
-        this.store = getStoreSafe()
-        this.ensureLangServerExecFolderExists()
+        this.store = getStoreSafe();
+        this.ensureLangServerExecFolderExists();
 
-        if (!this.doesJavaJarExist()) {
-            this.downloadJavaLangServer()
-        }
-
-        this.jdkLocation = this.store.get('java-home-location', '')
-        if (!this.jdkLocation) {
-            this.findJdkLocation()
-        }
+        _.each(_.values(SupportedServerLanguage), (language: string) => {
+            this.serverLocations[language] = this.store.get(getLanguageLocationKey(language), "");
+            this.enabledServers[language] = this.store.get(getLanguageEnableKey(language), "false") === "true";
+        });
     }
 
     public doesJavaJarExist(): boolean {
-        return fs.existsSync(javaLangServerJarLocation)
+        // Make sure the file exists and is not empty (thus invalid)
+        return fs.existsSync(javaLangServerJarLocation) && fs.statSync(javaLangServerJarLocation).size > 0;
+    }
+
+    public setIsLanguageServerEnabled = async (language: SupportedServerLanguage, isEnabled: boolean) => {
+        if (!isLanguageSupported(language)) {
+            throw new Error("We do not currently support for a language server for the requested language");
+        }
+        const languageStoreKey = getLanguageEnableKey(language);
+        if (this.enabledServers[language] === isEnabled) {
+            return;
+        }
+        if (isEnabled) {
+            await this.installLanguageServer(language);
+        }
+        // Save the result if nothing failed
+        this.enabledServers[language] = isEnabled;
+        const isEnabledString = isEnabled ? "true" : "false";
+        this.store.set(languageStoreKey, isEnabledString);
+    }
+
+    public setLocations = (languageLocations: [InputLangServerConfigs]) => {
+        _.each(languageLocations, langLocation => {
+            this.validateLanguageLocation(langLocation.language, langLocation.location);
+        });
+
+        // If we reached here, all locations are valid, so save the values
+        _.each(languageLocations, langLocation => {
+            this.serverLocations[langLocation.language] = langLocation.location;
+            this.store.set(getLanguageLocationKey(langLocation.language), langLocation.location);
+        });
     }
 
     // Since we use fs.createWriteStream() in order to write the downloaded langserver file, it will not
     // not create the directories on its own.
     private ensureLangServerExecFolderExists = () => {
         if (!fs.existsSync(langServerExecFolder)) {
-            fs.mkdirSync(langServerExecFolder, { recursive: true })
+            fs.mkdirSync(langServerExecFolder, { recursive: true });
+        }
+    }
+
+    private ensureLangServerNpmFolderExists = () => {
+        if (!fs.existsSync(langServersNpmInstallationLocation)) {
+            fs.mkdirSync(langServersNpmInstallationLocation, { recursive: true });
         }
     }
 
     // Java ls is about 2.1MB, so expecting a very quick download time
     private downloadJavaLangServer = async () => {
-        this.isDownloadingJavaJar = true
+        logger.info(`downloading Java LS from ${JavaLangServerDownloadURL}`);
 
-        logger.info('downloading Java LS from ' + JavaLangServerDownloadURL)
+        return new Promise((resolve, reject) => {
+            https.get(JavaLangServerDownloadURL, (response) => {
 
-        const file = fs.createWriteStream(javaLangServerJarLocation);
-        https.get(JavaLangServerDownloadURL, (response) => {
-
-            if (response.statusCode !== 200){
-                logger.error("Failed to download Java Langserver", response)
-                return false
-            }
-
-            response.pipe(file);
-            file.on('finish', () => file.close())
-            this.isDownloadingJavaJar = false
-            logger.info('Java - Langserver downloaded successfully')
-
-            return true
-        })
-    }
-
-    public setJdkLocation = (location: string) => {
-        const javaVersion = getJavaVersion(location)
-        if (javaVersion >= minimumJavaVersionRequired) {
-            this.jdkLocation = location
-            this.store.set('jdk-home-location', this.jdkLocation)
-            return
-        } else if (javaVersion){
-            throw new Error("The submitted JRE's version is lower than required JDK " + minimumJavaVersionRequired)
-        }
-        else {
-            throw new Error("This location is an invalid JRE location")
-        }
+                if (response.statusCode !== 200) {
+                    logger.error("Failed to download Java Language server", {message: response.statusMessage});
+                    reject("Failed to download Java Language server");
+                } else {
+                    const file = fs.createWriteStream(javaLangServerJarLocation);
+                    response.pipe(file);
+                    file.on("finish", () => {
+                        logger.info("Java - Langserver downloaded successfully");
+                        resolve();
+                    });
+                    file.on("error", (error) => reject(error));
+                }
+            });
+        });
     }
 
     private findJdkLocation = () => {
         const jreLocations = findJavaHomes();
 
-        const foundJre = _.find(jreLocations, jre => jre.version >= minimumJavaVersionRequired)
+        const foundJre = _.find(jreLocations, jre => compare(jre.version, minimumLanguageVersions["java"], ">="));
 
         if (foundJre) {
-            this.jdkLocation = foundJre.location
-            this.store.set('java-home-location', this.jdkLocation)
+            this.serverLocations["java"] = foundJre.location;
+            this.store.set(getLanguageLocationKey("java"), this.serverLocations["java"]);
+        }
+    }
+
+    private findPythonLocation = () => {
+        const pythonLocations = findPythonLocation();
+        const foundPython = _.find(pythonLocations, python => compare(python.version, minimumLanguageVersions["python"], ">="));
+
+        if (foundPython) {
+            this.serverLocations["python"] = foundPython.location;
+            this.store.set(getLanguageLocationKey("python"), this.serverLocations["python"]);
+        } else {
+            throw new Error("Did not find any suitable python installations");
+        }
+    }
+
+    private findGoLocation = () => {
+        const goLocations = findGoLocation();
+
+        const foundGo = _.find(goLocations, go => compare(go.version, minimumLanguageVersions["go"], ">="));
+
+        if (foundGo) {
+            this.serverLocations["go"] = foundGo.location;
+            this.store.set(getLanguageLocationKey("go"), foundGo.location);
+        } else {
+            throw new Error("Did not find any suitable go installations");
+        }
+    }
+
+    private async installJavaLanguageServer() {
+        if (!this.serverLocations["java"]) {
+            this.findJdkLocation();
+        }
+        if (!this.doesJavaJarExist()) {
+            return this.downloadJavaLangServer();
+        }
+    }
+
+    private installPythonLanguageServerIfNeeded() {
+        if (!this.serverLocations["python"]) {
+            this.findPythonLocation();
+        }
+        try {
+            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.serverLocations["python"], encoding: "utf-8" });
+            const trimmedOutput = _.trim(stdout);
+            if (trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
+                LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
+            }
+        } catch (e) {
+            const trimmedError = _.trim(e.message);
+            console.error(trimmedError);
+            if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
+                LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
+            } else {
+                logger.error(trimmedError);
+                // Make sure server is not enabled
+                throw e;
+            }
+        }
+    }
+
+    private installGoLanguageServerIfNeeded() {
+        if (isWindows) {
+            throw new Error("Go language server is not currently supported on Windows");
+        }
+        if (!this.serverLocations["go"]) {
+            this.findGoLocation();
+        }
+        cp.execFileSync(GO_FILENAME, ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
+    }
+
+    private installTypescriptLanguageServerIfNeeded() {
+        if (isWindows) {
+            throw new Error("Typescript language server is not currently supported on Windows");
+        }
+        this.ensureLangServerNpmFolderExists();
+        try {
+            const stdout = cp.execSync("npm list typescript-language-server", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+            const trimmedOutput = _.trim(stdout);
+            if (trimmedOutput.includes("(empty)")) {
+                // Windows might need npm.cmd
+                cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+            }
+        } catch (e) {
+            const trimmedError = _.trim(e.stdout?.toString());
+            console.error(trimmedError);
+            if (trimmedError.includes("(empty)")) {
+                cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+            } else {
+                logger.error(trimmedError);
+                // Make sure server is not enabled
+                throw e;
+            }
+        }
+    }
+
+    private installLanguageServer = async (language: SupportedServerLanguage) => {
+        switch (language) {
+            case SupportedServerLanguage.java:
+                return this.installJavaLanguageServer();
+            case SupportedServerLanguage.python:
+                return this.installPythonLanguageServerIfNeeded();
+            case SupportedServerLanguage.go:
+                return this.installGoLanguageServerIfNeeded();
+            case SupportedServerLanguage.typescript:
+                return this.installTypescriptLanguageServerIfNeeded();
+            default:
+                throw new Error("Unsupported language server");
+        }
+    }
+
+    private validateLanguageLocation = (language: SupportedServerLanguage, location: string) => {
+        if (!_.has(this.serverLocations, language)) {
+            throw new Error("Language not supported for setting a location");
+        }
+
+        const version = languageToGetVersionFunction[language](location);
+        if (compare(version, minimumLanguageVersions[language], ">=")) {
+            return;
+        } else if (version && version !== "0") {
+            const errorMsg = `The location requested for ${language} has a version lower than: ${minimumLanguageVersions[language]}`;
+            throw new Error(errorMsg);
+        } else {
+            throw new Error(`Not a valid location for ${language}`);
         }
     }
 }

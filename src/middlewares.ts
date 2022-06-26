@@ -7,6 +7,7 @@ import _ = require("lodash");
 import { posix } from "path";
 import validateUrl = require("valid-url");
 import {encryptWithPublicKey} from "./authentication";
+import {Settings} from "./common";
 import { Repository } from "./common/repository";
 import { notify } from "./exceptionManager";
 import { repStore } from "./repoStore";
