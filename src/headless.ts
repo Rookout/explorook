@@ -9,14 +9,14 @@ import * as graphQlServer from "./server";
 const args = require("args-parser")(process.argv);
 
 if (args.help || args.h) {
-    console.log("add repository using --repo=<name>,<path> or -r=<name>,<path>");
+    console.log("add repository using --repo=<name>,<path> or -r=<name>,<path> or with the EXPLOROOK_REPO environment variable");
     console.log("customize listen port with --port or -p");
     console.log("customize access token with --token");
     process.exit(0);
 }
 
-if (args.repo || args.r) {
-    const repoArg = args.repo || args.r;
+if (args.repo || args.r || process.env.EXPLOROOK_REPO) {
+    const repoArg = args.repo || args.r || process.env.EXPLOROOK_REPO;
     let repos;
 
     try { // Allow for multiple repos as an array of objects

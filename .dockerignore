@@ -1,0 +1,13 @@
+*Dockerfile
+.git/
+.circleci/
+.github/
+.jenkins/
+node_modules/
+logs/
+.dockerignore
+.gitignore
+README.md
+PULL_REQUEST_TEMPLATE.md
+DEVELOPING.MD
+LICENSE
