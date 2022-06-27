@@ -22,5 +22,4 @@ COPY --from=build /build/graphql /app/graphql
 
 EXPOSE 44512
 
-ENV EXPLOROOK_REPO=unspecified
 ENTRYPOINT ["node", "/app/dist/headless.js", "-p=44512"]
