@@ -58,7 +58,7 @@ const fromCommonPlaces = (): string[] => {
 
     // common place for Linux
     if (isLinux || isMac) {
-        const stdout = cp.execSync("which go", { encoding: "utf-8" });
+        const stdout = cp.execSync("which go", { encoding: "utf-8", stdio: ["inherit"] });
         const trimmedOutput = _.trim(stdout);
         const locations = _.split(trimmedOutput, /[\n\r]+/);
         locations?.forEach(goLocation => {

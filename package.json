@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -135,7 +135,6 @@
     "isomorphic-git": "^1.8.2",
     "lodash": "^4.17.21",
     "log4js": "^6.4.0",
-    "minimatch": "^5.0.1",
     "node-rsa": "^1.0.5",
     "p4api": "^3.4.0",
     "parse-repo": "^1.0.4",
