@@ -1,17 +1,14 @@
 import * as cp from "child_process";
 import * as fs from "fs";
 import _ = require("lodash");
-import * as minimatch from "minimatch";
-import * as os from "os";
 import * as path from "path";
 import { getLogger } from "../logger";
 
 const logger = getLogger("langserver");
-export const isWindows = process.platform.match("win32");
+const isWindows = process.platform.match("win32");
 const isMac = process.platform.match("darwin");
 const isLinux = process.platform.match("linux");
-export const PYTHON_FILENAME = isWindows ? "python3.exe" : "python3";
-export const PIP_FILENAME = isWindows ? "pip3.exe" : "pip3";
+export const PYTHON_FILENAME = isWindows ? "python.exe" : "python3";
 
 export interface PythonRuntime {
     location: string;
@@ -59,25 +56,16 @@ const fromCommonPlaces = (): string[] => {
 
     // common place for Windows
     if (isWindows) {
-        const localAppDataFolder = process.env.LOCALAPPDATA ? process.env.LOCALAPPDATA : path.join(os.homedir(), "AppData", "Local");
-        const possibleParentLocations: string[] = [
-            process.env.ProgramFiles || undefined, // Python per machine
-            process.env.ProgramW6432 || undefined, // Python per machine
-            "C:", // Python per machine
-            path.join(localAppDataFolder, "Programs"), // Python per user
-        ].filter(Boolean) as string[];
-        const pythonStoreParents = _.uniq(possibleParentLocations);
-        pythonStoreParents.forEach(pythonStoreParent => {
-            fs.readdirSync(pythonStoreParent, {withFileTypes: true}).filter(possibleStore => possibleStore.isFile()).forEach(possibleStore => {
-                if (minimatch.match([possibleStore.name], "**Python*")) {
-                    pythonLocations.push(possibleStore.name);
-                }
-            });
+        const stdout = cp.execSync("cmd /c where python", { encoding: "utf-8", stdio: ["inherit"] });
+        const trimmedOutput = _.trim(stdout);
+        const locations = _.split(trimmedOutput, /[\n\r]+/);
+        locations?.forEach(goLocation => {
+            if (fs.existsSync(goLocation)) {
+                pythonLocations.push(path.dirname(goLocation));
+            }
         });
-    }
-
-    // common place for Linux
-    if (isLinux || isMac) {
+    } else if (isLinux || isMac) {
+        // common place for Linux and macOS
         ["/usr/local/bin", "/usr/bin"].forEach(pythonLocation => {
             if (fs.existsSync(pythonLocation)) {
                 pythonLocations.push(pythonLocation);

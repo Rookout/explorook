@@ -10,7 +10,7 @@ import { getLogger } from "../logger";
 import { getLibraryFolder } from "../utils";
 import {findGoLocation, getGoVersion, GO_FILENAME} from "./goUtils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
-import {findPythonLocation, getPythonVersion, PIP_FILENAME} from "./pythonUtils";
+import {findPythonLocation, getPythonVersion, PYTHON_FILENAME} from "./pythonUtils";
 
 const isWindows =  !_.isEmpty(process.platform.match("win32"));
 
@@ -41,10 +41,6 @@ const getLanguageEnableKey = (language: string): string => `enable-${language}-s
 const getLanguageLocationKey = (language: string): string => `${language}-location`;
 
 class LangServerConfigStore {
-    private static installPythonLanguageServer(pythonLocation: string) {
-        cp.execFileSync(PIP_FILENAME, ["install", "python-lsp-server[all]"], { cwd: pythonLocation, encoding: "utf-8" });
-    }
-
     public serverLocations: {[language: string]: string} = {
         [SupportedServerLanguage.java]: "",
         [SupportedServerLanguage.python]: "",
@@ -190,16 +186,26 @@ class LangServerConfigStore {
             this.findPythonLocation();
         }
         try {
-            const stdout = cp.execFileSync(PIP_FILENAME, ["show", "python-lsp-server"], { cwd: this.serverLocations["python"], encoding: "utf-8" });
+            const stdout = cp.execFileSync(
+                PYTHON_FILENAME,
+                ["-m", "pip", "show", "python-lsp-server"],
+                { cwd: this.serverLocations["python"], encoding: "utf-8" }
+            );
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
-                LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
+                cp.execFileSync(PYTHON_FILENAME,
+                    ["-m", "pip", "install", "python-lsp-server[all]"],
+                    { cwd: this.serverLocations["python"], encoding: "utf-8" }
+                );
             }
         } catch (e) {
             const trimmedError = _.trim(e.message);
             console.error(trimmedError);
             if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
-                LangServerConfigStore.installPythonLanguageServer(this.serverLocations["python"]);
+                cp.execFileSync(PYTHON_FILENAME,
+                    ["-m", "pip", "install", "python-lsp-server[all]"],
+                    { cwd: this.serverLocations["python"], encoding: "utf-8" }
+                );
             } else {
                 logger.error(trimmedError);
                 // Make sure server is not enabled
