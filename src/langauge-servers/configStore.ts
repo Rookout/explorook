@@ -211,6 +211,8 @@ class LangServerConfigStore {
             const trimmedError = _.trim(stderr);
             if (trimmedError.startsWith("WARNING: Package(s) not found:") || trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
                 this.installPythonLS();
+            } else {
+                throw new Error(stderr);
             }
         } catch (e) {
             const trimmedError = _.trim(e.message);
