@@ -2,13 +2,15 @@ import * as cp from "child_process";
 import * as fs from "fs";
 import _ = require("lodash");
 import * as path from "path";
+import * as which from "which";
 import { getLogger } from "../logger";
 
 const logger = getLogger("langserver");
+const isWindows = process.platform.match("win32");
 const isMac = process.platform.match("darwin");
 const isLinux = process.platform.match("linux");
 
-export const GO_FILENAME = "go";
+export const GO_EXEC_FILENAME = isWindows ? "go.exe" : "go";
 
 // -----Windows is not supported as of now
 
@@ -32,7 +34,7 @@ export const findGoLocation = (): GoRuntime[] => {
         logger.debug("Go - found candidate installation location", { goLocation });
         console.log("Go - found candidate installation location", { goLocation });
 
-        const goExecutable = path.join(goLocation, GO_FILENAME);
+        const goExecutable = path.join(goLocation, GO_EXEC_FILENAME);
         if (fs.existsSync(goExecutable)) {
             const version = checkVersionByCLI(goLocation);
 
@@ -50,15 +52,15 @@ export const findGoLocation = (): GoRuntime[] => {
 };
 
 const updateInstallations = (set: Set<string>, newInstallations: string[]) => {
-    newInstallations.forEach(pythonLoc => {set.add(pythonLoc); console.log(pythonLoc); });
+    newInstallations.forEach(goLoc => {set.add(goLoc); console.log(goLoc); });
 };
 
 const fromCommonPlaces = (): string[] => {
     const goLocations: string[] = [];
 
-    // common place for Linux
-    if (isLinux || isMac) {
-        const stdout = cp.execSync("which go", { encoding: "utf-8", stdio: ["inherit"] });
+
+    if (isWindows) {
+        const stdout = cp.execSync("cmd /c where go", { encoding: "utf-8", stdio: ["inherit"] });
         const trimmedOutput = _.trim(stdout);
         const locations = _.split(trimmedOutput, /[\n\r]+/);
         locations?.forEach(goLocation => {
@@ -66,6 +68,17 @@ const fromCommonPlaces = (): string[] => {
                 goLocations.push(path.dirname(goLocation));
             }
         });
+    } else if (isLinux || isMac) {
+        // common place for Linux and macOS
+        const locations = which.sync("go", {nothrow: true, all: true});
+        if (!_.isEmpty(locations)) {
+            locations.forEach(goLocation => {
+                if (fs.existsSync(goLocation)) {
+                    goLocations.push(path.dirname(goLocation));
+                }
+            });
+        }
+
 
     }
 
@@ -92,7 +105,7 @@ const checkVersionByCLI = (goLocation: string): string => {
     }
 
     let stdout;
-    const goExecutable = path.join(goLocation, GO_FILENAME);
+    const goExecutable = path.join(goLocation, GO_EXEC_FILENAME);
     try {
         stdout = cp.execFileSync(goExecutable, ["version"], {encoding: "utf-8"});
     } catch (e) {

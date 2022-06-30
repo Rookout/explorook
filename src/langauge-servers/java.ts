@@ -3,7 +3,7 @@ import * as rpc from "vscode-ws-jsonrpc";
 import {SupportedServerLanguage} from "../common";
 import { javaLangServerJarLocation, langServerConfigStore } from "./configStore";
 import { JAVA_FILENAME } from "./javaUtils";
-import { launchLanguageServer } from "./langaugeServer";
+import { launchLanguageServer } from "./languageServer";
 
 export const launchJavaLanguageServer = (socket: rpc.IWebSocket) => {
     if (langServerConfigStore.enabledServers[SupportedServerLanguage.java] && langServerConfigStore.serverLocations[SupportedServerLanguage.java]) {

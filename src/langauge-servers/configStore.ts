@@ -8,11 +8,10 @@ import {InputLangServerConfigs, SupportedServerLanguage} from "../common";
 import { getStoreSafe, IStore } from "../explorook-store";
 import { getLogger } from "../logger";
 import { getLibraryFolder } from "../utils";
-import {findGoLocation, getGoVersion, GO_FILENAME} from "./goUtils";
+import {findGoLocation, getGoVersion, GO_EXEC_FILENAME} from "./goUtils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
-import {findPythonLocation, getPythonVersion, PYTHON_FILENAME} from "./pythonUtils";
-
-const isWindows =  !_.isEmpty(process.platform.match("win32"));
+import { NODE_EXEC_FILENAME } from "./nodeUtils";
+import {findPythonLocation, getPythonVersion, PYTHON_EXEC_FILENAME} from "./pythonUtils";
 
 export const logger = getLogger("langServer");
 const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
@@ -41,6 +40,13 @@ const getLanguageEnableKey = (language: string): string => `enable-${language}-s
 const getLanguageLocationKey = (language: string): string => `${language}-location`;
 
 class LangServerConfigStore {
+    private static installTypeScriptLS() {
+        cp.execSync(
+            `${NODE_EXEC_FILENAME} install typescript-language-server typescript`,
+            { cwd: langServersNpmInstallationLocation, encoding: "utf-8" }
+        );
+    }
+
     public serverLocations: {[language: string]: string} = {
         [SupportedServerLanguage.java]: "",
         [SupportedServerLanguage.python]: "",
@@ -181,31 +187,38 @@ class LangServerConfigStore {
         }
     }
 
+    private installPythonLS() {
+        const {stderr} = cp.spawnSync(PYTHON_EXEC_FILENAME,
+            ["-m", "pip", "install", "python-lsp-server[all]"],
+            { cwd: this.serverLocations["python"], encoding: "utf-8" }
+        );
+        if (stderr) {
+            throw new Error(stderr);
+        }
+    }
+
     private installPythonLanguageServerIfNeeded() {
         if (!this.serverLocations["python"]) {
             this.findPythonLocation();
         }
         try {
-            const stdout = cp.execFileSync(
-                PYTHON_FILENAME,
+            const { stdout, stderr } = cp.spawnSync(
+                PYTHON_EXEC_FILENAME,
                 ["-m", "pip", "show", "python-lsp-server"],
                 { cwd: this.serverLocations["python"], encoding: "utf-8" }
             );
             const trimmedOutput = _.trim(stdout);
-            if (trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
-                cp.execFileSync(PYTHON_FILENAME,
-                    ["-m", "pip", "install", "python-lsp-server[all]"],
-                    { cwd: this.serverLocations["python"], encoding: "utf-8" }
-                );
+            const trimmedError = _.trim(stderr);
+            if (trimmedError.startsWith("WARNING: Package(s) not found:") || trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
+                this.installPythonLS();
+            } else {
+                throw new Error(stderr);
             }
         } catch (e) {
             const trimmedError = _.trim(e.message);
             console.error(trimmedError);
             if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
-                cp.execFileSync(PYTHON_FILENAME,
-                    ["-m", "pip", "install", "python-lsp-server[all]"],
-                    { cwd: this.serverLocations["python"], encoding: "utf-8" }
-                );
+                this.installPythonLS();
             } else {
                 logger.error(trimmedError);
                 // Make sure server is not enabled
@@ -215,32 +228,29 @@ class LangServerConfigStore {
     }
 
     private installGoLanguageServerIfNeeded() {
-        if (isWindows) {
-            throw new Error("Go language server is not currently supported on Windows");
-        }
         if (!this.serverLocations["go"]) {
             this.findGoLocation();
         }
-        cp.execFileSync(GO_FILENAME, ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
+        cp.execFileSync(GO_EXEC_FILENAME, ["install", "golang.org/x/tools/gopls@v0.8.4"], { cwd: this.serverLocations["go"], encoding: "utf-8" });
     }
 
     private installTypescriptLanguageServerIfNeeded() {
-        if (isWindows) {
-            throw new Error("Typescript language server is not currently supported on Windows");
-        }
         this.ensureLangServerNpmFolderExists();
         try {
-            const stdout = cp.execSync("npm list typescript-language-server", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+            const stdout = cp.execSync(
+                `${NODE_EXEC_FILENAME} list typescript-language-server`,
+                { cwd: langServersNpmInstallationLocation, encoding: "utf-8" }
+            );
             const trimmedOutput = _.trim(stdout);
             if (trimmedOutput.includes("(empty)")) {
                 // Windows might need npm.cmd
-                cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+                LangServerConfigStore.installTypeScriptLS();
             }
         } catch (e) {
             const trimmedError = _.trim(e.stdout?.toString());
             console.error(trimmedError);
             if (trimmedError.includes("(empty)")) {
-                cp.execSync("npm install typescript-language-server typescript", { cwd: langServersNpmInstallationLocation, encoding: "utf-8" });
+                LangServerConfigStore.installTypeScriptLS();
             } else {
                 logger.error(trimmedError);
                 // Make sure server is not enabled

@@ -8,7 +8,7 @@ const logger = getLogger("langserver");
 const isWindows = process.platform.match("win32");
 const isMac = process.platform.match("darwin");
 const isLinux = process.platform.match("linux");
-export const PYTHON_FILENAME = isWindows ? "python.exe" : "python3";
+export const PYTHON_EXEC_FILENAME = isWindows ? "python.exe" : "python3";
 
 export interface PythonRuntime {
     location: string;
@@ -29,7 +29,7 @@ export const findPythonLocation = (): PythonRuntime[] => {
     pythonSet.forEach(pythonLocation => {
         logger.debug("Python - found candidate installation location", { pythonLocation });
         console.log("Python - found candidate installation location", { pythonLocation });
-        const pythonExecutable = path.join(pythonLocation, PYTHON_FILENAME);
+        const pythonExecutable = path.join(pythonLocation, PYTHON_EXEC_FILENAME);
 
         if (fs.existsSync(pythonExecutable)) {
             const version = checkVersionByCLI(pythonLocation);
@@ -59,9 +59,9 @@ const fromCommonPlaces = (): string[] => {
         const stdout = cp.execSync("cmd /c where python", { encoding: "utf-8", stdio: ["inherit"] });
         const trimmedOutput = _.trim(stdout);
         const locations = _.split(trimmedOutput, /[\n\r]+/);
-        locations?.forEach(goLocation => {
-            if (fs.existsSync(goLocation)) {
-                pythonLocations.push(path.dirname(goLocation));
+        locations?.forEach(pythonLocation => {
+            if (fs.existsSync(pythonLocation)) {
+                pythonLocations.push(path.dirname(pythonLocation));
             }
         });
     } else if (isLinux || isMac) {
@@ -84,7 +84,7 @@ const checkVersionByCLI = (pythonLocation: string): string => {
         return "0";
     }
 
-    const pythonExecutable = path.join(pythonLocation, PYTHON_FILENAME);
+    const pythonExecutable = path.join(pythonLocation, PYTHON_EXEC_FILENAME);
 
     let stdout = "";
     try {
