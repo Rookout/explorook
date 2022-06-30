@@ -2,7 +2,6 @@ import * as cp from "child_process";
 import * as fs from "fs";
 import _ = require("lodash");
 import * as path from "path";
-import * as which from "which";
 import { getLogger } from "../logger";
 
 const logger = getLogger("langserver");
@@ -70,16 +69,11 @@ const fromCommonPlaces = (): string[] => {
         });
     } else if (isLinux || isMac) {
         // common place for Linux and macOS
-        const locations = which.sync("go", {nothrow: true, all: true});
-        if (!_.isEmpty(locations)) {
-            locations.forEach(goLocation => {
-                if (fs.existsSync(goLocation)) {
-                    goLocations.push(path.dirname(goLocation));
-                }
-            });
-        }
-
-
+        ["/usr/local/bin", "/usr/bin"].forEach(goLocation => {
+            if (fs.existsSync(goLocation)) {
+                goLocations.push(path.dirname(goLocation));
+            }
+        });
     }
 
     return goLocations;
