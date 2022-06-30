@@ -1,7 +1,7 @@
 import * as rpc from "vscode-ws-jsonrpc";
 import {SupportedServerLanguage} from "../common";
 import {langServerConfigStore, typescriptLangServerExecLocation} from "./configStore";
-import {launchLanguageServer} from "./langaugeServer";
+import {launchLanguageServer} from "./languageServer";
 
 export const launchTypescriptLanguageServer = (socket: rpc.IWebSocket) => {
     if (langServerConfigStore.enabledServers[SupportedServerLanguage.typescript]) {
