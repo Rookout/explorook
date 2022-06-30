@@ -69,9 +69,12 @@ const fromCommonPlaces = (): string[] => {
         });
     } else if (isLinux || isMac) {
         // common place for Linux and macOS
-        ["/usr/local/bin", "/usr/bin"].forEach(goLocation => {
+        const stdout = cp.execSync("go env GOROOT", { encoding: "utf-8", stdio: ["inherit"] });
+        const locations = _.compact(_.split(stdout, /[\n\r]+/));
+        locations?.forEach(goRootLocation => {
+            const goLocation = path.join(goRootLocation, "bin");
             if (fs.existsSync(goLocation)) {
-                goLocations.push(path.dirname(goLocation));
+                goLocations.push(goLocation);
             }
         });
     }
