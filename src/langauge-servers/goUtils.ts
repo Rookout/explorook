@@ -2,7 +2,6 @@ import * as cp from "child_process";
 import * as fs from "fs";
 import _ = require("lodash");
 import * as path from "path";
-import * as which from "which";
 import { getLogger } from "../logger";
 
 const logger = getLogger("langserver");
@@ -62,7 +61,7 @@ const fromCommonPlaces = (): string[] => {
     if (isWindows) {
         const stdout = cp.execSync("cmd /c where go", { encoding: "utf-8", stdio: ["inherit"] });
         const trimmedOutput = _.trim(stdout);
-        const locations = _.split(trimmedOutput, /[\n\r]+/);
+        const locations = _.split(trimmedOutput, /[\r\n]+/);
         locations?.forEach(goLocation => {
             if (fs.existsSync(goLocation)) {
                 goLocations.push(path.dirname(goLocation));
@@ -70,16 +69,14 @@ const fromCommonPlaces = (): string[] => {
         });
     } else if (isLinux || isMac) {
         // common place for Linux and macOS
-        const locations = which.sync("go", {nothrow: true, all: true});
-        if (!_.isEmpty(locations)) {
-            locations.forEach(goLocation => {
-                if (fs.existsSync(goLocation)) {
-                    goLocations.push(path.dirname(goLocation));
-                }
-            });
-        }
-
-
+        const stdout = cp.execSync("go env GOROOT", { encoding: "utf-8", stdio: ["inherit"] });
+        const locations = _.compact(_.split(stdout, /[\r\n]+/));
+        locations?.forEach(goRootLocation => {
+            const goLocation = path.join(goRootLocation, "bin");
+            if (fs.existsSync(goLocation)) {
+                goLocations.push(goLocation);
+            }
+        });
     }
 
     return goLocations;

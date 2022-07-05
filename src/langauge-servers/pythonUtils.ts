@@ -58,7 +58,7 @@ const fromCommonPlaces = (): string[] => {
     if (isWindows) {
         const stdout = cp.execSync("cmd /c where python", { encoding: "utf-8", stdio: ["inherit"] });
         const trimmedOutput = _.trim(stdout);
-        const locations = _.split(trimmedOutput, /[\n\r]+/);
+        const locations = _.split(trimmedOutput, /[\r\n]+/);
         locations?.forEach(pythonLocation => {
             if (fs.existsSync(pythonLocation)) {
                 pythonLocations.push(path.dirname(pythonLocation));
