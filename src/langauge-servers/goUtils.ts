@@ -38,7 +38,7 @@ export const findGoLocation = (): GoRuntime[] => {
         console.log("Go - found candidate installation location", { goLocation });
 
         const goExecutable = path.join(goLocation, GO_EXEC_FILENAME);
-        if (fs.existsSync(goExecutable) && fs.lstatSync(goExecutable).isFile() || fs.lstatSync(goExecutable).isSymbolicLink()) {
+        if (fs.existsSync(goExecutable) && (fs.lstatSync(goExecutable).isFile() || fs.lstatSync(goExecutable).isSymbolicLink())) {
             const version = checkVersionByCLI(goLocation);
 
             if (version) {
