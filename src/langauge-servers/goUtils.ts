@@ -28,13 +28,17 @@ export const findGoLocation = (): GoRuntime[] => {
     const goInstallations = fromCommonPlaces();
 
     updateInstallations(goSet, goInstallations);
+    const envBasedLocation = getLocationFromEnv("GOROOT");
+    if (!_.isEmpty(envBasedLocation)) {
+        updateInstallations(goSet, [envBasedLocation]);
+    }
 
     goSet.forEach(goLocation => {
         logger.debug("Go - found candidate installation location", { goLocation });
         console.log("Go - found candidate installation location", { goLocation });
 
         const goExecutable = path.join(goLocation, GO_EXEC_FILENAME);
-        if (fs.existsSync(goExecutable)) {
+        if (fs.existsSync(goExecutable) && fs.lstatSync(goExecutable).isFile() || fs.lstatSync(goExecutable).isSymbolicLink()) {
             const version = checkVersionByCLI(goLocation);
 
             if (version) {
@@ -69,17 +73,31 @@ const fromCommonPlaces = (): string[] => {
         });
     } else if (isLinux || isMac) {
         // common place for Linux and macOS
-        const stdout = cp.execSync("go env GOROOT", { encoding: "utf-8", stdio: ["inherit"] });
-        const locations = _.compact(_.split(stdout, /[\r\n]+/));
-        locations?.forEach(goRootLocation => {
+        ["/usr/local/go"].forEach(goRootLocation => {
             const goLocation = path.join(goRootLocation, "bin");
-            if (fs.existsSync(goLocation)) {
+            if (fs.existsSync(goLocation) && fs.lstatSync(goLocation).isDirectory()) {
                 goLocations.push(goLocation);
             }
         });
     }
 
     return goLocations;
+};
+
+const getLocationFromEnv = (envVarName: string): string => {
+    if (!process.env[envVarName]) {
+        return "";
+    }
+
+    // Expecting the envVar one 'path/to/go'
+    const rawLocation = process.env[envVarName];
+    const parsedLocation = _.replace(rawLocation, /\s/g, "");
+    const location = path.join(parsedLocation, "bin");
+    if (fs.existsSync(location) && fs.lstatSync(location).isDirectory()) {
+        return location;
+    } else {
+        return "";
+    }
 };
 
 const parseVersion = (version: string): string => {

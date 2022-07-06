@@ -11,7 +11,7 @@ import { getLibraryFolder } from "../utils";
 import {findGoLocation, getGoVersion, GO_EXEC_FILENAME} from "./goUtils";
 import { findJavaHomes, getJavaVersion } from "./javaUtils";
 import { NODE_EXEC_FILENAME } from "./nodeUtils";
-import {findPythonLocation, getPythonVersion, PYTHON_EXEC_FILENAME} from "./pythonUtils";
+import {findPythonLocation, getPipLocationFromPythonDirectory, getPythonVersion, PIP_EXEC_FILENAME} from "./pythonUtils";
 
 export const logger = getLogger("langServer");
 const langServerExecFolder = path.join(getLibraryFolder(), "languageServers");
@@ -187,13 +187,28 @@ class LangServerConfigStore {
         }
     }
 
+    private isPythonLSInstalled() {
+        const pipLocation = getPipLocationFromPythonDirectory(this.serverLocations["python"]);
+        const { stdout, stderr } = cp.spawnSync(
+            PIP_EXEC_FILENAME,
+            ["show", "python-lsp-server"],
+            { cwd: pipLocation, encoding: "utf-8" }
+        );
+        const trimmedError = _.trim(stderr);
+        const trimmedOutput = _.trim(stdout);
+        return _.includes(trimmedOutput, "Name: python-lsp-server") && !_.startsWith(trimmedError, "WARNING: Package(s) not found:");
+    }
+
     private installPythonLS() {
-        const {stderr} = cp.spawnSync(PYTHON_EXEC_FILENAME,
-            ["-m", "pip", "install", "python-lsp-server[all]"],
-            { cwd: this.serverLocations["python"], encoding: "utf-8" }
+        const pipLocation = getPipLocationFromPythonDirectory(this.serverLocations["python"]);
+        const {stderr} = cp.spawnSync(PIP_EXEC_FILENAME,
+            ["install", "python-lsp-server[all]"],
+            { cwd: pipLocation, encoding: "utf-8" }
         );
         if (stderr) {
-            throw new Error(stderr);
+            if (!this.isPythonLSInstalled()) {
+                throw new Error(stderr);
+            }
         }
     }
 
@@ -201,29 +216,9 @@ class LangServerConfigStore {
         if (!this.serverLocations["python"]) {
             this.findPythonLocation();
         }
-        try {
-            const { stdout, stderr } = cp.spawnSync(
-                PYTHON_EXEC_FILENAME,
-                ["-m", "pip", "show", "python-lsp-server"],
-                { cwd: this.serverLocations["python"], encoding: "utf-8" }
-            );
-            const trimmedOutput = _.trim(stdout);
-            const trimmedError = _.trim(stderr);
-            if (trimmedError.startsWith("WARNING: Package(s) not found:") || trimmedOutput.startsWith("WARNING: Package(s) not found:")) {
-                this.installPythonLS();
-            } else {
-                throw new Error(stderr);
-            }
-        } catch (e) {
-            const trimmedError = _.trim(e.message);
-            console.error(trimmedError);
-            if (trimmedError.includes("WARNING: Package(s) not found: python-lsp-server")) {
-                this.installPythonLS();
-            } else {
-                logger.error(trimmedError);
-                // Make sure server is not enabled
-                throw e;
-            }
+        const isInstalled = this.isPythonLSInstalled();
+        if (!isInstalled) {
+            this.installPythonLS();
         }
     }
 
