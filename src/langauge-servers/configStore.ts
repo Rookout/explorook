@@ -189,14 +189,12 @@ class LangServerConfigStore {
 
     private isPythonLSInstalled() {
         const pipLocation = getPipLocationFromPythonDirectory(this.serverLocations["python"]);
-        const { stdout, stderr } = cp.spawnSync(
+        const { stderr } = cp.spawnSync(
             PIP_EXEC_FILENAME,
             ["show", "python-lsp-server"],
             { cwd: pipLocation, encoding: "utf-8" }
         );
-        const trimmedError = _.trim(stderr);
-        const trimmedOutput = _.trim(stdout);
-        return _.includes(trimmedOutput, "Name: python-lsp-server") && !_.startsWith(trimmedError, "WARNING: Package(s) not found:");
+        return _.isEmpty(stderr);
     }
 
     private installPythonLS() {
