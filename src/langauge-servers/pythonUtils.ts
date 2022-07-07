@@ -9,6 +9,7 @@ const isWindows = process.platform.match("win32");
 const isMac = process.platform.match("darwin");
 const isLinux = process.platform.match("linux");
 export const PYTHON_EXEC_FILENAME = isWindows ? "python.exe" : "python3";
+export const PIP_EXEC_FILENAME = isWindows ? "pip.exe" : "pip3";
 
 export interface PythonRuntime {
     location: string;
@@ -75,6 +76,15 @@ const fromCommonPlaces = (): string[] => {
     }
 
     return pythonLocations;
+};
+
+export const getPipLocationFromPythonDirectory = (pythonLocation: string): string => {
+    const pipExecLocation = isWindows ? path.join(pythonLocation, "Scripts", PIP_EXEC_FILENAME) : path.join(pythonLocation, PIP_EXEC_FILENAME);
+    if (fs.existsSync(pipExecLocation) && (fs.lstatSync(pipExecLocation).isFile() || fs.lstatSync(pipExecLocation).isSymbolicLink())) {
+        return path.dirname(pipExecLocation);
+    } else {
+        throw new Error("Pip not found");
+    }
 };
 
 export const getPythonVersion = (pythonExecutableFolder: string): string => checkVersionByCLI(pythonExecutableFolder);
