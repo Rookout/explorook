@@ -83,7 +83,7 @@ export const start = async (options: StartOptions) => {
       updateGitLoadingState: settings.updateGitLoadingState
     }),
     schema: schemaWithMiddleware,
-    introspection: true,
+    introspection: false,
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
         notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors } });
