@@ -1,4 +1,5 @@
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { ApolloServerPluginLandingPageDisabled } from "apollo-server-core";
 import { ApolloServer } from "apollo-server-express";
 import * as bodyParser from "body-parser";
 import * as cors from "cors";
@@ -84,6 +85,7 @@ export const start = async (options: StartOptions) => {
     }),
     schema: schemaWithMiddleware,
     introspection: false,
+    plugins: [ApolloServerPluginLandingPageDisabled()],
     formatError: (errors: any) => {
       if (errors && !/repository\s\"(.*)?\"\snot\sfound/.test(errors.toString())) {
         notify(`Explorook returned graphql errors to client: ${errors}`, { metaData: { errors } });
