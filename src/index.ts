@@ -46,7 +46,9 @@ const TEN_MINUTES = 1000 * 60 * 10;
 const updateParamMap = new Map<string, {ymlFile: string, fileExt: string, osName: string}>([
                     ["win32", {ymlFile: "latest.yml", fileExt: "exe", osName: "windows"}],
                     ["darwin", {ymlFile: "latest-mac.yml", fileExt: "dmg", osName: "mac"}],
+                    ["darwin-arm64", {ymlFile: "latest-mac.yml", fileExt: "-arm64.dmg", osName: "mac"}],
                     ["linux", {ymlFile: "latest-linux.yml", fileExt: "AppImage", osName: "linux"}],
+                    ["linux-arm64", {ymlFile: "latest-linux-arm64.yml", fileExt: "-arm64.AppImage", osName: "linux"}],
 ]);
 
 let mainWindow: Electron.BrowserWindow;
@@ -322,7 +324,9 @@ async function getLatestVersionLink() {
 }
 
 async function getPlatformDownloadLink(verNum: string) {
-  const { ymlFile, fileExt, osName } = updateParamMap.get(os.platform());
+  const platform = os.platform();
+  const archExtension = os.arch() === "arm64" && platform !== "win32" ? "-arm64" : "";
+  const { ymlFile, fileExt, osName } = updateParamMap.get(`${platform}${archExtension}`);
   const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${ymlFile}`;
   const response = await fetch(versionUrl);
   const availableVersions = await response.text();
