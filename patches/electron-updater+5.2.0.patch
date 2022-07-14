@@ -1,0 +1,60 @@
+diff --git a/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js b/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js
+index 9d35ee9..8151efc 100644
+--- a/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js
++++ b/node_modules/electron-updater/out/windowsExecutableCodeSignatureVerifier.js
+@@ -43,8 +43,8 @@ function verifySignature(publisherNames, unescapedTempUpdateFile, logger) {
+             try {
+                 if (error != null || stderr) {
+                     handleError(logger, error, stderr);
+-                    resolve(null);
+-                    return;
++                    logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error || stderr}. Aborting update.`);
++                    throw error;
+                 }
+                 const data = parseOut(Buffer.from(stdout, "base64").toString("utf-8"));
+                 if (data.Status === 0) {
+@@ -64,6 +64,7 @@ function verifySignature(publisherNames, unescapedTempUpdateFile, logger) {
+                             match = true;
+                         }
+                         if (match) {
++                            // Indicates that the signature looks good and CN is in publisherNames
+                             resolve(null);
+                             return;
+                         }
+@@ -75,8 +76,7 @@ function verifySignature(publisherNames, unescapedTempUpdateFile, logger) {
+             }
+             catch (e) {
+                 handleError(logger, e, null);
+-                resolve(null);
+-                return;
++                throw error;
+             }
+         });
+     });
+@@ -101,21 +101,22 @@ function parseOut(out) {
+ }
+ function handleError(logger, error, stderr) {
+     if (isOldWin6()) {
+-        logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error || stderr}. Ignoring signature validation due to unsupported powershell version. Please upgrade to powershell 3 or higher.`);
++        logger.warn(`Cannot execute Get-AuthenticodeSignature: ${error || stderr}. Aborting update due to unsupported powershell version. Please upgrade to powershell 3 or higher.`);        return;
+         return;
+     }
+     try {
+         child_process_1.execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "ConvertTo-Json test"], { timeout: 10 * 1000 });
+     }
+     catch (testError) {
+-        logger.warn(`Cannot execute ConvertTo-Json: ${testError.message}. Ignoring signature validation due to unsupported powershell version. Please upgrade to powershell 3 or higher.`);
++        logger.warn(`Cannot execute ConvertTo-Json: ${testError.message}. Aborting update due to unsupported powershell version. Please upgrade to powershell 3 or higher.`);
+         return;
+     }
+     if (error != null) {
+-        throw error;
++        logger.warn(`Cannot execute Get-AuthenticodeSignature, error: ${error}. Aborting update.`);
++        return;
+     }
+     if (stderr) {
+-        throw new Error(`Cannot execute Get-AuthenticodeSignature, stderr: ${stderr}. Failing signature validation due to unknown stderr.`);
++        logger.warn(`Cannot execute Get-AuthenticodeSignature, stderr: ${stderr}. Aborting update.`);
+     }
+ }
+ function isOldWin6() {
