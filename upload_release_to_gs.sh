@@ -14,6 +14,8 @@ MAC_ARM64_DMG_FILE_NAME="Rookout Desktop App-${VERSION}-arm64.dmg"
 MAC_ARM64_DMG_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}-arm64.dmg"
 MAC_ZIP_FILE_NAME="Rookout Desktop App-${VERSION}-mac.zip"
 MAC_ZIP_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}-mac.zip"
+MAC_ARM64_ZIP_FILE_NAME="Rookout Desktop App-${VERSION}-arm64-mac.zip"
+MAC_ARM64_ZIP_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}-arm64-mac.zip"
 LINUX_FILE_NAME="Rookout Desktop App-${VERSION}.AppImage"
 LINUX_NO_SPACE_FILE_NAME="Rookout-Desktop-App-${VERSION}.AppImage"
 LINUX_ARM64_FILE_NAME="Rookout Desktop App-${VERSION}-arm64.AppImage"
@@ -33,6 +35,8 @@ gsutil acl ch -u AllUsers:R "gs://${BUCKET}/explorook/mac/${MAC_ARM64_DMG_NO_SPA
 
 gsutil cp "${INSTALLERS_DIR}${MAC_ZIP_FILE_NAME}" "gs://${BUCKET}/explorook/mac/${MAC_ZIP_NO_SPACE_FILE_NAME}"
 gsutil acl ch -u AllUsers:R "gs://${BUCKET}/explorook/mac/${MAC_ZIP_NO_SPACE_FILE_NAME}"
+gsutil cp "${INSTALLERS_DIR}${MAC_ARM64_ZIP_FILE_NAME}" "gs://${BUCKET}/explorook/mac/${MAC_ARM64_ZIP_NO_SPACE_FILE_NAME}"
+gsutil acl ch -u AllUsers:R "gs://${BUCKET}/explorook/mac/${MAC_ARM64_ZIP_NO_SPACE_FILE_NAME}"
 
 echo "Uploading Linux Installer..."
 gsutil cp "${INSTALLERS_DIR}${LINUX_FILE_NAME}" "gs://${BUCKET}/explorook/linux/${LINUX_NO_SPACE_FILE_NAME}"
