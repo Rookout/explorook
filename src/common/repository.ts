@@ -3,7 +3,7 @@ export interface Repository {
     fullpath: string;
     id: string;
     indexDone?: boolean;
-    indexRunning?: boolean;
+    indexLimitReached?: boolean;
     listTree?(): string[];
     reIndex?(): void;
 }
