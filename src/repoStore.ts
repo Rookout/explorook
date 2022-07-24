@@ -53,6 +53,7 @@ export class Repo {
             fullpath: this.fullpath,
             id: this.id,
             indexDone: this.indexer.indexDone,
+            indexRunning: this.indexer.indexRunning
         };
     }
 }
