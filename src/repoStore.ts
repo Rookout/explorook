@@ -53,6 +53,7 @@ export class Repo {
             fullpath: this.fullpath,
             id: this.id,
             indexDone: this.indexer.indexDone,
+            indexLimitReached: !this.indexer.indexDone && !this.indexer.indexRunning
         };
     }
 }
