@@ -129,7 +129,7 @@ const fetchAllPages = async (
         });
         const pageRes: any = await res.json();
         if (Array.isArray(pageRes.values)) {
-            results = [...results, ...pageRes.values];
+            results = _.concat(results, pageRes.values);
         } else {
             logger.error("Bitbucket OnPrem paginated request returned an unexpected value", {res, badValues: pageRes.values});
             notify("Bitbucket OnPrem paginated request returned an unexpected value", { metaData: {
