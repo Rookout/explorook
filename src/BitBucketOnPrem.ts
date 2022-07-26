@@ -114,37 +114,46 @@ const fetchTreeParallel =
 };
 
 const fetchAllPages = async (
-    {url, accessToken, maxPageSize, hasQueryParams}: {url: string; accessToken: string; maxPageSize: number, hasQueryParams: boolean}
+    { url, accessToken, maxPageSize, hasQueryParams }: { url: string; accessToken: string; maxPageSize: number; hasQueryParams: boolean; }
 ): Promise<string[]> => {
     let isLastPage = false;
     let start = 0;
     let results: string[] = [];
-    while (!isLastPage) {
-        const startQueryParam = hasQueryParams ? `&start=${start}` : `?start=${start}`;
-        const fetchUrl = `${url}${startQueryParam}&limit=${maxPageSize}`;
-        const res = await fetchNoCache(fetchUrl, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+    try {
+        while (!isLastPage) {
+            const startQueryParam = hasQueryParams ? `&start=${start}` : `?start=${start}`;
+            const fetchUrl = `${url}${startQueryParam}&limit=${maxPageSize}`;
+            const res = await fetchNoCache(fetchUrl, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const pageBody: any = await res.json();
+            if (Array.isArray(pageBody.values)) {
+                results = _.concat(results, pageBody.values);
+            } else {
+                logger.error("Bitbucket OnPrem paginated request returned an unexpected value", {res, badValues: pageBody.values});
+                notify("Bitbucket OnPrem paginated request returned an unexpected value", { metaData: {
+                        resStatus: res.status, badValues: pageBody.values
+                    }});
+                return [];
             }
-        });
-        const pageRes: any = await res.json();
-        if (Array.isArray(pageRes.values)) {
-            results = _.concat(results, pageRes.values);
-        } else {
-            logger.error("Bitbucket OnPrem paginated request returned an unexpected value", {res, badValues: pageRes.values});
-            notify("Bitbucket OnPrem paginated request returned an unexpected value", { metaData: {
-                resStatus: res.status, badValues: pageRes.values
-            }});
-            return [];
-        }
 
-        // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
-        isLastPage = pageRes.isLastPage;
-        if (!isLastPage) {
-            start = pageRes.nextPageStart;
+            // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
+            isLastPage = pageBody.isLastPage;
+            if (!isLastPage) {
+                start = pageBody.nextPageStart;
+            }
         }
+        return results;
+    } catch (e) {
+        logger.error("Failed to get bitbucket on prem paginated result", {
+            e,
+            url
+        });
+        notify(e);
+        return [];
     }
-    return results;
 };
 
 export const getFileTreeByPath =
@@ -207,16 +216,9 @@ export const getFileTreeFromBitbucket =
         }).toString();
 
         logger.debug("Getting files for", {projectKey, repoName, url, commit});
-        let files: string[];
-        try {
-            files = await fetchAllPages({url: fileTreeUrl, accessToken, maxPageSize: MAX_PAGE_SIZES.FILE_TREE_RECURSIVE, hasQueryParams: true});
-        } catch (e) {
-            logger.error("Failed to get bitbucket on prem files", {
-                e
-            });
-            notify(e);
-            files = [];
-        }
+        const files: string[] = await fetchAllPages({
+            url: fileTreeUrl, accessToken, maxPageSize: MAX_PAGE_SIZES.FILE_TREE_RECURSIVE, hasQueryParams: true
+        });
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
         return files;
     };
@@ -404,18 +406,11 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
 export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
     logger.debug("Getting projects for user", {url});
     const projectsQuery = UrlAssembler(url).template("/rest/api/1.0/projects").toString();
-    let projects: string[];
-    try {
-        projects = await fetchAllPages({url: projectsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.PROJECTS, hasQueryParams: false});
-    } catch (e) {
-        logger.error("Failed to get bitbucket on prem projects", {
-            e
-        });
-        notify(e);
-        projects = [];
-    }
+    const projects: string[] = await fetchAllPages({
+        url: projectsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.PROJECTS, hasQueryParams: false
+    });
     logger.debug("Finished getting projects for user. Result:\n", JSON.stringify(projects));
-    return projects || [];
+    return projects;
 };
 
 export const getReposForProjectFromBitbucket = async ({url, accessToken, projectKey}: BitbucketOnPrem) => {
@@ -423,16 +418,9 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
     const reposQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos").param({
         projectKey
     }).toString();
-    let repos: string[];
-    try {
-        repos = await fetchAllPages({url: reposQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.REPOSITORIES, hasQueryParams: false});
-    } catch (e) {
-        logger.error("Failed to get bitbucket on prem repos", {
-            e
-        });
-        notify(e);
-        repos = [];
-    }
+    const repos: string[] = await fetchAllPages({
+        url: reposQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.REPOSITORIES, hasQueryParams: false
+    });
     logger.debug("Finished getting repos", {url, projectKey, repos: JSON.stringify(repos)});
     return repos;
 };
@@ -443,16 +431,9 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
         projectKey,
         repoName
     }).toString();
-    let commits: string[];
-    try {
-        commits = await fetchAllPages({url: commitsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.COMMITS, hasQueryParams: false});
-    } catch (e) {
-        logger.error("Failed to get bitbucket on prem commits", {
-            e
-        });
-        notify(e);
-        commits = [];
-    }
+    const commits: string[] = await fetchAllPages({
+        url: commitsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.COMMITS, hasQueryParams: false
+    });
     logger.debug("Finished getting commits for repo", {url, projectKey, repoName, commits: JSON.stringify(commits)});
     return commits;
 };
@@ -463,16 +444,9 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
         projectKey,
         repoName
     }).toString();
-    let branches: string[];
-    try {
-        branches = await fetchAllPages({url: branchesQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.BRANCHES, hasQueryParams: false});
-    } catch (e) {
-        logger.error("Failed to get bitbucket on prem branches", {
-            e
-        });
-        notify(e);
-        branches = [];
-    }
+    const branches: string[] = await fetchAllPages({
+        url: branchesQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.BRANCHES, hasQueryParams: false
+    });
     logger.debug("Finished getting branches for repo", {url, projectKey, repoName, branches: JSON.stringify(branches)});
     return branches;
 };
