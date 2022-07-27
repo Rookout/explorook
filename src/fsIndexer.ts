@@ -9,7 +9,7 @@ const defaultIgnores = [/\.git/, /\.svn/, /\.hg/, /CVS/, /\.DS_Store/,
     /\.project/, /\.cache/, /\.gradle/, /\.idea/, /\.kube/, /\.vscode/, /\.history/, /\.eggs/];
 const ignoreRegex = /.*(\.pyc|\.class|\.jar|\.svg|\.png|\.mxml|\.html|\.css|\.scss|\.dll|\.pdb|\.exe|\.csproj|\.txt|\.xml)$/i;
 // TODO: check performance to the limit and increase as necessary
-const listLimit = 50000;
+const listLimit = 300_000;
 
 // This worker used to index all the filenames in the repository
 // but we changed it to just keep a list of all the files instead.

@@ -14,13 +14,18 @@ let repoCurrentlyBeingCached: {projectKey: string, repoName: string, commit: str
 let abortCache = false;
 
 
-// So, BitBucket can really perform well when asked for large datasets.
-// This saves on tons of time when you fetch large amounts of files instead of the default limit which is 25....
-const FETCH_LIMIT = 30000;
+// Max page sizes of various bitbucket api functions
 // Used to check the bitbucket instance's configured limit in comparison to the default limit, which is 100K
 // Documentation: https://confluence.atlassian.com/bitbucketserver070/bitbucket-server-config-properties-996644784.html
-// Configuration's name: page.max.directory.recursive.children
-const DEFAULT_TREE_FETCH_LIMIT = 100_000;
+// Configuration's name: page.max.directory.recursive.children, page.max...
+const MAX_PAGE_SIZES = {
+    FILE_TREE_RECURSIVE: 100_000,
+    FILE_TREE_DIR: 1_000,
+    PROJECTS: 1_000,
+    REPOSITORIES: 1_000,
+    BRANCHES: 1_000,
+    COMMITS: 100
+};
 
 const FILES_API_TEMPLATE = "/rest/api/1.0/projects/:projectKey/repos/:repoName/files";
 
@@ -108,6 +113,49 @@ const fetchTreeParallel =
     return Promise.all(requests);
 };
 
+const fetchAllPages = async (
+    { url, accessToken, maxPageSize, hasQueryParams }: { url: string; accessToken: string; maxPageSize: number; hasQueryParams: boolean; }
+): Promise<string[]> => {
+    let isLastPage = false;
+    let start = 0;
+    let results: string[] = [];
+    try {
+        while (!isLastPage) {
+            const startQueryParam = hasQueryParams ? `&start=${start}` : `?start=${start}`;
+            const fetchUrl = `${url}${startQueryParam}&limit=${maxPageSize}`;
+            const res = await fetchNoCache(fetchUrl, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const pageBody: any = await res.json();
+            if (Array.isArray(pageBody.values)) {
+                results = _.concat(results, pageBody.values);
+            } else {
+                logger.error("Bitbucket OnPrem paginated request returned an unexpected value", {res, badValues: pageBody.values});
+                notify("Bitbucket OnPrem paginated request returned an unexpected value", { metaData: {
+                        resStatus: res.status, badValues: pageBody.values
+                    }});
+                return [];
+            }
+
+            // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
+            isLastPage = pageBody.isLastPage;
+            if (!isLastPage) {
+                start = pageBody.nextPageStart;
+            }
+        }
+        return results;
+    } catch (e) {
+        logger.error("Failed to get bitbucket on prem paginated result", {
+            e,
+            url
+        });
+        notify(e);
+        return [];
+    }
+};
+
 export const getFileTreeByPath =
     async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem): Promise<string[]> => {
         const templateUrl: string = addSlugToUrl("rest/api/1.0/projects/:projectKey/repos/:repoName/browse", filePath);
@@ -127,7 +175,7 @@ export const getFileTreeByPath =
         let start = 0;
         const files: string[] = [];
         while (!isLastPage) {
-            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${FETCH_LIMIT}`, {
+            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${MAX_PAGE_SIZES.FILE_TREE_DIR}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -168,31 +216,9 @@ export const getFileTreeFromBitbucket =
         }).toString();
 
         logger.debug("Getting files for", {projectKey, repoName, url, commit});
-        let isLastPage = false;
-        let start = 0;
-        let files: string[] = [];
-        while (!isLastPage) {
-            const res = await fetchNoCache(`${fileTreeUrl}&start=${start}&limit=${FETCH_LIMIT}`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
-            const fileList: any = await res.json();
-            if (Array.isArray(fileList.values)) {
-                files = [...files, ...fileList.values];
-            } else {
-                notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileList}});
-                logger.error("Bitbucket OnPrem files tree request returned an unexpected value", {res, fileList});
-                return [];
-            }
-
-            // If there are more files than the limit the API is paged. Get the page starting at the end of this request.
-            isLastPage = fileList.isLastPage;
-            if (!isLastPage) {
-                start = fileList.nextPageStart;
-                logger.debug("File tree is paged. Getting next page", {nextPageStart: start});
-            }
-        }
+        const files: string[] = await fetchAllPages({
+            url: fileTreeUrl, accessToken, maxPageSize: MAX_PAGE_SIZES.FILE_TREE_RECURSIVE, hasQueryParams: true
+        });
         logger.debug("Finished getting files for", {projectKey, repoName, url, commit});
         return files;
     };
@@ -323,7 +349,7 @@ export const getFileTreePageLimit =
             repoName
         }).query({
             at: commit,
-            limit: DEFAULT_TREE_FETCH_LIMIT
+            limit: MAX_PAGE_SIZES.FILE_TREE_RECURSIVE
         }).toString();
 
         logger.debug("Getting Bitbucket server's limit for tree fetching using", { fileTreeUrl });
@@ -380,23 +406,11 @@ export const getUserFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) 
 export const getProjectsFromBitbucket = async ({url, accessToken}: BitbucketOnPrem) => {
     logger.debug("Getting projects for user", {url});
     const projectsQuery = UrlAssembler(url).template("/rest/api/1.0/projects").toString();
-    const res = await fetchNoCache(projectsQuery, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
+    const projects: string[] = await fetchAllPages({
+        url: projectsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.PROJECTS, hasQueryParams: false
     });
-    let projects = [];
-    try {
-        projects = await res.json();
-    } catch (e) {
-        logger.error("Failed to parse bitbucket on prem projects", {
-            e,
-            res
-        });
-        notify(e);
-    }
     logger.debug("Finished getting projects for user. Result:\n", JSON.stringify(projects));
-    return projects?.values || [];
+    return projects;
 };
 
 export const getReposForProjectFromBitbucket = async ({url, accessToken, projectKey}: BitbucketOnPrem) => {
@@ -404,14 +418,11 @@ export const getReposForProjectFromBitbucket = async ({url, accessToken, project
     const reposQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos").param({
         projectKey
     }).toString();
-    const res = await fetchNoCache(reposQuery, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
+    const repos: string[] = await fetchAllPages({
+        url: reposQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.REPOSITORIES, hasQueryParams: false
     });
-    const repos = await res.json();
     logger.debug("Finished getting repos", {url, projectKey, repos: JSON.stringify(repos)});
-    return repos.values;
+    return repos;
 };
 
 export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
@@ -420,14 +431,11 @@ export const getCommitsForRepoFromBitbucket = async ({url, accessToken, projectK
         projectKey,
         repoName
     }).toString();
-    const res = await fetchNoCache(commitsQuery, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
+    const commits: string[] = await fetchAllPages({
+        url: commitsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.COMMITS, hasQueryParams: false
     });
-    const commits = await res.json();
     logger.debug("Finished getting commits for repo", {url, projectKey, repoName, commits: JSON.stringify(commits)});
-    return commits.values;
+    return commits;
 };
 
 export const getBranchesForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName}: BitbucketOnPrem) => {
@@ -436,14 +444,11 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
         projectKey,
         repoName
     }).toString();
-    const res = await fetchNoCache(branchesQuery, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
+    const branches: string[] = await fetchAllPages({
+        url: branchesQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.BRANCHES, hasQueryParams: false
     });
-    const branches = await res.json();
     logger.debug("Finished getting branches for repo", {url, projectKey, repoName, branches: JSON.stringify(branches)});
-    return branches.values;
+    return branches;
 };
 
 export const getFileContentFromBitbucket = async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem) => {
