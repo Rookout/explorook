@@ -183,11 +183,21 @@ type BitbucketProject {
   id: Int
 }
 
+type BitbucketClone {
+  href: String
+  name: String
+}
+
+type BitbucketLinks {
+  clone: [BitbucketClone]
+}
+
 type BitbucketRepo {
   slug: String!
   id: Int!
   project: BitbucketProject!
   name: String!
+  links: BitbucketLinks
 }
 
 type BitbucketRepoBeingCached {
