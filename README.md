@@ -30,7 +30,7 @@ The Rookout desktop app ("explorook") allows you to navigate through your local 
 
 - Ease of use - set up once and easily access any directory or file you choose directly from the browser. No need to manually open or refresh files and folders; no additional privileges needed.
 - Git aware - seamlessly access your source code across all devices where the app is installed, regardless of the local paths to which you’ve cloned a git repository to. Easily collaborate with fellow developers working on the same code base. 
-- [Security](https://www.rookout.com/solution/source-code-security/) - maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
+- Security- maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
 
 ## Security
 
