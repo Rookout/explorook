@@ -1,1 +1,1 @@
-If this PR is updating explrook behavior even in the most minimal way, please bump up the version in `package.json`.
+Before merging the PR, please bump up the version in `package.json`.
