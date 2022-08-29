@@ -250,7 +250,6 @@ function main() {
   userSite = store.getOrCreate("user-site", "default");
   dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
   signedEula = Boolean(store.get("has-signed-eula", false));
-
   if (signedEula && (dataCollectionEnabled || process.env.development)) {
     initExceptionManager(() => userId);
     initAnalytics();
