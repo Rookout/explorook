@@ -310,7 +310,7 @@ async function update() {
   });
   const tryUpdate = async () => {
     try {
-      const latestVersion = await getLatestVersion();
+      const latestVersion = await getLatestVersionName();
       // If the minor and major did not change, don't auto update
       if (
           semver.major(latestVersion) === semver.major(app.getVersion()) &&
@@ -326,14 +326,14 @@ async function update() {
   tryUpdate();
 }
 
-async function getLatestVersion() {
+async function getLatestVersionName() {
   const LATEST_VERSION_URL = "https://api.github.com/repos/Rookout/explorook/releases/latest";
   const response = await fetch(LATEST_VERSION_URL);
   return (await response.json()).name;
 }
 
 async function getLatestVersionLink() {
-  const verNum = await getLatestVersion();
+  const verNum = await getLatestVersionName();
   return await getPlatformDownloadLink(verNum);
 }
 
