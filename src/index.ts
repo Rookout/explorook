@@ -66,7 +66,6 @@ let analytics: Analytics;
 let userId: string;
 let userSite: string;
 let signedEula: boolean = false;
-let autoUpdatePatches: boolean = true;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -158,9 +157,6 @@ function registerIpc() {
   ipcMain.on("exception-manager-is-enabled-req", (e: IpcMainEvent) => {
     e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
   });
-  ipcMain.on("auto-update-patches-is-enabled-req", (e: IpcMainEvent) => {
-    e.sender.send("auto-update-patches-enabled-changed", autoUpdatePatches);
-  });
   ipcMain.on("exception-manager-enabled-set", (e: IpcMainEvent, enable: boolean) => {
     store.set("sentry-enabled", enable);
     e.sender.send("exception-manager-enabled-changed", enable);
@@ -185,10 +181,6 @@ function registerIpc() {
       store.set("linux-start-with-os", false);
       al.disable().then(() => e.sender.send("auto-launch-is-enabled-changed", false));
     }
-  });
-  ipcMain.on("auto-update-patches-set", (e: IpcMainEvent, enable: boolean) => {
-    store.set("auto-update-patches", Boolean(enable));
-    e.sender.send("auto-update-patches-enabled-changed", enable);
   });
 }
 
@@ -258,7 +250,6 @@ function main() {
   userSite = store.getOrCreate("user-site", "default");
   dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
   signedEula = Boolean(store.get("has-signed-eula", false));
-  autoUpdatePatches = Boolean(store.get("auto-update-patches", true));
 
   if (signedEula && (dataCollectionEnabled || process.env.development)) {
     initExceptionManager(() => userId);
@@ -319,15 +310,13 @@ async function update() {
   });
   const tryUpdate = async () => {
     try {
-      // If autoUpdatePatches is false, don't update if major and minor did not change
-      if (!autoUpdatePatches) {
-        const latestVersion = await getLatestVersion();
-        if (
-            semver.major(latestVersion) === semver.major(app.getVersion()) &&
-            semver.minor(latestVersion) === semver.minor(app.getVersion())
-        ) {
-          return;
-        }
+      const latestVersion = await getLatestVersion();
+      // If the minor and major did not change, don't auto update
+      if (
+          semver.major(latestVersion) === semver.major(app.getVersion()) &&
+          semver.minor(latestVersion) === semver.minor(app.getVersion())
+      ) {
+        return;
       }
       await autoUpdater.checkForUpdates();
     } catch (error) {
