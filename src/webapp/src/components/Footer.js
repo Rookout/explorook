@@ -19,6 +19,7 @@ const styles = {
 export const Footer = ({ classes, ...props }) => {
     const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(false);
     const [exceptionManagerEnabled, setExceptionManagerEnabled] = useState(false);
+    const [autoUpdatePatchesEnabled, setAutoUpdatePatchesEnabled] = useState(true);
 
     useEffect(() => {
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
@@ -27,8 +28,12 @@ export const Footer = ({ classes, ...props }) => {
         ipcRenderer.on("exception-manager-enabled-changed", (event, isEnabled) => {
             setExceptionManagerEnabled(isEnabled);
         });
+        ipcRenderer.on("auto-update-patches-enabled-changed", (event, isEnabled) => {
+            setAutoUpdatePatchesEnabled(isEnabled);
+        });
         ipcRenderer.send("auto-launch-is-enabled-req");
         ipcRenderer.send("exception-manager-is-enabled-req");
+        ipcRenderer.send("auto-update-patches-is-enabled-req");
     }, []);
 
     const onAutoLaunchChecked = event => {
@@ -37,6 +42,11 @@ export const Footer = ({ classes, ...props }) => {
 
     const onExceptionManagerEnableChecked = event => {
         ipcRenderer.send("exception-manager-enabled-set", event.target.checked);
+        alert("Changes will take effect after you restart the app");
+    };
+
+    const onAutoUpdatePatchesEnableChecked = event => {
+        ipcRenderer.send("auto-update-patches-set", event.target.checked);
         alert("Changes will take effect after you restart the app");
     };
 
@@ -72,6 +82,15 @@ export const Footer = ({ classes, ...props }) => {
                     }}
                 />
                 <p title="Allow reporting errors to our servers" className="gray-shaded">Allow errors collection</p>
+                <Checkbox
+                    checked={autoUpdatePatchesEnabled}
+                    onChange={onAutoUpdatePatchesEnableChecked}
+                    classes={{
+                        root: classes.root,
+                        checked: classes.checked,
+                    }}
+                />
+                <p title="Auto update new patch versions when they come out" className="gray-shaded">Auto update patches</p>
             </ FormGroup>
         </div>
     )
