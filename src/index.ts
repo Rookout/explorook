@@ -330,6 +330,9 @@ async function update() {
 async function getLatestVersionName() {
   const LATEST_VERSION_URL = "https://api.github.com/repos/Rookout/explorook/releases/latest";
   const response = await fetch(LATEST_VERSION_URL);
+  if (!response.ok) {
+    throw new Error(`Error fetching latest version. Got: ${response.status} status with body: ${await response.text()}`);
+  }
   return (await response.json()).name;
 }
 
