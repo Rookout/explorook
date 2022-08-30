@@ -27,7 +27,7 @@ import AutoLaunch = require("auto-launch");
 import fetch from "node-fetch";
 import * as os from "os";
 const YAML = require("yaml");
-import semver from "semver";
+import {SemVer} from "semver";
 import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
 initElectronRemote();
@@ -310,10 +310,12 @@ async function update() {
   const tryUpdate = async () => {
     try {
       const latestVersion = await getLatestVersionName();
+      const latestVersionObj = new SemVer(latestVersion);
+      const currentVersionObj = new SemVer(app.getVersion());
       // If the minor and major did not change, don't auto update
       if (
-          semver.major(latestVersion) === semver.major(app.getVersion()) &&
-          semver.minor(latestVersion) === semver.minor(app.getVersion())
+          latestVersionObj.major === currentVersionObj.major &&
+          latestVersionObj.minor === currentVersionObj.minor
       ) {
         return;
       }
