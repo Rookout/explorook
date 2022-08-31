@@ -2808,10 +2808,10 @@ electron-updater@5.2.0:
     semver "^7.3.5"
     typed-emitter "^2.1.0"
 
-electron@19.0.8:
-  version "19.0.8"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-19.0.8.tgz#c4d4ba915de554f2926261eb37d3527d2b092d4c"
-  integrity sha512-OWK3P/NbDFfBUv+wbYv1/OV4jehY5DQPT7n1maQJfN9hsnrWTMktXS/bmS05eSUAjNAzHmKPKfiKH2c1Yr7nGw==
+electron@19.0.13:
+  version "19.0.13"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-19.0.13.tgz#68bcf7d94f249dbae9a3d4d1794d45a24db666dc"
+  integrity sha512-11Ne0VJy8L1GU7sGcbJHhkAz73szR27uP4vmfUVGlppC/ipA39AUkdzqiQoPC/F1EJdjEOBvHySG8K8Xe9yETA==
   dependencies:
     "@electron/get" "^1.14.1"
     "@types/node" "^16.11.26"

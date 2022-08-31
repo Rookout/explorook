@@ -27,6 +27,7 @@ import AutoLaunch = require("auto-launch");
 import fetch from "node-fetch";
 import * as os from "os";
 const YAML = require("yaml");
+import {SemVer} from "semver";
 import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
 initElectronRemote();
@@ -308,6 +309,16 @@ async function update() {
   });
   const tryUpdate = async () => {
     try {
+      const latestVersion = await getLatestVersionName();
+      const latestVersionObj = new SemVer(latestVersion);
+      const currentVersionObj = new SemVer(app.getVersion());
+      // If the minor and major did not change, don't auto update
+      if (
+          latestVersionObj.major === currentVersionObj.major &&
+          latestVersionObj.minor === currentVersionObj.minor
+      ) {
+        return;
+      }
       await autoUpdater.checkForUpdates();
     } catch (error) {
     }
@@ -316,10 +327,17 @@ async function update() {
   tryUpdate();
 }
 
-async function getLatestVersionLink() {
+async function getLatestVersionName() {
   const LATEST_VERSION_URL = "https://api.github.com/repos/Rookout/explorook/releases/latest";
   const response = await fetch(LATEST_VERSION_URL);
-  const verNum = (await response.json()).name;
+  if (!response.ok) {
+    throw new Error(`Error fetching latest version. Got: ${response.status} status with body: ${await response.text()}`);
+  }
+  return (await response.json()).name;
+}
+
+async function getLatestVersionLink() {
+  const verNum = await getLatestVersionName();
   return await getPlatformDownloadLink(verNum);
 }
 
