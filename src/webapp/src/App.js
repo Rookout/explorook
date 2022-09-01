@@ -7,7 +7,6 @@ import Footer from './components/Footer'
 import { ReposList } from './components/ReposList'
 import { EulaModal } from './components/EulaModal'
 import { EmptyState } from './components/EmptyState'
-import {UpdateFailedModal} from "./components/UpdateFailedModal";
 
 const INITIAL_HAS_SIGNED_EULA = ipcRenderer.sendSync('has-signed-eula')
 
@@ -36,7 +35,6 @@ export const App = ({ ...props }) => {
       </div>
       {hasSignedEula && <EmptyState />}
       {hasSignedEula && <ReposList />}
-      {hasSignedEula && <UpdateFailedModal />}
       {!hasSignedEula && (
         <div style={{ overflow: 'auto' }}>
           <div id='content-container'>
