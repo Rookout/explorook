@@ -258,6 +258,8 @@ div, span {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  height: 35px;
+  margin-bottom: 20px;
 }
 
 .eula-modal .agree {

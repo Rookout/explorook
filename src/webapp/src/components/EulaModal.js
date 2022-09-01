@@ -12,6 +12,8 @@ const styles = {
     border: '1px solid #9962FF',
     borderRadius: '17.5px',
     color: '#9962FF',
+    height: 'inherit',
+    width: '9em'
   },
   agreeButton: {
     backgroundColor: '#9962FF',
@@ -20,6 +22,8 @@ const styles = {
     '&:hover': {
       backgroundColor: '#AE83FF',
     },
+    height: 'inherit',
+    width: '9em'
   },
   agreeButtonDisabled: {
     backgroundColor: '#CAB4F3',
