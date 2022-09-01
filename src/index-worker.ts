@@ -126,7 +126,5 @@ ipcRenderer.on("set-log-level", (e: IpcRendererEvent, newLogLevel: string) => {
     setLogLevel(newLogLevel);
 });
 
-ipcRenderer.on("upgrade-version-failed", (e: IpcRendererEvent, msg) => ipcRenderer.sendTo(mainWindowId, "pop-failed-upgrade", msg));
-
 ipcRenderer.send("index-worker-up");
 ipcRenderer.send("exception-manager-is-enabled-req");

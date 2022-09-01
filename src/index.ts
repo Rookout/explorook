@@ -25,8 +25,6 @@ import { ExplorookStore } from "./explorook-store";
 const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
 import fetch from "node-fetch";
-import * as os from "os";
-const YAML = require("yaml");
 import {SemVer} from "semver";
 import { initExceptionManager, Logger, notify } from "./exceptionManager";
 
@@ -44,13 +42,6 @@ const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_b
 const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
 const SETTINGS_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_settings_white_18dp.png");
 const TEN_MINUTES = 1000 * 60 * 10;
-const updateParamMap = new Map<string, {ymlFile: string, fileExt: string, osName: string}>([
-                    ["win32", {ymlFile: "latest.yml", fileExt: "exe", osName: "windows"}],
-                    ["darwin", {ymlFile: "latest-mac.yml", fileExt: "dmg", osName: "mac"}],
-                    ["darwin-arm64", {ymlFile: "latest-mac.yml", fileExt: "-arm64.dmg", osName: "mac"}],
-                    ["linux", {ymlFile: "latest-linux.yml", fileExt: "AppImage", osName: "linux"}],
-                    ["linux-arm64", {ymlFile: "latest-linux-arm64.yml", fileExt: "-arm64.AppImage", osName: "linux"}],
-]);
 
 let mainWindow: Electron.BrowserWindow;
 let indexWorker: Electron.BrowserWindow;
@@ -288,16 +279,8 @@ async function update() {
     return;
   }
   autoUpdater.on("error",  async (error) => {
-    try {
-      // Make sure that GitHub is not available before showing the error message
-      const gitHubRes = await fetch("https://github.com/");
-      if (gitHubRes.ok) {
-        indexWorker.webContents.postMessage("upgrade-version-failed", {downloadUrl: await getLatestVersionLink()});
-        notify(error);
-      }
-    } catch (err) {
-      console.trace(`autoUpdater error: ${err}`);
-    }
+    console.error("autoUpdater error", {error});
+    notify(error);
   });
   let updateInterval: ReturnType<typeof setInterval> = null;
   autoUpdater.signals.updateDownloaded((info: UpdateInfo) => {
@@ -334,27 +317,6 @@ async function getLatestVersionName() {
     throw new Error(`Error fetching latest version. Got: ${response.status} status with body: ${await response.text()}`);
   }
   return (await response.json()).name;
-}
-
-async function getLatestVersionLink() {
-  const verNum = await getLatestVersionName();
-  return await getPlatformDownloadLink(verNum);
-}
-
-async function getPlatformDownloadLink(verNum: string) {
-  const platform = os.platform();
-  const archExtension = os.arch() === "arm64" && platform !== "win32" ? "-arm64" : "";
-  const { ymlFile, fileExt, osName } = updateParamMap.get(`${platform}${archExtension}`);
-  const versionUrl = `https://github.com/Rookout/explorook/releases/download/v${verNum}/${ymlFile}`;
-  const response = await fetch(versionUrl);
-  const availableVersions = await response.text();
-  /*
-  TODO Fix bug where files is undefined:
-  Trace: autoUpdater error: TypeError: Cannot read properties of undefined (reading 'map')
-  */
-  const fileNames = YAML.parse(availableVersions).files.map((file: { url: string, sha512: string, size: number }) => file.url);
-  const fileLink = fileNames.find((fileName: string) => fileName.includes(fileExt));
-  return `https://get.rookout.com/explorook/${osName}/${fileLink}`;
 }
 
 function displayWindowHiddenNotification() {
