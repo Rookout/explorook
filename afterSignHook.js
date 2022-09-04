@@ -33,6 +33,7 @@ module.exports = async function (params) {
             appPath: appPath,
             appleId: process.env.appleId,
             appleIdPassword: process.env.appleIdPassword,
+            tool: "notarytool" // This will prevent using the legacy altool to notarize (will be shut down by 2023)
         });
     } catch (error) {
         console.error(error);
