@@ -2808,10 +2808,10 @@ electron-updater@5.2.0:
     semver "^7.3.5"
     typed-emitter "^2.1.0"
 
-electron@19.0.13:
-  version "19.0.13"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-19.0.13.tgz#68bcf7d94f249dbae9a3d4d1794d45a24db666dc"
-  integrity sha512-11Ne0VJy8L1GU7sGcbJHhkAz73szR27uP4vmfUVGlppC/ipA39AUkdzqiQoPC/F1EJdjEOBvHySG8K8Xe9yETA==
+electron@19.0.15:
+  version "19.0.15"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-19.0.15.tgz#a410b43f56a628c9b38f88e896ec68daedbc3cb1"
+  integrity sha512-VB9cT/6VLg1GOSmEST3mGLN2VCrQMv75dcnEsHjXq6DjltStR/miiXKqujOTVFNzT4fxTRcDDGX5iFF51H+Jhw==
   dependencies:
     "@electron/get" "^1.14.1"
     "@types/node" "^16.11.26"
@@ -8276,11 +8276,6 @@ yallist@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
-
-yaml@^1.10.2:
-  version "1.10.2"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
-  integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
 yargs-parser@^13.1.0:
   version "13.1.1"
