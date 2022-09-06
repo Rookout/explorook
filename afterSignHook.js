@@ -17,9 +17,11 @@ module.exports = async function (params) {
     console.log('afterSign hook triggered');
 
     // Same appId in electron-builder.
-    let appId = 'com.rookout.explorook'
+    const appId = 'com.rookout.explorook';
+    // This will prevent using the legacy altool to notarize (will be shut down by 2023)
+    const tool = "notarytool";
 
-    let appPath = path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`);
+    const appPath = path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`);
     console.log(appPath)
     if (!fs.existsSync(appPath)) {
         throw new Error(`Cannot find application at: ${appPath}`);
@@ -30,10 +32,11 @@ module.exports = async function (params) {
     try {
         await electron_notarize.notarize({
             appBundleId: appId,
-            appPath: appPath,
+            appPath,
             appleId: process.env.appleId,
             appleIdPassword: process.env.appleIdPassword,
-            tool: "notarytool" // This will prevent using the legacy altool to notarize (will be shut down by 2023)
+            teamId: process.env.appleTeamId,
+            tool
         });
     } catch (error) {
         console.error(error);
