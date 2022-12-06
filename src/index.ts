@@ -18,7 +18,12 @@ import * as log from "electron-log";
 import * as Store from "electron-store";
 import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
-import { userInfo } from "os";
+import {
+  arch as operatingSystemArch,
+  platform as operatingSystemPlatform,
+  userInfo,
+  version as operatingSystemVersion
+} from "os";
 import * as path from "path";
 import {deeplinkHandler, initDeeplinks} from "./deeplinks";
 import { ExplorookStore } from "./explorook-store";
@@ -195,7 +200,10 @@ function flushAnalytics(callback: () => void) {
 
 function identifyAnalytics() {
   const { username } = userInfo();
-  analytics.identify({ userId, traits: { username } });
+  const osArch = operatingSystemArch();
+  const osPlatform = operatingSystemPlatform();
+  const osVersion = operatingSystemVersion();
+  analytics.identify({ userId, traits: { username, osPlatform, osArch, osVersion } });
 }
 
 function initAnalytics() {
