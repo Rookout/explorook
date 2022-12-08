@@ -58,7 +58,7 @@ const updateGitLoadingState = (isLoading: boolean, repo: string) => {
     ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", { isLoading, repo });
 };
 
-ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firstTimeLaunch: boolean, id: number) => {
+ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, firstTimeLaunch: boolean, id: number) => {
     mainWindowId = id;
     const port = 44512;
     try {
@@ -67,11 +67,8 @@ ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, token: string, firs
             throw new Error(`port ${port} in use`);
         }
         const userId: string = ipcRenderer.sendSync("get-user-id");
-        const userSite: string = ipcRenderer.sendSync("get-user-site");
         await graphQlServer.start({
             userId,
-            userSite,
-            accessToken: token,
             port,
             firstTimeLaunch,
             onAddRepoRequest,

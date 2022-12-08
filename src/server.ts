@@ -20,10 +20,6 @@ import { launchJavaLanguageServer } from "./langauge-servers/java";
 import { launchPythonLanguageServer } from "./langauge-servers/python";
 import {launchTypescriptLanguageServer} from "./langauge-servers/typescript";
 import {
-  authenticateController,
-  authenticateControllerV2,
-  authorizationMiddleware,
-  configureFirstTimeSettings,
   filterDirTraversal,
   logMiddleware,
   resolveRepoFromId,
@@ -36,14 +32,11 @@ export type onRemoveRepoRequestHandler = (repId: string) => Promise<boolean>;
 export type loadingStateUpdateHandler = (isLoading: boolean, repo: string) => void;
 
 export interface StartOptions {
-  accessToken?: string;
   userId?: string;
-  userSite?: string;
   port?: number;
   firstTimeLaunch?: boolean;
   onAddRepoRequest?: onAddRepoRequestHandler;
   onRemoveRepoRequest?: onRemoveRepoRequestHandler;
-  useTokenAuthorization?: boolean;
   updateGitLoadingState?: loadingStateUpdateHandler;
 }
 
@@ -62,14 +55,8 @@ const corsOptions = {
 };
 
 export const start = async (options: StartOptions) => {
-  const startedAt = new Date();
   const settings = { ...options, ...defaultOptions };
   const typeDefs = readFileSync(join(__dirname, `../graphql/schema.graphql`), { encoding: "utf8" });
-
-  const reconfigure = (id: string, site: string) => {
-    settings.userId = id;
-    settings.userSite = site;
-  };
 
   const schema = makeExecutableSchema({ typeDefs, resolvers });
   const schemaWithMiddleware = applyMiddleware(schema, logMiddleware, resolveRepoFromId, filterDirTraversal);
@@ -97,17 +84,6 @@ export const start = async (options: StartOptions) => {
 
   app.use(cors(corsOptions));
   app.use(bodyParser.json());
-  app.post("/configure", configureFirstTimeSettings(settings.firstTimeLaunch, startedAt, reconfigure));
-  // indicates that the authorization v2 feature is available (automatic)
-  app.get("/authorize/v2", (req, res) => res.status(200).send("AVAILABLE"));
-  app.post("/authorize/v2", authenticateControllerV2(settings));
-  // indicates that the authorization feature is available
-  app.get("/authorize/", (req, res) => res.status(200).send("AVAILABLE"));
-  app.post("/authorize/:env", authenticateController(settings.accessToken, settings.userId));
-
-  if (options.useTokenAuthorization) {
-    app.use(authorizationMiddleware(settings.accessToken));
-  }
 
   await apolloServer.start();
   apolloServer.applyMiddleware({ app, path: "/" });
