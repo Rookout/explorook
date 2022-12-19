@@ -349,7 +349,7 @@ function createWindows() {
     width: 400,
     height: 400,
     show: !!process.env.development,
-    webPreferences: { nodeIntegration: true, contextIsolation: false }
+    webPreferences: { nodeIntegration: true, contextIsolation: false, sandbox: false }
   });
   remoteEnable(indexWorker.webContents);
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
@@ -375,7 +375,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     frame: false,
     icon,
     show: !hidden,
-    webPreferences: { nodeIntegration: true, contextIsolation: false }
+    webPreferences: { nodeIntegration: true, contextIsolation: false, sandbox: false }
   });
   remoteEnable(mainWindow.webContents);
   if (signedEula) {
