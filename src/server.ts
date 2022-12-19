@@ -29,15 +29,12 @@ export type onAddRepoRequestHandler = (fullpath: string, id?: string) => Promise
 
 export type onRemoveRepoRequestHandler = (repId: string) => Promise<boolean>;
 
-export type loadingStateUpdateHandler = (isLoading: boolean, repo: string) => void;
-
 export interface StartOptions {
   userId?: string;
   port?: number;
   firstTimeLaunch?: boolean;
   onAddRepoRequest?: onAddRepoRequestHandler;
   onRemoveRepoRequest?: onRemoveRepoRequestHandler;
-  updateGitLoadingState?: loadingStateUpdateHandler;
 }
 
 const defaultOptions: StartOptions = {
@@ -67,8 +64,7 @@ export const start = async (options: StartOptions) => {
   const apolloServer = new ApolloServer({
     context: () => ({
       onAddRepoRequest: settings.onAddRepoRequest,
-      onRemoveRepoRequest: settings.onRemoveRepoRequest,
-      updateGitLoadingState: settings.updateGitLoadingState
+      onRemoveRepoRequest: settings.onRemoveRepoRequest
     }),
     schema: schemaWithMiddleware,
     introspection: false,

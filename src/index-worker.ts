@@ -4,7 +4,6 @@ import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
 import { initExceptionManager, notify } from "./exceptionManager";
-import {cloneRemoteOriginWithCommit, GitConnectionOptions} from "./git";
 import {setLogLevel} from "./logger";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
@@ -54,10 +53,6 @@ const onRemoveRepoRequest = async (repId: string) => {
   return true;
 };
 
-const updateGitLoadingState = (isLoading: boolean, repo: string) => {
-    ipcRenderer.sendTo(mainWindowId, "set-git-is-loading", { isLoading, repo });
-};
-
 ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, firstTimeLaunch: boolean, id: number) => {
     mainWindowId = id;
     const port = 44512;
@@ -72,7 +67,6 @@ ipcRenderer.on("main-window-id", async (e: IpcRendererEvent, firstTimeLaunch: bo
             port,
             firstTimeLaunch,
             onAddRepoRequest,
-            updateGitLoadingState,
             onRemoveRepoRequest
         });
     } catch (err) {
@@ -103,18 +97,6 @@ ipcRenderer.on("clear-all-repos", (e: IpcRendererEvent) => {
         repStore.remove(repo);
     });
     ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos());
-});
-
-ipcRenderer.on("test-git-connection", async (e: IpcRendererEvent, connectionOptions: GitConnectionOptions) => {
-    let isSuccess = false;
-    try {
-      isSuccess = !!(await cloneRemoteOriginWithCommit(connectionOptions.connectionString, "master"));
-    } catch (e) {
-      notify(e, { metaData: { extra: { message: "Cannot clone remote origin", connectionOptions } } });
-      console.error(`Failed to clone git repo ${connectionOptions.connectionString}`, e);
-    }
-
-    ipcRenderer.sendTo(mainWindowId, "test-git-connection-result", isSuccess);
 });
 
 ipcRenderer.on("repos-request", (e: IpcRendererEvent) => ipcRenderer.sendTo(mainWindowId, "refresh-repos", getRepos()));

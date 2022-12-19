@@ -3,18 +3,6 @@ export interface OperationStatus {
   reason?: string;
 }
 
-export interface Settings {
-  OverrideGlobal?: boolean;
-  BitbucketOnPremServers?: string[];
-}
-
-export interface CanQueryRepoStatus {
-  repoUrl: string;
-  isSuccess: boolean;
-  protocol: string;
-  reason?: string;
-}
-
 export enum SupportedServerLanguage {
   java = "java",
   python = "python",

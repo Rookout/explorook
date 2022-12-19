@@ -145,12 +145,6 @@ class RepoStore {
         return _.find(this.repos, repo => id === repo.id);
     }
 
-    public reAllIndices() {
-        _.forEach(this.repos, (repo: Repo) => {
-            repo.reIndex();
-        });
-    }
-
     public reMultipleIndices(ids: string[]) {
         if (_.isEmpty(ids)) {
             return;

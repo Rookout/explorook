@@ -33,17 +33,8 @@ type Query {
   listTree(repoId: String!): [String]!
   listRepos: [Repository!]!
   refreshIndex(repoId: String!): Boolean
-  refreshAllIndices: Boolean @deprecated(reason: "Use refreshMultipleIndices instead to avoid refreshing repos that are not currently used by the client")
   refreshMultipleIndices(repoIds: [String!]!): Boolean
   repository(repoId: String!): Repository!
-  getCommitIdForFile(
-    provider: OnPremSourceProvider!
-    remoteOrigin: String
-    repoId: String!
-    path: String!
-  ): String @deprecated(reason: "Unused")
-  settings: Settings! @deprecated(reason: "Unused")
-  canAuthGitRepos(sources: [GitRepo]!): [CanAuthGitRepoResponse]! @deprecated(reason: "Unused")
   BitbucketOnPrem: BitbucketOnPrem!
   langServerConfig: LangServerConfig!
   recentLogs: [Log]!
@@ -66,29 +57,6 @@ input BitbucketTreeInput {
   commit: String!
   searchTerm: String
   maxResults: Int
-}
-
-input GitRepo {
-  repoUrl: String!
-}
-
-type CanAuthGitRepoResponse {
-  repoUrl: String!
-  isSuccess: Boolean!
-  reason: String
-}
-
-type Settings {
-  BitbucketOnPremServers: [String]
-}
-
-input SettingsInput {
-  BitbucketOnPremServers: [String] @deprecated(reason: "there is no need to pre-configure valid URLs")
-  """use this flag to signal that the provided settings should override any
-  global settings provided by the admin.
-  When a user edits his own local settings - set this flag to true
-  When applying the global settings of the organization - set this flag to false"""
-  OverrideGlobal: Boolean @deprecated(reason: "Unused")
 }
 
 enum SupportedServerLanguage {
@@ -114,16 +82,9 @@ type OperationStatus {
   reason: String
 }
 
-input GitSource {
-  repoUrl: String!
-  commit: String!
-}
-
 type Mutation {
   addRepository(fullpath: String): Boolean
   removeRepository(repoId: String!): Boolean
-  getGitRepo(sources: [GitSource]!): OperationStatus! @deprecated(reason: "Unused")
-  settings(settings: SettingsInput): Settings! @deprecated(reason: "Unused")
   userEmail(userEmail: String): Boolean
   langServerConfig: LangServerOps!
 }
@@ -141,10 +102,6 @@ input LangServerConfigInput {
 input EnableSingleLanguageServerInput {
   language: SupportedServerLanguage!
   enable: Boolean
-}
-
-enum OnPremSourceProvider {
-  git
 }
 
 type BitbucketOnPrem {
