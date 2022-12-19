@@ -26,27 +26,17 @@ import {
   searchBitbucketTree
 } from "./BitBucketOnPrem";
 import {
-  CanQueryRepoStatus,
   EnableOrDisableSingleLanguageServer,
   InputLangServerConfigs,
   LangServerConfig,
   OperationStatus,
-  Settings,
   SupportedServerLanguage
 } from "./common";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
 import {
-  canAuthGitRepo,
-  checkGitRemote,
-  cloneRemoteOriginWithCommit,
-  getCommitIfRightOrigin,
   getLastCommitDescription as getLastCommitDescription,
-  GIT_ROOT,
-  isGitFolderBiggerThanMaxSize as computeGitFoldersSize,
-  removeGitReposFromStore,
-  TMP_DIR_PREFIX
 } from "./git";
 import {
   langServerConfigStore,
@@ -56,9 +46,7 @@ import Log from "./logData";
 import {getLogger} from "./logger";
 import LogsContainer from "./logsContainer";
 import {Repo, repStore} from "./repoStore";
-import {loadingStateUpdateHandler, onAddRepoRequestHandler, onRemoveRepoRequestHandler} from "./server";
-import { getSettings, setSettings } from "./utils";
-const folderDelete = require("folder-delete");
+import {onAddRepoRequestHandler, onRemoveRepoRequestHandler} from "./server";
 
 // using posix api makes paths consistent across different platforms
 const join = posix.join;
@@ -102,9 +90,6 @@ export const resolvers = {
     },
   },
   Mutation: {
-    settings: (parent: any, args: { settings: Settings }): Settings => {
-      return setSettings(args.settings);
-    },
     userEmail: (parent: any, args: { userEmail: string }): boolean => {
       if (args.userEmail) {
         const currentUserEmail = store.get(USER_EMAIL_KEY);
@@ -135,104 +120,12 @@ export const resolvers = {
       }
       return true;
     },
-    getGitRepo: async (parent: any, args: {sources: [{repoUrl: string, commit: string}]},
-                       context: { onAddRepoRequest: onAddRepoRequestHandler, updateGitLoadingState: loadingStateUpdateHandler }):
-        Promise<OperationStatus> => {
-      const subDirs = fs.readdirSync(GIT_ROOT);
-
-      // Delete the folder if it's too big
-      const sizeResult = await computeGitFoldersSize();
-      if (!_.isEmpty(sizeResult.failedFolders)) {
-        logger.debug("Deleting failed folders", sizeResult.failedFolders);
-        _.forEach(sizeResult.failedFolders, folderPath => {
-          try {
-            folderDelete(folderPath);
-          } catch (err) {
-            logger.error("Failed to delete folder", { folderPath, err });
-          }
-        });
-      }
-      if (sizeResult.sizeOverMaxSize) {
-        logger.debug("Removing repos because git folder is too big", subDirs);
-        removeGitReposFromStore(subDirs);
-      } else {
-        // If we had any duplicate repos with two different commits we want to delete them now
-        const tmpDirs = _.filter(subDirs, dir => dir.includes(TMP_DIR_PREFIX));
-        if (!_.isEmpty(tmpDirs)) {
-          logger.debug("Removing temporary git folders", tmpDirs);
-          removeGitReposFromStore(tmpDirs);
-        }
-      }
-
-      // If we have the same remote origin with two different commits we will take the first one only.
-      const duplicates = _.keys(_.pickBy(_.groupBy(args.sources, "repoUrl"), d => d.length > 1));
-      logger.debug("Found duplicate repos", duplicates);
-      const updatedSourcesArray = _.uniqBy(args.sources, src => src.repoUrl);
-
-      const addRepoPromises = _.map(updatedSourcesArray, async repo => {
-        context.updateGitLoadingState(true, repo.repoUrl);
-        if (!checkGitRemote(repo.repoUrl)) {
-          notify(new Error(`Failed to parse give repo url: ${repo.repoUrl}`));
-          logger.error("Failed to parse git url", repo);
-          context.updateGitLoadingState(false, repo.repoUrl);
-          return {
-            isSuccess: false,
-            reason: `Got bad format for git remote origin: ${repo.repoUrl}`
-          };
-        }
-        try {
-          logger.debug("Cloning repo", repo);
-          const cloneDir = await cloneRemoteOriginWithCommit(repo.repoUrl, repo.commit);
-          if (!cloneDir) {
-            return {
-              isSuccess: false,
-              reason: "Failed to clone repository"
-            };
-          }
-          const didAddRepo = await context.onAddRepoRequest(cloneDir);
-          context.updateGitLoadingState(false, repo.repoUrl);
-          logger.debug("Finished loading repo", {repo: repo.repoUrl, didAddRepo});
-          return {
-            isSuccess: didAddRepo,
-            reason: didAddRepo ? undefined : `Failed to add repo on folder ${cloneDir}`
-          };
-        } catch (e) {
-          notify(e);
-          logger.error("Failed to clone repo", {repo, e});
-          context.updateGitLoadingState(false, repo.repoUrl);
-          return {
-            isSuccess: false,
-            reason: e.message
-          };
-        }
-      });
-
-      const res = await Promise.all(addRepoPromises);
-      // Return the first error or success.
-      context.updateGitLoadingState(false, "");
-      logger.debug("Finished cloning git repos", res);
-      return _.find(res, r => !r.isSuccess) || { isSuccess: true };
-    },
     langServerConfig: async (parent: any):
         Promise<any> => {
       return {};
     }
   },
   Query: {
-    async canAuthGitRepos(parent: any, args: { sources: Array<{ repoUrl: string }> }): Promise<CanQueryRepoStatus[]> {
-      const promises = _.map(args.sources, async src => {
-        const res = await canAuthGitRepo(src.repoUrl);
-        return {
-          isSuccess: res.querySuccessful,
-          repoUrl: src.repoUrl,
-          protocol: res.protocol.toString()
-        };
-      });
-      return Promise.all(promises);
-    },
-    settings(): Settings {
-      return getSettings();
-    },
     async repository(parent: any, args: { repo: Repo, path: string }) {
       const { repo } = args;
       return repo.toModel();
@@ -308,23 +201,9 @@ export const resolvers = {
       args.repo.reIndex();
       return true;
     },
-    refreshAllIndices(parent: any): boolean {
-      repStore.reAllIndices();
-      return true;
-    },
     refreshMultipleIndices(parent: any, args: { repoIds: string[] }): boolean {
       repStore.reMultipleIndices(args.repoIds);
       return true;
-    },
-    getCommitIdForFile: async (parent: any, args: {provider: any, remoteOrigin: string, repo: Repository, path: string}): Promise<string> => {
-      logger.debug("Getting commit ID for file", args);
-      const {provider, repo, remoteOrigin} = args;
-      switch (provider) {
-        case "git":
-          return getCommitIfRightOrigin(repo, remoteOrigin);
-        default:
-          throw new Error(`Unreachable code - got unknown source provider: ${provider}`);
-      }
     },
     BitbucketOnPrem: async (parent: any):
         Promise<any> => {

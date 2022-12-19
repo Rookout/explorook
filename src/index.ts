@@ -53,14 +53,12 @@ let indexWorker: Electron.BrowserWindow;
 let tray: Tray;
 let firstTimeLaunch = false;
 let al: AutoLaunch;
-let token: string;
 let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
 let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 let analytics: Analytics;
 let userId: string;
-let userSite: string;
 let signedEula: boolean = false;
 
 // getAppIcon resolves the right icon for the running platform
@@ -127,18 +125,8 @@ function registerIpc() {
   ipcMain.on("track", (e: IpcMainEvent, trackEvent: string, props: any) => {
     track(trackEvent, props);
   });
-  ipcMain.on("configure-first-launch", (e: IpcMainEvent, id: string, site: string) => {
-    userId = id;
-    userSite = site;
-    store.set("user-id", userId);
-    store.set("user-site", userSite);
-    identifyAnalytics();
-    track("configure-first-launch");
-  });
-  ipcMain.on("get-user-site", (e: IpcMainEvent) => e.returnValue = store.get("user-site"));
   ipcMain.on("get-user-id", (e: IpcMainEvent) => e.returnValue = userId);
   ipcMain.on("get-platform", (e: IpcMainEvent) => e.returnValue = process.platform.toString());
-  ipcMain.on("token-request", (e: IpcMainEvent) => e.returnValue = token);
   ipcMain.on("force-exit", (e: IpcMainEvent) => quitApplication());
   ipcMain.on("inspect-all", () => {
     mainWindow.webContents.openDevTools();
@@ -241,12 +229,11 @@ function main() {
   initDeeplinks(app);
   // store helps us store data on local disk
   store = new ExplorookStore();
-  // access token used to access this app's GraphQL api
-  token = store.getOrCreate("token", uuidv4(), () => {
+  // Only set firstTimeLaunch to true if the deprecated "token" store var does not exist
+  store.getOrCreate("token", uuidv4(), () => {
     firstTimeLaunch = true;
   });
   userId = store.getOrCreate("user-id", uuidv4());
-  userSite = store.getOrCreate("user-site", "default");
   dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
   signedEula = Boolean(store.get("has-signed-eula", false));
   if (signedEula && (dataCollectionEnabled || process.env.development)) {
@@ -362,7 +349,7 @@ function createWindows() {
     width: 400,
     height: 400,
     show: !!process.env.development,
-    webPreferences: { nodeIntegration: true, contextIsolation: false }
+    webPreferences: { nodeIntegration: true, contextIsolation: false, sandbox: false }
   });
   remoteEnable(indexWorker.webContents);
   ipcMain.on("index-worker-up", (e: IpcMainEvent) => {
@@ -376,7 +363,7 @@ function createWindows() {
 }
 
 function startGraphqlServer() {
-  indexWorker.webContents.send("main-window-id", token, firstTimeLaunch, mainWindow.webContents.id);
+  indexWorker.webContents.send("main-window-id", firstTimeLaunch, mainWindow.webContents.id);
 }
 
 function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = false) {
@@ -388,7 +375,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     frame: false,
     icon,
     show: !hidden,
-    webPreferences: { nodeIntegration: true, contextIsolation: false }
+    webPreferences: { nodeIntegration: true, contextIsolation: false, sandbox: false }
   });
   remoteEnable(mainWindow.webContents);
   if (signedEula) {
