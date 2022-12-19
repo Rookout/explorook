@@ -230,7 +230,7 @@ function main() {
   // store helps us store data on local disk
   store = new ExplorookStore();
   // Only set firstTimeLaunch to true if the deprecated "token" store var does not exist
-  store.getOrCreate("token", "foobar", () => {
+  store.getOrCreate("token", uuidv4(), () => {
     firstTimeLaunch = true;
   });
   userId = store.getOrCreate("user-id", uuidv4());
