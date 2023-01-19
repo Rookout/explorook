@@ -21,7 +21,7 @@ const ignoredErrors = new Set<string>(["ENOENT", "ENOTDIR", "ENOTEMPTY",
 Object.freeze(ignoredErrors); // prevents anyone from changing the object
 
 export const initExceptionManager = (getUserID: () => string) => {
-    if (!exceptionManagerInstance && app) {
+    if (!exceptionManagerInstance && app && (app.isPackaged || process.env.headless_mode === "true")) {
       const releaseStage = app.isPackaged ? "production" : "development";
       exceptionManagerInstance = bugsnag({
         onUncaughtException: (err: any) => {
