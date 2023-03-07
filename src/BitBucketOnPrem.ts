@@ -54,12 +54,27 @@ export interface BitbucketOnPremRepoProps {
     maxResults?: number;
 }
 
+export interface BitbucketOnPremPropertiesInputProps {
+    url: string;
+}
+
 export interface BitBucketOnPremInput {
     args: BitbucketOnPrem;
 }
 
 export interface BitbucketOnPremTreeInput {
     args: BitbucketOnPremRepoProps;
+}
+
+export interface BitbucketPropertiesInput {
+    args: BitbucketOnPremPropertiesInputProps;
+}
+
+export interface BitbucketProperties {
+    version: string;
+    buildNumber: string;
+    buildDate: string;
+    displayName: string;
 }
 
 const getRepoId = ({projectKey, repoName, commit}: {projectKey: string, repoName: string, commit: string}) => {
@@ -505,6 +520,22 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
     logger.debug("Finished getting commit info", {url, projectKey, repoName, commit, res});
     return res.json();
 };
+
+export const getBitbucketProperties =
+    async ({url}: BitbucketOnPremPropertiesInputProps): Promise<BitbucketProperties> => {
+
+        const bitbucketPropertiesUrl = UrlAssembler(url).template("/rest/api/1.0/application-properties").toString();
+
+        logger.debug("Getting Bitbucket server's properties using", { bitbucketPropertiesUrl });
+        try {
+            const res = await fetchNoCache(bitbucketPropertiesUrl, {}); // Empty second param is required, using default values
+            if (res.ok) {
+                return res.json();
+            }
+        } catch (error) {
+            logger.error("Failed to fetch bitbucket properties", { error });
+        }
+    };
 
 const addSlugToUrl = (url: string, slug: string): string => {
     if (!slug) {

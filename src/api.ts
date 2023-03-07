@@ -5,9 +5,12 @@ import {
   BitBucketOnPremInput,
   BitbucketOnPremRepoProps,
   BitbucketOnPremTreeInput,
+  BitbucketProperties,
+  BitbucketPropertiesInput,
   cacheFileTree,
   cancelCacheBitbucketTree,
   cleanBitbucketTreeCache,
+  getBitbucketProperties,
   getBranchesForRepoFromBitbucket,
   getCommitDetailsFromBitbucket,
   getCommitsForRepoFromBitbucket,
@@ -263,7 +266,9 @@ export const resolvers = {
     branches: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
         getBranchesForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
-        getFileContentFromBitbucket(args)
+        getFileContentFromBitbucket(args),
+    bitbucketProperties: async (parent: any, { args }: BitbucketPropertiesInput): Promise<BitbucketProperties> =>
+        getBitbucketProperties(args)
   },
   LangServerConfig: {
     allLangServerConfigs: async (parent: any): Promise<LangServerConfig[]> => {

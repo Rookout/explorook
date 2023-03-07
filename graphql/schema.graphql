@@ -59,6 +59,10 @@ input BitbucketTreeInput {
   maxResults: Int
 }
 
+input BitbucketPropertiesInput {
+  url: String!
+}
+
 enum SupportedServerLanguage {
   java
   python
@@ -124,6 +128,7 @@ type BitbucketOnPrem {
   commit(args: BitbucketInput!): BitbucketCommit
   branches(args: BitbucketInput!): [BitbucketBranch]
   file(args: BitbucketInput!): String
+  bitbucketProperties(args: BitbucketPropertiesInput!): BitbucketProperties
 }
 
 type BitbucketUser {
@@ -175,6 +180,13 @@ type BitbucketBranch {
   displayId: String!
   latestCommit: String!
   isDefault: Boolean!
+}
+
+type BitbucketProperties {
+  version: String
+  buildNumber: String
+  buildDate: String
+  displayName: String
 }
 
 type Log {
