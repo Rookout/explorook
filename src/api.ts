@@ -23,6 +23,8 @@ import {
   getIsTreeCached,
   getProjectsFromBitbucket,
   getReposForProjectFromBitbucket,
+  getTagForRepoFromBitbucket,
+  getTagsForRepoFromBitbucket,
   getUserFromBitbucket,
   idsOfAllCachedTrees,
   removeFileTreeFromCache,
@@ -265,6 +267,10 @@ export const resolvers = {
     commit: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> => getCommitDetailsFromBitbucket(args),
     branches: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
         getBranchesForRepoFromBitbucket(args),
+    tags: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
+        getTagsForRepoFromBitbucket(args),
+    tag: async (parent: any, { args }: BitBucketOnPremInput): Promise<any> =>
+        getTagForRepoFromBitbucket(args),
     file: async (parent: any, { args }: BitBucketOnPremInput): Promise<string> =>
         getFileContentFromBitbucket(args),
     bitbucketProperties: async (parent: any, { args }: BitbucketPropertiesInput): Promise<BitbucketProperties> =>

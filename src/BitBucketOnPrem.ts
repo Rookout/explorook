@@ -24,7 +24,8 @@ const MAX_PAGE_SIZES = {
     PROJECTS: 1_000,
     REPOSITORIES: 1_000,
     BRANCHES: 1_000,
-    COMMITS: 100
+    COMMITS: 100,
+    TAGS: 1_000
 };
 
 const FILES_API_TEMPLATE = "/rest/api/1.0/projects/:projectKey/repos/:repoName/files";
@@ -41,6 +42,7 @@ export interface BitbucketOnPrem {
     repoName?: string;
     commit?: string;
     branch?: string;
+    tag?: string;
     fileTree?: string[];
     filePath?: string;
     treeSize?: number;
@@ -464,6 +466,38 @@ export const getBranchesForRepoFromBitbucket = async ({url, accessToken, project
     });
     logger.debug("Finished getting branches for repo", {url, projectKey, repoName, branches: JSON.stringify(branches)});
     return branches;
+};
+
+export const getTagsForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName, tag}: BitbucketOnPrem) => {
+    logger.debug("Getting filtered tags for repo", {url, projectKey, repoName, filterBy: tag});
+    const tagsQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/tags").param({
+        projectKey,
+        repoName
+    }).query({
+        filterText: tag
+    }).toString();
+    const tags: string[] = await fetchAllPages({
+        url: tagsQuery, accessToken, maxPageSize: MAX_PAGE_SIZES.TAGS, hasQueryParams: true
+    });
+    logger.debug("Finished getting filtered tags for repo", {url, projectKey, repoName, tags: JSON.stringify(tags)});
+    return tags;
+};
+
+export const getTagForRepoFromBitbucket = async ({url, accessToken, projectKey, repoName, tag}: BitbucketOnPrem) => {
+    logger.debug("Getting tag info", {url, projectKey, repoName, tag});
+    const tagQuery = UrlAssembler(url).template("/rest/api/1.0/projects/:projectKey/repos/:repoName/tags/:tag").param({
+        projectKey,
+        repoName,
+        tag
+    });
+    const res = await fetchNoCache(tagQuery, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+
+    logger.debug("Finished getting tag info", {url, projectKey, repoName, tag, res});
+    return res.json();
 };
 
 export const getFileContentFromBitbucket = async ({url, accessToken, projectKey, repoName, commit, filePath}: BitbucketOnPrem) => {

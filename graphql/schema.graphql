@@ -47,6 +47,7 @@ input BitbucketInput {
   repoName: String
   commit: String
   branch: String
+  tag: String
   filePath: String
   treeSize: Int
 }
@@ -127,6 +128,8 @@ type BitbucketOnPrem {
   commits(args: BitbucketInput!): [BitbucketCommit] @deprecated(reason: "Unused")
   commit(args: BitbucketInput!): BitbucketCommit
   branches(args: BitbucketInput!): [BitbucketBranch]
+  tags(args: BitbucketInput!): [BitbucketTag]
+  tag(args: BitbucketInput!): BitbucketTag
   file(args: BitbucketInput!): String
   bitbucketProperties(args: BitbucketPropertiesInput!): BitbucketProperties
 }
@@ -180,6 +183,14 @@ type BitbucketBranch {
   displayId: String!
   latestCommit: String!
   isDefault: Boolean!
+}
+
+type BitbucketTag {
+  id: String!
+  displayId: String!
+  latestCommit: String!
+  latestChangeset: String!
+  hash: String!
 }
 
 type BitbucketProperties {
