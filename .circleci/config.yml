@@ -8,7 +8,7 @@ references:
 jobs:
   publish:
     macos:
-      xcode: "13.3.1"
+      xcode: "14.0.1"
     steps:
       - checkout
       - restore_cache:
@@ -59,7 +59,7 @@ jobs:
             - /usr/local/Homebrew
   version_validation:
     macos:
-      xcode: "13.3.1"
+      xcode: "14.0.1"
     steps:
       - checkout
       - run:
@@ -67,7 +67,7 @@ jobs:
           command: sh ./validate_version.sh
   publish_release_notes:
     docker:
-      - image: node:16.14.2
+      - image: node:16.17.1
     steps:
       - checkout
       - run:
