@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.14.6",
+  "version": "1.14.7",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -135,7 +135,7 @@
     "parse-repo": "^1.0.4",
     "patch-package": "^6.4.0",
     "postinstall-postinstall": "^2.1.0",
-    "semver": "^7.3.7",
+    "semver": "7.5.4",
     "slash": "^2.0.0",
     "url-assembler": "^2.1.1",
     "uuid": "^3.2.1",
