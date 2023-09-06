@@ -1,5 +1,4 @@
 import fs = require("fs");
-import _ = require("lodash");
 import {posix} from "path";
 import {
   BitBucketOnPremInput,
@@ -28,23 +27,12 @@ import {
   removeFileTreeFromCache,
   searchBitbucketTree
 } from "./BitBucketOnPrem";
-import {
-  EnableOrDisableSingleLanguageServer,
-  InputLangServerConfigs,
-  LangServerConfig,
-  OperationStatus,
-  SupportedServerLanguage
-} from "./common";
 import {Repository} from "./common/repository";
 import {notify, USER_EMAIL_KEY} from "./exceptionManager";
 import {getStoreSafe} from "./explorook-store";
 import {
   getLastCommitDescription as getLastCommitDescription,
 } from "./git";
-import {
-  langServerConfigStore,
-  minimumLanguageVersions
-} from "./langauge-servers/configStore";
 import Log from "./logData";
 import {getLogger} from "./logger";
 import LogsContainer from "./logsContainer";
@@ -122,10 +110,6 @@ export const resolvers = {
         return false;
       }
       return true;
-    },
-    langServerConfig: async (parent: any):
-        Promise<any> => {
-      return {};
     }
   },
   Query: {
@@ -212,10 +196,6 @@ export const resolvers = {
         Promise<any> => {
       return {};
     },
-    langServerConfig: async (parent: any):
-        Promise<any> => {
-      return {};
-    },
     appVersion: async (parent: any): Promise<string> => {
       if (process.env.development || process.env.headless_mode === "true") {
         return require("../package.json")?.version;
@@ -269,41 +249,5 @@ export const resolvers = {
         getFileContentFromBitbucket(args),
     bitbucketProperties: async (parent: any, { args }: BitbucketPropertiesInput): Promise<BitbucketProperties> =>
         getBitbucketProperties(args)
-  },
-  LangServerConfig: {
-    allLangServerConfigs: async (parent: any): Promise<LangServerConfig[]> => {
-      return _.map(SupportedServerLanguage, (language) => ({
-        language,
-        enabled: langServerConfigStore.enabledServers[language],
-        executableLocation: langServerConfigStore.serverLocations[language],
-        minVersionRequired: minimumLanguageVersions[language]
-      }));
-    },
-  },
-  LangServerOps: {
-    setLangServerConfig: async (parent: any, args: { config: [InputLangServerConfigs] }): Promise<OperationStatus> => {
-      try {
-        langServerConfigStore.setLocations(args.config);
-      } catch (e) {
-        logger.error("Failed to setLangServerConfig", e);
-        return {
-          isSuccess: false,
-          reason: e.message
-        };
-      }
-      return { isSuccess: true };
-    },
-    enableOrDisableLanguageServer: async (parent: any, args: { config: EnableOrDisableSingleLanguageServer }): Promise<OperationStatus> => {
-      try {
-        await langServerConfigStore.setIsLanguageServerEnabled(args.config.language, args.config.enable);
-      } catch (e) {
-        logger.error(`Failed to enable or disable language server for ${args.config.language}`, e);
-        return {
-          isSuccess: false,
-          reason: e.message
-        };
-      }
-      return { isSuccess: true };
-    }
   }
 };

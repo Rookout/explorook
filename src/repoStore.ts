@@ -5,7 +5,9 @@ import { Repository } from "./common/repository";
 import { getStoreSafe, IStore } from "./explorook-store";
 import { IndexWorker } from "./fsIndexer";
 import { getRepoId } from "./git";
-import {logger} from "./langauge-servers/configStore";
+import { getLogger } from "./logger";
+
+const logger = getLogger("repoStore");
 
 export class Repo {
     public repoName: string;
