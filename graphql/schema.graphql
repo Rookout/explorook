@@ -36,7 +36,6 @@ type Query {
   refreshMultipleIndices(repoIds: [String!]!): Boolean
   repository(repoId: String!): Repository!
   BitbucketOnPrem: BitbucketOnPrem!
-  langServerConfig: LangServerConfig!
   recentLogs: [Log]!
 }
 
@@ -63,49 +62,10 @@ input BitbucketPropertiesInput {
   url: String!
 }
 
-enum SupportedServerLanguage {
-  java
-  python
-  go
-  typescript
-}
-
-type LangServerConfig {
-  allLangServerConfigs: [LangServerConfig]
-}
-
-type LangServerConfig {
-  language: SupportedServerLanguage!
-  enabled: Boolean
-  executableLocation: String
-  minVersionRequired: String
-}
-
-type OperationStatus {
-  isSuccess: Boolean!
-  reason: String
-}
-
 type Mutation {
   addRepository(fullpath: String): Boolean
   removeRepository(repoId: String!): Boolean
   userEmail(userEmail: String): Boolean
-  langServerConfig: LangServerOps!
-}
-
-type LangServerOps {
-  setLangServerConfig(config: [LangServerConfigInput!]!): OperationStatus!
-  enableOrDisableLanguageServer(config: EnableSingleLanguageServerInput): OperationStatus!
-}
-
-input LangServerConfigInput {
-  language: SupportedServerLanguage!
-  location: String
-}
-
-input EnableSingleLanguageServerInput {
-  language: SupportedServerLanguage!
-  enable: Boolean
 }
 
 type BitbucketOnPrem {
