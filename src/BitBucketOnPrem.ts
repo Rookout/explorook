@@ -202,8 +202,21 @@ export const getFileTreeByPath =
             if (Array.isArray(values)) {
                 for (const item of values) {
                     const { type, path } = item;
-                    const { name } = path || {};
-                    files.push(`${name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
+                    // toString (which is a string prop) is important, such as in cases where a child is a folder
+                    // that recursively has single child that is a folder.
+                    // In that case, we get the folder that is in the bottom of this subtree as a direct child.
+                    // The way we get it is that name is the name of the dir itself,
+                    // but toString is path to it relative to the path we fetch its children
+                    // If this is a normal folder or file, toString and name are the same
+                    // Therefore, fetching the file as toString is preferable to name
+                    // Example:
+                    // -- Dir1
+                    // -- -- Dir2
+                    // -- -- -- Dir3
+                    // -- -- -- -- File-not-in-this-response-because-call-is-lazy-fetching.txt
+                    // In this example: { name: 'Dir3', toString: 'Dir1/Dir2/Dir3' }
+                    const { name, toString } = path || {};
+                    files.push(`${toString || name}${type === FILE_TYPE.DIRECTORY ? "/" : ""}`);
                 }
             } else {
                 notify("Bitbucket OnPrem files tree request returned an unexpected value", {metaData: {resStatus: res.status, fileTreeResponse}});
