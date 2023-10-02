@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-var electron_notarize = require('@electron/notarize');
+const electronNotarize = require('@electron/notarize');
 
 module.exports = async function (params) {
     // Only notarize the app on Mac OS only.
@@ -28,7 +28,7 @@ module.exports = async function (params) {
     console.log(`Notarizing app found at ${appPath}`);
 
     try {
-        await electron_notarize.notarize({
+        await electronNotarize.notarize({
             appPath,
             appleId: process.env.APPLE_DEV_USER,
             appleIdPassword: process.env.APPLE_DEV_PASSWORD,
