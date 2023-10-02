@@ -1,6 +1,6 @@
 {
   "name": "explorook",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "description": "Rookout's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -99,7 +99,6 @@
     "cross-env": "^5.2.0",
     "electron": "22.3.12",
     "electron-builder": "23.1.0",
-    "electron-notarize": "1.2.1",
     "graphql-middleware": "6.1.28",
     "node-fetch": "^2.6.7",
     "ts-loader": "^6.0.4",
@@ -112,6 +111,7 @@
   },
   "dependencies": {
     "@bugsnag/js": "6.5.2",
+    "@electron/notarize": "^2.1.0",
     "@electron/remote": "2.0.9",
     "@graphql-tools/schema": "^8.3.13",
     "analytics-node": "^6.0.0",
