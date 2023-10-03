@@ -19,6 +19,10 @@ jobs:
             # wine is required to sign windows executables
             brew install --cask xquartz
             brew install --cask wine-stable
+            
+            export CSC_LINK=$NEW_CSC_LINK
+            export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
+            
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
             unzip /Users/distiller/google-cloud-sdk.zip
@@ -49,8 +53,6 @@ jobs:
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
-            export CSC_LINK=$NEW_CSC_LINK
-            export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             # Remove before merge
             export CSC_FOR_PULL_REQUEST=true
             # package code for every distribution (mac, win, linux) and publish as github release
