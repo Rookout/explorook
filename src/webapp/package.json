@@ -13,6 +13,7 @@
     "typeface-roboto": "^0.0.54"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "react-scripts": "^4.0.3"
   },
   "resolutions": {
@@ -21,8 +22,8 @@
     "react-scripts/semver": "^7.5.2"
   },
   "scripts": {
-    "start": "export NODE_OPTIONS=--openssl-legacy-provider && craco start",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && craco build",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider craco start",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider craco build",
     "postbuild": "mkdir -p ../../dist/webapp && cp -r build/* ../../dist/webapp",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
