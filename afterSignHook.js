@@ -1,7 +1,7 @@
 // See: https://medium.com/@TwitterArchiveEraser/notarize-electron-apps-7a5f988406db
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const electronNotarize = require('@electron/notarize');
 
 module.exports = async function (params) {
@@ -30,8 +30,8 @@ module.exports = async function (params) {
     try {
         await electronNotarize.notarize({
             appPath,
-            appleId: process.env.appleId,
-            appleIdPassword: process.env.appleIdPassword,
+            appleId: process.env.APPLE_DEV_USER,
+            appleIdPassword: process.env.APPLE_DEV_PASSWORD,
             teamId: process.env.appleTeamId,
             tool
         });
