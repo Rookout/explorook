@@ -20,8 +20,8 @@ jobs:
             brew install --cask xquartz
             brew install --cask wine-stable
             
-            export CSC_LINK=$NEW_CSC_LINK
-            export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
+            # export CSC_LINK=$NEW_CSC_LINK
+            # export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             
             # install gcloud sdk
             curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip --output /Users/distiller/google-cloud-sdk.zip
