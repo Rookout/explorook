@@ -60,6 +60,7 @@
       "background": "assets/dmg-background.png"
     },
     "mac": {
+      "gatekeeperAssess": false,
       "icon": "assets/icons/mac/icons.icns"
     },
     "win": {
