@@ -48,9 +48,8 @@ jobs:
             yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
-            echo $NEW_CSC_LINK | base64 --decode > mac_cert.p12
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
-            export CSC_LINK=mac_cert.p12
+            export CSC_LINK=$NEW_CSC_LINK
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             # Remove before merge
             export CSC_FOR_PULL_REQUEST=true
