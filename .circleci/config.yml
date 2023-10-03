@@ -50,6 +50,7 @@ jobs:
             echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
             export CSC_LINK=$NEW_CSC_LINK
+            export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
             # publish in google storage bucket (additionally to electronbuild-publisher)
