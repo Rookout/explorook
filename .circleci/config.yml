@@ -52,6 +52,8 @@ jobs:
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
             export CSC_LINK=mac_cert.p12
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
+            # Remove before merge
+            export CSC_FOR_PULL_REQUEST=true
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
             # publish in google storage bucket (additionally to electronbuild-publisher)
