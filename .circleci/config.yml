@@ -8,7 +8,7 @@ references:
 jobs:
   publish:
     macos:
-      xcode: "14.0.1"
+      xcode: "15.0.0"
     steps:
       - checkout
       - restore_cache:
@@ -64,7 +64,7 @@ jobs:
             - /usr/local/Homebrew
   version_validation:
     macos:
-      xcode: "14.0.1"
+      xcode: "15.0.0"
     steps:
       - checkout
       - run:
