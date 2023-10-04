@@ -42,7 +42,7 @@ jobs:
             
             security import certificates/mac_cert.p12 -x -t agg -k RooKeychain.keychain -A -P $NEW_CSC_KEY_PASSWORD -T /usr/bin/codesign
             
-            rm certificates/mac_cert.p12
+            # rm certificates/mac_cert.p12
 
             # check
               
