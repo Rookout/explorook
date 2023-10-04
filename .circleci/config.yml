@@ -24,7 +24,7 @@ jobs:
             
             echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
             
-            security add-trusted-cert -d certificates/mac_cert.p12
+            security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
             #
             # security list-keychains
             # security import certificates/mac_cert.p12 -k System.keychain -T /usr/bin/codesign -P $CIRCLE_CI_KEYCHAIN_TMP_PASS
