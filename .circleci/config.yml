@@ -18,8 +18,51 @@ jobs:
           command: |
             mkdir certificates
             
-            echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
+            # echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
             echo $TMP_WWDR_CERT | base64 --decode > certificates/wwdr.cer
+            
+            
+            
+            
+            
+            
+            echo $NEW_CSC_LINK | base64 -D -o certificates/mac_cert.p12
+  
+            echo "Creating keychain"
+            
+            security create-keychain -p default RooKeychain.keychain
+            
+            echo "unlocking keychain"
+            
+            security set-keychain-settings RooKeychain.keychain
+            
+            security unlock-keychain -p default RooKeychain.keychain
+            
+            echo "Importing certificates"
+            
+            security import certificates/mac_cert.p12 -x -t agg -k RooKeychain.keychain -A -P $CIRCLE_CI_KEYCHAIN_TMP_PASS
+            
+            rm Certificates.p12
+
+            # check
+              
+            echo "appending new keychain to the list"
+            
+            security list-keychains -d user -s RooKeychain.keychain $(security list-keychains -d user | sed s/\"//g)
+            
+            security list-keychains
+            
+            echo "setting default keychain"
+            
+            security default-keychain -s RooKeychain.keychain
+            
+            echo "finding identity"
+            
+            security find-identity -v -p codesigning
+            
+            
+            
+            
             
             security add-certificates certificates/wwdr.cer
             # security add-trusted-cert -k /Library/Keychains/System.keychain -r trustAsRoot -T /usr/bin/codesign certificates/wwdr.cer
