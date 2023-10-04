@@ -20,12 +20,12 @@ jobs:
             brew install --cask xquartz
             brew install --cask wine-stable
 
-#            mkdir certificates
-
-#            echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
-#
-#            security list-keychains
-#            security import certificates/mac_cert.p12 -k System.keychain -T /usr/bin/codesign -P $CIRCLE_CI_KEYCHAIN_TMP_PASS
+            # mkdir certificates
+            
+            # echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
+            #
+            # security list-keychains
+            # security import certificates/mac_cert.p12 -k System.keychain -T /usr/bin/codesign -P $CIRCLE_CI_KEYCHAIN_TMP_PASS
 
             export CSC_LINK=$NEW_CSC_LINK
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
