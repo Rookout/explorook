@@ -24,6 +24,7 @@ jobs:
             
             echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
             
+            security list-keychains
             security import certificates/mac_cert.p12 -k circle.keychain -T /usr/bin/codesign
             
             export CSC_LINK=certificates/mac_cert.p12
