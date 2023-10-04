@@ -42,3 +42,10 @@ To run the webapp server:
 
 # Build for production
 see `.circleci/config.yml`
+
+# Misc.
+Added the following to several "build" commands:
+```bash
+cross-env NODE_OPTIONS=--openssl-legacy-provider
+```
+This is due to problems associated with using CRA4 with node 18
