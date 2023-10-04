@@ -56,7 +56,6 @@ jobs:
             echo $APPLE_CERT | base64 --decode > certificates/wwdr.cer
             security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
-            security find-identity
             export CSC_LINK=certificates/mac_cert.p12
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             
