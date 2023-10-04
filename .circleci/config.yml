@@ -25,7 +25,7 @@ jobs:
             echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
             echo $TMP_WWDR_CERT | base64 --decode > certificates/wwdr.cer
             
-            echo $TMP_CIRCLE_PASS | security add-trusted-cert -r trustAsRoot certificates/wwdr.cer
+            security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
             #
             # security list-keychains
