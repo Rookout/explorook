@@ -8,7 +8,7 @@ references:
 jobs:
   publish:
     macos:
-      xcode: "14.0.1"
+      xcode: "15.0.0"
     steps:
       - checkout
       - restore_cache:
@@ -56,7 +56,6 @@ jobs:
             echo $APPLE_CERT | base64 --decode > certificates/wwdr.cer
             security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
-            security find-identity
             export CSC_LINK=certificates/mac_cert.p12
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             
@@ -70,7 +69,7 @@ jobs:
             - /usr/local/Homebrew
   version_validation:
     macos:
-      xcode: "14.0.1"
+      xcode: "15.0.0"
     steps:
       - checkout
       - run:
@@ -78,7 +77,7 @@ jobs:
           command: sh ./validate_version.sh
   publish_release_notes:
     docker:
-      - image: node:16.17.1
+      - image: node:18.17.1
     steps:
       - checkout
       - run:
