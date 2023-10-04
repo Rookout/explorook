@@ -64,9 +64,9 @@ jobs:
             
             
             
-            security add-certificates certificates/wwdr.cer
+            # security add-certificates certificates/wwdr.cer
             # security add-trusted-cert -k /Library/Keychains/System.keychain -r trustAsRoot -T /usr/bin/codesign certificates/wwdr.cer
-            security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD -T /usr/bin/codesign
+            # security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD -T /usr/bin/codesign
             
             # wine is required to sign windows executables
             brew install --cask xquartz
