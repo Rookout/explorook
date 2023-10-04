@@ -22,13 +22,13 @@ jobs:
             echo $TMP_WWDR_CERT | base64 --decode > certificates/wwdr.cer
             
             security add-certificates certificates/wwdr.cer
-            security add-trusted-cert -k /Library/Keychains/System.keychain -r trustAsRoot certificates/wwdr.cer
+            # security add-trusted-cert -k /Library/Keychains/System.keychain -r trustAsRoot -T /usr/bin/codesign certificates/wwdr.cer
+            security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD -T /usr/bin/codesign
             
             # wine is required to sign windows executables
             brew install --cask xquartz
             brew install --cask wine-stable
             
-            security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
             #
             # security list-keychains
             # security import certificates/mac_cert.p12 -k System.keychain -T /usr/bin/codesign -P $CIRCLE_CI_KEYCHAIN_TMP_PASS
