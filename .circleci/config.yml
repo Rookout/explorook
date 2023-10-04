@@ -22,7 +22,7 @@ jobs:
             echo $TMP_WWDR_CERT | base64 --decode > certificates/wwdr.cer
             
             security add-certificates certificates/wwdr.cer
-            echo $TMP_CIRCLE_PASS | sudo security add-trusted-cert -k /Library/Keychains/System.keychain -r trustAsRoot certificates/wwdr.cer
+            security add-trusted-cert -k /Library/Keychains/System.keychain -r trustAsRoot certificates/wwdr.cer
             
             # wine is required to sign windows executables
             brew install --cask xquartz
