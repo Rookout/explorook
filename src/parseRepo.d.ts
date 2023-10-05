@@ -1,1 +1,1 @@
-declare module 'parse-repo';
+declare module "parse-repo";
