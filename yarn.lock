@@ -698,6 +698,13 @@
     "@types/mime" "^1"
     "@types/node" "*"
 
+"@types/url-assembler@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@types/url-assembler/-/url-assembler-2.1.2.tgz#29eddddbe19ed0cfd8b2684c6b1c0dd358399002"
+  integrity sha512-Dxp3Z8hS90Cvezg1ofr+Xt0oylCr4T6chcOH4RskipvLZPn/eZcSsHllFkPXYg+6XZKmJu9t41T8wOWdlKoVfw==
+  dependencies:
+    "@types/qs" "*"
+
 "@types/verror@^1.10.3":
   version "1.10.4"
   resolved "https://registry.yarnpkg.com/@types/verror/-/verror-1.10.4.tgz#805c0612b3a0c124cf99f517364142946b74ba3b"
@@ -6754,6 +6761,11 @@ simple-update-notifier@2.0.0:
   integrity sha512-a2B9Y0KlNXl9u/vsW6sTIu9vGEpfKu2wRV6l1H3XEas/0gUIzGzBoP/IouTcUQbm9JWZLH3COxyn03TYlFax6w==
   dependencies:
     semver "^7.5.3"
+
+slash@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
+  integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
 slash@^2.0.0:
   version "2.0.0"

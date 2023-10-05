@@ -1,8 +1,8 @@
 import _ = require("lodash");
 import UrlAssembler = require("url-assembler");
-import {notify} from "./exceptionManager";
+import { notify } from "./exceptionManager";
 import { getStoreSafe } from "./explorook-store";
-import {getLogger} from "./logger";
+import { getLogger } from "./logger";
 
 const logger = getLogger("bitbucket");
 const isNode = () => !(typeof window !== "undefined" && window !== null);
@@ -523,7 +523,7 @@ export const getCommitDetailsFromBitbucket = async ({url, accessToken, projectKe
         projectKey,
         repoName,
         commit
-    });
+    }).toString();
     const res = await fetchNoCache(commitQuery, {
         headers: {
             Authorization: `Bearer ${accessToken}`
