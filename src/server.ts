@@ -33,8 +33,10 @@ const defaultOptions: StartOptions = {
 };
 
 const corsDomainWhitelist = [
-  /^https:\/\/.*\.rookout.com$/,
-  /^https:\/\/.*\.rookout-dev.com$/,
+  /^https:\/\/.*\.rookout\.com$/,
+  /^https:\/\/.*\.rookout-dev\.com$/,
+  /^https:\/\/.*\.dynatracelabs\.com$/,
+  /^https:\/\/.*\.dynatrace\.com$/,
   "https://localhost:8080"
 ];
 
