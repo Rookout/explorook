@@ -1,7 +1,5 @@
-html { 
-  background-color: #3F4758;
+html {
   font-family: Roboto;
-  color: white;
   height: 100%;
 }
 
@@ -10,7 +8,7 @@ html {
 }
 
 .gray-shaded {
-  color: #B6C8D4;
+  color: #2C2D4D;
 }
 
 body {
@@ -31,13 +29,13 @@ div, span {
 
 .Header-line {
   box-sizing: border-box;
-  height: 2px;
+  height: 1px;
   border: 1px solid #4D5667;
 }
 
 .Header-title {
   height: 24px;
-  color: #FFFFFF;
+  color: #2C2D4D;
   font-family: Roboto;
   font-size: 20px;
   line-height: 24px;
@@ -63,8 +61,8 @@ div, span {
 
 
 #close-window-btn {
-  color: white;
-  margin: 10px;
+  color: black;
+  margin: 28px 28px 0 0;
   -webkit-app-region: no-drag;
 }
 

@@ -34,9 +34,7 @@ export const App = ({ ...props }) => {
       {hasSignedEula && <EmptyState />}
       {hasSignedEula && <ReposList />}
       {!hasSignedEula && <EulaModal setSignedEula={setHasSignedEula} />}
-      <div style={{ justifyContent: 'flex-end', marginTop: 'auto' }}>
-        <Footer />
-      </div>
+      <Footer />
     </div>
   )
 }
