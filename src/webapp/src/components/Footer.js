@@ -47,7 +47,7 @@ export const Footer = ({ classes, ...props }) => {
             'win32': 'Windows'
         };
         const pcName = dic[ipcRenderer.sendSync("get-platform")] || "PC";
-        return `Start With ${pcName}`;
+        return `Start with ${pcName}`;
     };
 
     return (
