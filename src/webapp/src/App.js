@@ -30,18 +30,10 @@ export const App = ({ ...props }) => {
 
   return (
     <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-      <div>
-        <Header />
-      </div>
+      <Header />
       {hasSignedEula && <EmptyState />}
       {hasSignedEula && <ReposList />}
-      {!hasSignedEula && (
-        <div style={{ overflow: 'auto' }}>
-          <div id='content-container'>
-            <EulaModal setSignedEula={setHasSignedEula} {...props} />
-          </div>
-        </div>
-      )}
+      {!hasSignedEula && <EulaModal setSignedEula={setHasSignedEula} />}
       <div style={{ justifyContent: 'flex-end', marginTop: 'auto' }}>
         <Footer />
       </div>
