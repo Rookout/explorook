@@ -30,7 +30,6 @@ div, span {
 
 .Header-line {
   box-sizing: border-box;
-  height: 1px;
   border: 1px solid #4D5667;
 }
 
@@ -42,6 +41,7 @@ div, span {
   line-height: 24px;
   margin-bottom: 5px;
   margin-left: 10px;
+  font-weight: 600;
 }
 
 .Header-logo {
@@ -129,6 +129,10 @@ div, span {
 
 .eula-modal .agree {
   margin-left: 10px;
+}
+
+#footer-container p {
+  color: #F0F0F5;
 }
 
 div::-webkit-scrollbar-track, span::-webkit-scrollbar-track, code::-webkit-scrollbar-track {

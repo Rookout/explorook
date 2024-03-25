@@ -62,7 +62,7 @@ export const Footer = ({ classes, ...props }) => {
                         checked: classes.checked,
                     }}
                 />
-                <p title={AUTO_LAUNCH_EXPLANATION} className="gray-shaded">{getPlatformCheckboxText()}</p>
+                <p title={AUTO_LAUNCH_EXPLANATION}>{getPlatformCheckboxText()}</p>
                 <Checkbox
                     checked={exceptionManagerEnabled}
                     onChange={onExceptionManagerEnableChecked}
@@ -71,7 +71,7 @@ export const Footer = ({ classes, ...props }) => {
                         checked: classes.checked,
                     }}
                 />
-                <p title="Allow reporting errors to our servers" className="gray-shaded">Allow errors collection</p>
+                <p title="Allow reporting errors to our servers">Allow errors collection</p>
             </ FormGroup>
         </div>
     )
