@@ -1,7 +1,7 @@
 html {
   font-family: DynatraceFlow;
   height: 100%;
-  background: #DDDDE700;
+  background: #111223;
 }
 
 #root {
@@ -9,7 +9,7 @@ html {
 }
 
 .gray-shaded {
-  color: #2C2D4D;
+  color: #AEAFC980;
 }
 
 body {
@@ -36,7 +36,7 @@ div, span {
 
 .Header-title {
   height: 24px;
-  color: #2C2D4D;
+  color: #F0F0F5;
   font-family: DynatraceFlow;
   font-size: 20px;
   line-height: 24px;
@@ -93,7 +93,7 @@ div, span {
 .eula-modal {
   display: flex;
   flex-direction: column;
-  background: white;
+  background: #111223;
   font-family: DynatraceFlow, sans-serif;
   height: 100%;
   padding-left: 5%;
@@ -101,7 +101,7 @@ div, span {
 }
 
 .eula-modal .headline {
-  color: black;
+  color: white;
   font-size: 24px;
   margin-top: 30px;
   font-weight: 300;

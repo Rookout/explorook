@@ -9,14 +9,14 @@ import { closeWindow, exitApplication } from '../utils'
 
 const styles = {
   disagreeButton: {
-    border: '1px solid #9962FF',
+    border: '1px solid #A9AAF2',
     borderRadius: '17.5px',
-    color: '#9962FF',
+    color: '#A9AAF2',
     height: 'inherit',
     width: '9em'
   },
   agreeButton: {
-    backgroundColor: '#9962FF',
+    backgroundColor: '#A9AAF2',
     borderRadius: '17.5px',
     color: '#fff',
     '&:hover': {
@@ -31,13 +31,13 @@ const styles = {
   checkboxDefault: {},
   checkboxChecked: {},
   root: {
-    color: '#9962FF !important',
+    color: '#A9AAF2 !important',
     '&$checked': {
-      color: '#9962FF !important',
+      color: '#A9AAF2 !important',
     },
   },
   label: {
-    color: '#000000',
+    color: 'white',
     fontSize: '15px',
   },
 }
@@ -92,7 +92,7 @@ const EulaModalComponent = ({ setSignedEula, ...props }) => {
             className='button disagree'
             onClick={() => exitApplication()}
           >
-            I Do not agree
+            Disagree
           </Button>
 
           <Button
