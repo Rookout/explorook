@@ -1,5 +1,5 @@
 html {
-  font-family: Roboto;
+  font-family: DynatraceFlow;
   height: 100%;
   background: #DDDDE700;
 }
@@ -37,7 +37,7 @@ div, span {
 .Header-title {
   height: 24px;
   color: #2C2D4D;
-  font-family: Roboto;
+  font-family: DynatraceFlow;
   font-size: 20px;
   line-height: 24px;
   margin-bottom: 5px;
@@ -94,7 +94,7 @@ div, span {
   display: flex;
   flex-direction: column;
   background: white;
-  font-family: Roboto, sans-serif;
+  font-family: DynatraceFlow, sans-serif;
   height: 100%;
   padding-left: 5%;
   padding-right: 5%;

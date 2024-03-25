@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { ipcRenderer } from 'electron'
 import './App.css'
-import 'typeface-roboto/index.css'
+import './Fonts.css'
 import { Header } from './components/Header'
 import Footer from './components/Footer'
-import { ReposList } from './components/ReposList'
 import { EulaModal } from './components/EulaModal'
 import { EmptyState } from './components/EmptyState'
 
 const INITIAL_HAS_SIGNED_EULA = ipcRenderer.sendSync('has-signed-eula')
 
-export const App = ({ ...props }) => {
+export const App = () => {
   const [loading, setLoading] = useState(true)
   const [hasSignedEula, setHasSignedEula] = useState(INITIAL_HAS_SIGNED_EULA)
 
@@ -31,9 +30,7 @@ export const App = ({ ...props }) => {
   return (
     <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
       <Header />
-      {hasSignedEula && <EmptyState />}
-      {hasSignedEula && <ReposList />}
-      {!hasSignedEula && <EulaModal setSignedEula={setHasSignedEula} />}
+      {hasSignedEula ? <EmptyState /> : <EulaModal setSignedEula={setHasSignedEula} />}
       <Footer />
     </div>
   )
