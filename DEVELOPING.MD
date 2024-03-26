@@ -20,7 +20,6 @@ It helps the windows achieve functionalities they cannot access directly (e.g: d
 
 # The react web app
 Written in ``ES6``, and uses ``create-react-app``, The react app is the configuration window where the user can add, delete and manage its configured folders and other global settings.
-[](/assets/explorook-main-window.gif)
 
 # The invisible worker window
 The invisible worker window runs the GraphQL server and manages all operations on repositories (CRUD operations and indexing)  

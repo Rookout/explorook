@@ -24,9 +24,7 @@ Rookout is a data extraction and pipelining platform, which provides the ability
 
 The Rookout desktop app ("explorook") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
 
-<p align="center">
-  <img src="https://github.com/Rookout/explorook/blob/master/assets/animated-gif.gif" alt="Rookout Desktop App" width="840">
-</p>
+
 
 - Ease of use - set up once and easily access any directory or file you choose directly from the browser. No need to manually open or refresh files and folders; no additional privileges needed.
 - Git aware - seamlessly access your source code across all devices where the app is installed, regardless of the local paths to which you’ve cloned a git repository to. Easily collaborate with fellow developers working on the same code base. 
