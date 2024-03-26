@@ -2,7 +2,7 @@ import {
   enable as remoteEnable,
   initialize as initElectronRemote
 } from "@electron/remote/main";
-import Analytics = require("analytics-node");
+import Analytics  from "@segment/analytics-node";
 import {
   app,
   BrowserWindow,
@@ -183,7 +183,7 @@ function flushAnalytics(callback: () => void) {
   if (!analytics) {
     return;
   }
-  analytics.flush(callback);
+  // analytics.flush(callback);
 }
 
 function identifyAnalytics() {
@@ -195,7 +195,7 @@ function identifyAnalytics() {
 }
 
 function initAnalytics() {
-  analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+  analytics = new Analytics({ writeKey: "isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH"});
   identifyAnalytics();
   track("startup");
 }
@@ -486,3 +486,21 @@ app.on("quit", async () => {
     }
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
