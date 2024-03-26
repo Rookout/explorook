@@ -30,7 +30,8 @@ div, span {
 
 .Header-line {
   box-sizing: border-box;
-  border: 1px solid #4D5667;
+  height: 1px;
+  background: #4D5667;
 }
 
 .Header-title {
@@ -121,7 +122,6 @@ div, span {
 
 .eula-modal .actions {
   display: flex;
-  flex-direction: row;
   justify-content: flex-end;
   height: 35px;
   margin-bottom: 20px;

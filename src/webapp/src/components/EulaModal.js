@@ -9,24 +9,26 @@ import { closeWindow, exitApplication } from '../utils'
 
 const styles = {
   disagreeButton: {
-    border: '1px solid #A9AAF2',
-    borderRadius: '17.5px',
-    color: '#A9AAF2',
+    borderRadius: 8,
+    color: '#DDDDE7',
+    backgroundColor: '#2C2D4D',
     height: 'inherit',
-    width: '9em'
+    width: 90
   },
   agreeButton: {
     backgroundColor: '#A9AAF2',
-    borderRadius: '17.5px',
-    color: '#fff',
+    borderRadius: 8,
+    color: '#1B1C2E',
     '&:hover': {
-      backgroundColor: '#AE83FF',
+      filter: 'brightness(1.1)',
     },
     height: 'inherit',
-    width: '9em'
+    width: 90
   },
   agreeButtonDisabled: {
-    backgroundColor: '#CAB4F3',
+    backgroundColor: '#37384d80 !important',
+    color: '#aeafc980 !important',
+    cursor: 'not-allowed !important'
   },
   checkboxDefault: {},
   checkboxChecked: {},
