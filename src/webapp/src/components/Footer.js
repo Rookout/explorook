@@ -52,7 +52,6 @@ export const Footer = ({ classes, ...props }) => {
 
     return (
         <div id="footer-container">
-            <hr className="Header-line"></hr>
             <FormGroup row id="checkboxes-group">
                 <Checkbox
                     checked={autoLaunchEnabled}

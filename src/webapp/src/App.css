@@ -28,12 +28,6 @@ div, span {
  }
 
 
-.Header-line {
-  box-sizing: border-box;
-  height: 1px;
-  background: #4D5667;
-}
-
 .Header-title {
   height: 24px;
   color: #F0F0F5;
@@ -129,6 +123,11 @@ div, span {
 
 .eula-modal .agree {
   margin-left: 10px;
+}
+
+#footer-container {
+  border-top: 1px solid #4D5667;
+  padding-top: 5px;
 }
 
 #footer-container p {
