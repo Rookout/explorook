@@ -8,15 +8,15 @@ const AUTO_LAUNCH_EXPLANATION = "Run Rookout's Desktop App on machine startup";
 
 const styles = {
     root: {
-        color: blueGrey[500],
+        color: '#A9AAF2 !important',
         '&$checked': {
-            color: blueGrey[500],
+            color: '#A9AAF2 !important',
         },
     },
     checked: {},
 }
 
-export const Footer = ({ classes, ...props }) => {
+export const Footer = ({ classes }) => {
     const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(false);
     const [exceptionManagerEnabled, setExceptionManagerEnabled] = useState(false);
 
