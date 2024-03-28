@@ -15,20 +15,14 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.ts?$/,
+        test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
-      // Solves a graphql-tools related issue: https://github.com/ardatan/graphql-tools/issues/3325
-      {
-        test: /\.mjs$/,
-        include: /node_modules/,
-        type: "javascript/auto"
-      }
-    ]
+    ],
   },
   resolve: {
-    extensions: [ '.ts', '.js' ]
+    extensions: ['.ts', '.js'], // Resolve these extensions
   },
   output: {
     filename: 'index.js',
