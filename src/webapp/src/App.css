@@ -4,6 +4,7 @@ html {
   background: #111223;
 }
 
+
 #root {
   height: 100%;
 }
@@ -15,6 +16,9 @@ html {
 body {
   height: 100%;
   -ms-overflow-style: scrollbar;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
 }
 
 .App {

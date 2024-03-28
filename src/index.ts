@@ -41,7 +41,7 @@ Store.initRenderer();
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
 const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
-const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
+const APP_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
 const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
@@ -335,7 +335,7 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
     tray.displayBalloon({
       title,
       content: body,
-      icon: ROOKOUT_LOGO,
+      icon: APP_LOGO,
     });
   }
 }
