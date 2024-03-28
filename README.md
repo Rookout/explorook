@@ -4,10 +4,10 @@
 </a>
 </p>
 
-<h3 align="center">Rookout Desktop App</h3>
+<h3 align="center">Dynatrace Desktop App</h3>
 
 <p align="center">
-  The Rookout desktop app makes it easy to view local files in your browser.
+  The Dynatrace desktop app makes it easy to view local files in your browser.
 </p>
 
 ## About
@@ -22,7 +22,7 @@
 
 Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on our [website](https://www.rookout.com) or our [docs pages](https://docs.rookout.com)).
 
-The Rookout desktop app ("explorook") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
+The Dynatrace desktop app ("explorook" or previously "Rookout desktop app") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
 
 
 
@@ -32,11 +32,11 @@ The Rookout desktop app ("explorook") allows you to navigate through your local 
 
 ## Security
 
-At Rookout we take your source code security very seriously. Rookout will never collect or modify your source code. 
+At Dynatrace we take your source code security very seriously. Dynatrace will never collect or modify your source code. 
 
-The Rookout Desktop App was designed with security as a foremost concern, its security features are as follows:
+The Dynatrace Desktop App was designed with security as a foremost concern, its security features are as follows:
 - The App only listens for connections from localhost.
-- The App only allows access from the Rookout app.
+- The App only allows access from the Rookout and Dynatrace web apps.
 
 [Learn more about our security standards](https://www.rookout.com/solution/source-code-security/)
 
