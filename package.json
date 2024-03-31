@@ -130,7 +130,7 @@
     "graphql": "^15.4.0",
     "isomorphic-git": "^1.8.2",
     "lodash": "^4.17.21",
-    "log4js": "^6.4.0",
+    "log4js": "6.7.1",
     "parse-repo": "^1.0.4",
     "patch-package": "^6.4.0",
     "postinstall-postinstall": "^2.1.0",
