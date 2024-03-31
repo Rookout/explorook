@@ -2,7 +2,7 @@ import {
   enable as remoteEnable,
   initialize as initElectronRemote
 } from "@electron/remote/main";
-import Analytics = require("analytics-node");
+import Analytics from "@segment/analytics-node";
 import {
   app,
   BrowserWindow,
@@ -168,7 +168,7 @@ function registerIpc() {
   });
 }
 
-function track(eventName: string, props: any = null, callback: () => void = null) {
+function track(eventName: string, props: any = null, callback: (() => void) | null = null): void {
   if (!analytics) {
     return;
   }
@@ -179,11 +179,12 @@ function track(eventName: string, props: any = null, callback: () => void = null
   }, callback);
 }
 
-function flushAnalytics(callback: () => void) {
+ async function flushAnalytics(callback: () => void) {
   if (!analytics) {
     return;
   }
-  analytics.flush(callback);
+  await analytics.closeAndFlush();
+  callback();
 }
 
 function identifyAnalytics() {
@@ -195,14 +196,14 @@ function identifyAnalytics() {
 }
 
 function initAnalytics() {
-  analytics = new Analytics("isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH");
+  analytics = new Analytics({ writeKey: "isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH"});
   identifyAnalytics();
   track("startup");
 }
 
 async function quitApplication() {
   track("quit-application");
-  flushAnalytics(() => app.quit());
+   await flushAnalytics(() => app.quit());
   // This timeout is here in case the callback is not called or takes too long
   setTimeout(() => app.quit(), 3000);
 }
