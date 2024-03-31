@@ -93,6 +93,7 @@
     "@types/aws-lambda": "^8.10.17",
     "@types/body-parser": "^1.17.0",
     "@types/lodash": "^4.14.182",
+    "@types/node": "^20.12.2",
     "@types/node-fetch": "^2.6.1",
     "@types/semver": "^7.5.3",
     "@types/url-assembler": "^2.1.2",
