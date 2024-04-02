@@ -18,7 +18,7 @@
     "debug": "cross-env development=1 $NODE_DEBUG_OPTION yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
   },
   "build": {
-    "productName": "Dynatrace Live Debugging Desktop App",
+    "productName": "Rookout Desktop App",
     "extends": null,
     "appId": "com.rookout.explorook",
     "afterSign": "./afterSignHook.js",
@@ -73,7 +73,6 @@
   },
   "repository": "https://github.com/rookout/explorook",
   "keywords": [
-    "Dynatrace",
     "Rookout",
     "Explorer",
     "ExploRook",

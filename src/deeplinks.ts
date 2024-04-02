@@ -20,5 +20,5 @@ export const initDeeplinks = (app: Electron.App) => {
 
 
 export const deeplinkHandler = () => {
-   dialog.showMessageBoxSync({title: "Dynatrace Desktop App", message: "Dynatrace Desktop App is now running"});
+   dialog.showMessageBoxSync({title: "Dynatrace Desktop App", message: "Rookout Desktop App is now running"});
 };

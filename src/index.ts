@@ -388,7 +388,7 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
       app.dock.hide();
     }
     if (firstTimeLaunch) {
-      displayNotification("Dynatrace's Desktop App is running in the background", "You can access the app via the tray icon");
+      displayNotification("Rookout's Desktop App is running in the background", "You can access the app via the tray icon");
     }
   });
 

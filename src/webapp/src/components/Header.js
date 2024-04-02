@@ -47,7 +47,7 @@ export const Header = () => {
             </div>
             <div className="Header flex">
                 <img src="logo.png" className="Header-logo"  alt="App Logo"/>
-                <p className="Header-title" title={EXPLOROOK_VERSION}>Dynatrace Live Debugging Desktop App</p>
+                <p className="Header-title" title={EXPLOROOK_VERSION}>Rookout Desktop App</p>
                 <p className="gray-shaded" id="version-title">{EXPLOROOK_VERSION}</p>
             </div>
         </div>
