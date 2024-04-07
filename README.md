@@ -63,6 +63,13 @@ If you are interested in fixing issues and contributing directly to the code bas
 - Follow [@rookoutlabs](https://twitter.com/rookoutlabs) and let us know what you think!
 - Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/)
 
+## Requirements
+### Node.js
+This project supports Node.js version 18 and above. Ensure that you have Node.js v18.19.30 or later installed on your system to use this project effectively.
+### Operating System
+While this project is designed to run on various operating systems, it does not support Windows 7 or Windows 8. We recommend using Windows 10/11, macOS, or a Linux distribution for optimal compatibility and performance.
+
+
 ## License
 
 Copyright (c) Rookout LTD. All rights reserved. 
