@@ -1,6 +1,6 @@
 <p align="center">
 <a href="https://www.rookout.com/" target="_blank">
-<img src="https://github.com/Rookout/docs/blob/master/website/static/img/logos/rookout_logo_horizontal.svg" alt="Rookout logo" width="460" height="100">
+ <img src="https://github.com/Rookout/docs/blob/master/website/static/img/logos/rookout_logo_horizontal.svg" alt="Rookout logo" width="460" height="100" />
 </a>
 </p>
 
@@ -25,7 +25,7 @@ Rookout is a data extraction and pipelining platform, which provides the ability
 The Rookout desktop app ("explorook") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
 
 <p align="center">
-  <img src="https://github.com/Rookout/explorook/blob/master/assets/animated-gif.gif" alt="Rookout Desktop App" width="840">
+  <img src="https://github.com/Rookout/explorook/blob/master/assets/animated-gif.gif" alt="Rookout Desktop App" width="840" />
 </p>
 
 - Ease of use - set up once and easily access any directory or file you choose directly from the browser. No need to manually open or refresh files and folders; no additional privileges needed.
@@ -62,6 +62,13 @@ If you are interested in fixing issues and contributing directly to the code bas
 - [File an issue](https://github.com/Rookout/explorook/issues)
 - Follow [@rookoutlabs](https://twitter.com/rookoutlabs) and let us know what you think!
 - Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/)
+
+## Requirements
+### Node.js
+This project supports Node.js version 18 and above. Ensure that you have Node.js v18.19.30 or later installed on your system to use this project effectively.
+### Operating System
+While this project is designed to run on various operating systems, it does not support Windows 7 or Windows 8. We recommend using Windows 10/11, macOS, or a Linux distribution for optimal compatibility and performance.
+
 
 ## License
 
