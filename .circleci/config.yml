@@ -38,7 +38,7 @@ jobs:
           name: Install Other shit
           command: |
             # download custom jsign to sign PE
-            curl --cacert cert.pem -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
+            curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
             # install electron main window dependencies
             yarn
             # build typescript code
