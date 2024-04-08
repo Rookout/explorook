@@ -6,15 +6,17 @@ references:
         only: master
 
 jobs:
-  publish:
+  build:
     macos:
       xcode: "15.0.0"
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - restore_cache:
           key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
+
       - run:
-          name: Build and Publish
+          name: Preparation
           command: |
             # wine is required to sign windows executables
             brew install --cask xquartz
@@ -58,9 +60,23 @@ jobs:
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
             export CSC_LINK=certificates/mac_cert.p12
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
-            
+      - run:
+          name: Build
+          command: |            
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
+
+  publish:
+    macos:
+      xcode: "15.0.0"
+    resource_class: macos.x86.medium.gen2
+    steps:
+      - checkout
+      - restore_cache:
+          key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: Publish
+          command: |
             # publish in google storage bucket (additionally to electronbuild-publisher)
             bash upload_release_to_gs.sh
       - save_cache:
@@ -70,6 +86,7 @@ jobs:
   version_validation:
     macos:
       xcode: "15.0.0"
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - run:
@@ -88,6 +105,7 @@ workflows:
   version: 2
   publish-pipeline:
     jobs:
+      - build:
       - version_validation:
           requires:
           <<: *filter_master
