@@ -63,7 +63,9 @@ jobs:
           name: Build
           command: |            
             # package code for every distribution (mac, win, linux) and publish as github release
+            export CSC_FOR_PULL_REQUEST=true 
             yarn run build-packages-all-distributions
+
 
   publish:
     macos:
