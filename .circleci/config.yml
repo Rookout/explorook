@@ -50,11 +50,14 @@ jobs:
             # save windows certificate locally (WIN_CERT) is base64 of our certificate
             echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
-            
+
+      - run:
+          name: APPLE_CERT
+          command: |
             # Make sure mac signing and certs are defined and trusted
             mkdir certificates
             echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
-            echo $APPLE_CERT_2024 | base64 --decode > certificates/wwdr.cer
+            echo $APPLE_CERT | base64 --decode > certificates/wwdr.cer
             security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
             export CSC_LINK=certificates/mac_cert.p12
