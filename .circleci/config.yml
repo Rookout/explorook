@@ -28,11 +28,6 @@ jobs:
             unzip /Users/distiller/google-cloud-sdk.zip
             bash google-cloud-sdk/install.sh --rc-path=/Users/distiller/.bashrc --usage-reporting=false --path-update=true --command-completion=true --install-python=true --quiet
             source ~/.bashrc
-            # Save gcloud credentials service account and authenticate
-            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
-            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
-            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
-
       - run:
           name: Install Dependencies
           command: |
@@ -49,6 +44,10 @@ jobs:
       - run: 
           name: Build
           command: |
+            # Save gcloud credentials service account and authenticate
+            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             # Make sure mac signing and certs are defined and trusted
             mkdir certificates
             echo $NEW_CSC_LINK | base64 --decode > certificates/mac_cert.p12
@@ -64,7 +63,6 @@ jobs:
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt          
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
-
 
   publish:
     macos:
