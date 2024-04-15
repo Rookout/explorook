@@ -14,7 +14,6 @@ jobs:
       - checkout
       - restore_cache:
           key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
-
       - run:
           name: Install Wine
           command: |
@@ -47,6 +46,7 @@ jobs:
             export CI=false
             # install dependencies
             yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
+      - run: 
           name: Build
           command: |
             # Make sure mac signing and certs are defined and trusted
