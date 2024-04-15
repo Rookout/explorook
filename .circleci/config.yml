@@ -35,7 +35,7 @@ jobs:
       #       gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
 
       - run:
-          name: Install Other shit
+          name: Install Dependencies
           command: |
             # download custom jsign to sign PE
             curl -fsSL https://get.rookout.com/jsign-rookout.jar --output jsign.jar
@@ -47,12 +47,7 @@ jobs:
             export CI=false
             # install dependencies
             yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
-            # save windows certificate locally (WIN_CERT) is base64 of our certificate
-            echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
-            export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt
-
-      - run:
-          name: APPLE_CERT
+          name: Build
           command: |
             # Make sure mac signing and certs are defined and trusted
             mkdir certificates
@@ -60,18 +55,14 @@ jobs:
             echo $APPLE_CERT | base64 --decode > certificates/wwdr.cer
             security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
-
-            echo ===========
-            security find-identity -p codesigning
-            echo ===========
-            security find-identity
-      - run:
-          name: Build
-          command: |            
-            # package code for every distribution (mac, win, linux) and publish as github release
             export CSC_FOR_PULL_REQUEST=true 
             export CSC_LINK=certificates/mac_cert.p12
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
+            # Win signing
+            # save windows certificate locally (WIN_CERT) is base64 of our certificate
+            echo $WIN_EV_CERT_BASE64_22 | base64 --decode > rookout.crt
+            export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt          
+            # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
 
 
