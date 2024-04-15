@@ -33,8 +33,7 @@ module.exports = async function (params) {
             appleId: process.env.APPLE_DEV_USER,
             appleIdPassword: process.env.APPLE_DEV_PASSWORD,
             teamId: process.env.appleTeamId,
-            tool,
-            keychain: "/Users/distiller/Library/Keychains/login.keychain-db"
+            tool
         });
     } catch (error) {
         console.error(error);

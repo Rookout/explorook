@@ -60,8 +60,7 @@ jobs:
             echo $APPLE_CERT | base64 --decode > certificates/wwdr.cer
             security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
-            export CSC_LINK=certificates/mac_cert.p12
-            export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
+
             echo ===========
             security find-identity -p codesigning
             echo ===========
@@ -71,6 +70,8 @@ jobs:
           command: |            
             # package code for every distribution (mac, win, linux) and publish as github release
             export CSC_FOR_PULL_REQUEST=true 
+            export CSC_LINK=certificates/mac_cert.p12
+            export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             yarn run build-packages-all-distributions
 
 
