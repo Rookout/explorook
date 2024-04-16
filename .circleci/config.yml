@@ -6,7 +6,7 @@ references:
         only: master
 
 jobs:
-  build:
+  publish:
     macos:
       xcode: "15.0.0"
     resource_class: macos.x86.medium.gen2
@@ -41,7 +41,7 @@ jobs:
             # install dependencies
             yarn --cwd=src/webapp && yarn run --cwd=src/webapp build
       - run: 
-          name: Build
+          name: Build & Sign
           command: |
             # Save gcloud credentials service account and authenticate
             bash google-cloud-sdk/install.sh --rc-path=/Users/distiller/.bashrc --usage-reporting=false --path-update=true --command-completion=true --install-python=true --quiet
@@ -55,7 +55,6 @@ jobs:
             echo $APPLE_CERT | base64 --decode > certificates/wwdr.cer
             security add-certificates certificates/wwdr.cer
             security import certificates/mac_cert.p12 -P $NEW_CSC_KEY_PASSWORD
-            export CSC_FOR_PULL_REQUEST=true 
             export CSC_LINK=certificates/mac_cert.p12
             export CSC_KEY_PASSWORD=$NEW_CSC_KEY_PASSWORD
             # Win signing
@@ -64,15 +63,6 @@ jobs:
             export WINDOWS_EV_CERTIFICATE_PATH=rookout.crt          
             # package code for every distribution (mac, win, linux) and publish as github release
             yarn run build-packages-all-distributions
-
-  publish:
-    macos:
-      xcode: "15.0.0"
-    resource_class: macos.x86.medium.gen2
-    steps:
-      - checkout
-      - restore_cache:
-          key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
       - run:
           name: Publish
           command: |
@@ -104,7 +94,6 @@ workflows:
   version: 2
   publish-pipeline:
     jobs:
-      - build
       - version_validation:
           requires:
           <<: *filter_master
