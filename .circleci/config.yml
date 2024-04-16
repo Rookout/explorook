@@ -66,6 +66,12 @@ jobs:
       - run:
           name: Publish
           command: |
+            Save gcloud credentials service account and authenticate
+            bash google-cloud-sdk/install.sh --rc-path=/Users/distiller/.bashrc --usage-reporting=false --path-update=true --command-completion=true --install-python=true --quiet
+            source ~/.bashrc
+            echo $GOOGLE_SERVICE_ACCOUNT_KEY_BASE64 | base64 --decode > gcloud_service_account.json
+            export GOOGLE_APPLICATION_CREDENTIALS=gcloud_service_account.json
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
             # publish in google storage bucket (additionally to electronbuild-publisher)
             bash upload_release_to_gs.sh
       - save_cache:
