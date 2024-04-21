@@ -4,8 +4,15 @@ const package = require('./package.json')
 
 const config = {
   mode: 'development',
+  optimization: {
+    minimize: false,
+    usedExports: false, // Disable tree shaking regarding used exports
+    sideEffects: false, // Disable tree shaking regarding side effects in package.json
+    concatenateModules: false // This is true by default in production mode in Webpack 5
+  },
   entry: './src/index-worker.ts',
   target: "electron-renderer",
+
   devtool: 'source-map',
   node: {
     __dirname: false,
@@ -23,7 +30,7 @@ const config = {
         test: /node_modules[\/\\](iconv-lite)[\/\\].+/,
         resolve: {
           aliasFields: ['main']
-        }
+      }
       },
       // Solves a graphql-tools related issue: https://github.com/ardatan/graphql-tools/issues/3325
       {
@@ -33,12 +40,17 @@ const config = {
       }
     ]
   },
+  externals: [ 'electron' ],
+
   resolve: {
     extensions: ['.mjs', '.ts', '.json', '.js', '.gql', '.graphql']
   },
   output: {
     filename: 'index-worker.js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
+    libraryTarget: 'commonjs',
+    globalObject: 'this',
+    umdNamedDefine: true,
   }
 };
 
