@@ -23,7 +23,7 @@ const config = {
         test: /node_modules[\/\\](iconv-lite)[\/\\].+/,
         resolve: {
           aliasFields: ['main']
-      }
+        }
       },
       // Solves a graphql-tools related issue: https://github.com/ardatan/graphql-tools/issues/3325
       {
@@ -38,7 +38,7 @@ const config = {
   },
   output: {
     filename: 'index-worker.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist')
   }
 };
 
