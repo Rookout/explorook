@@ -1,6 +1,6 @@
 <p align="center">
 <a href="https://www.rookout.com/" target="_blank">
-<img src="https://github.com/Rookout/docs/blob/master/website/static/img/logos/rookout_logo_horizontal.svg" alt="Rookout logo" width="460" height="100">
+ <img src="https://github.com/Rookout/docs/blob/master/website/static/img/logos/rookout_logo_horizontal.svg" alt="Rookout logo" width="460" height="100" />
 </a>
 </p>
 
@@ -60,6 +60,13 @@ If you are interested in fixing issues and contributing directly to the code bas
 - [File an issue](https://github.com/Rookout/explorook/issues)
 - Follow [@rookoutlabs](https://twitter.com/rookoutlabs) and let us know what you think!
 - Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/)
+
+## Requirements
+### Node.js
+This project supports Node.js version 18 and above. Ensure that you have Node.js v18.19.30 or later installed on your system to use this project effectively.
+### Operating System
+While this project is designed to run on various operating systems, it does not support Windows 7 or Windows 8. We recommend using Windows 10/11, macOS, or a Linux distribution for optimal compatibility and performance.
+
 
 ## License
 
