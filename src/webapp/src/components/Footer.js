@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Checkbox, FormGroup } from "@material-ui/core";
 import { ipcRenderer } from 'electron';
 
-const AUTO_LAUNCH_EXPLANATION = "Run Rookout's Desktop App on machine startup";
+const AUTO_LAUNCH_EXPLANATION = "Run Dynatrace Live Debugging Desktop App on machine startup";
 
 const styles = {
     root: {
