@@ -59,7 +59,6 @@ let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 let analytics: Analytics;
 let userId: string;
-let signedEula: boolean = false;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -145,18 +144,7 @@ function registerIpc() {
     store.set("sentry-enabled", enable);
     e.sender.send("exception-manager-enabled-changed", enable);
   });
-  ipcMain.on("has-signed-eula", (e: IpcMainEvent) => {
-    e.returnValue = store.get("has-signed-eula", false);
-  });
-  ipcMain.on("signed-eula", (e: IpcMainEvent) => {
-    if (dataCollectionEnabled || process.env.development) {
-      initExceptionManager(() => userId);
-      initAnalytics();
-      track("signed-eula");
-    }
-    store.set("has-signed-eula", true);
-    startGraphqlServer();
-  });
+
   ipcMain.on("auto-launch-set", (e: IpcMainEvent, enable: boolean) => {
     if (enable) {
       store.set("linux-start-with-os", true);
@@ -236,8 +224,8 @@ function main() {
   });
   userId = store.getOrCreate("user-id", uuidv4());
   dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
-  signedEula = Boolean(store.get("has-signed-eula", false));
-  if (signedEula && (dataCollectionEnabled || process.env.development)) {
+
+  if (dataCollectionEnabled || process.env.development) {
     initExceptionManager(() => userId);
     initAnalytics();
   }
@@ -379,9 +367,8 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     webPreferences: { nodeIntegration: true, contextIsolation: false, sandbox: false }
   });
   remoteEnable(mainWindow.webContents);
-  if (signedEula) {
-    startGraphqlServer();
-  }
+  startGraphqlServer();
+
   ipcMain.on("app-window-up", (ev: IpcMainEvent) => {
     ev.sender.send("indexer-worker-id", indexWorker.id);
     if (hidden && process.platform === "darwin") {
