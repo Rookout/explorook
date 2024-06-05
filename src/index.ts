@@ -2,7 +2,6 @@ import {
   enable as remoteEnable,
   initialize as initElectronRemote
 } from "@electron/remote/main";
-import Analytics from "@segment/analytics-node";
 import {
   app,
   BrowserWindow,
@@ -18,12 +17,6 @@ import * as log from "electron-log";
 import * as Store from "electron-store";
 import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
-import {
-  arch as operatingSystemArch,
-  platform as operatingSystemPlatform,
-  userInfo,
-  version as operatingSystemVersion
-} from "os";
 import * as path from "path";
 import {deeplinkHandler, initDeeplinks} from "./deeplinks";
 import { ExplorookStore } from "./explorook-store";
@@ -57,7 +50,6 @@ let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
 let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
-let analytics: Analytics;
 let userId: string;
 
 // getAppIcon resolves the right icon for the running platform
@@ -119,10 +111,6 @@ function registerIpc() {
   ipcMain.on("hidden", displayWindowHiddenNotification);
   ipcMain.on("start-server-error", (e: IpcMainEvent, err: any) => {
     displayNotification("Rookout Desktop App", `App failed to start local server: ${err}`);
-    track("start-server-error", { err });
-  });
-  ipcMain.on("track", (e: IpcMainEvent, trackEvent: string, props: any) => {
-    track(trackEvent, props);
   });
   ipcMain.on("get-user-id", (e: IpcMainEvent) => e.returnValue = userId);
   ipcMain.on("get-platform", (e: IpcMainEvent) => e.returnValue = process.platform.toString());
@@ -156,44 +144,9 @@ function registerIpc() {
   });
 }
 
-function track(eventName: string, props: any = null, callback: (() => void) | null = null): void {
-  if (!analytics) {
-    return;
-  }
-  analytics.track({
-    userId,
-    event: eventName,
-    properties: props
-  }, callback);
-}
-
- async function flushAnalytics(callback: () => void) {
-  if (!analytics) {
-    return;
-  }
-  await analytics.closeAndFlush();
-  callback();
-}
-
-function identifyAnalytics() {
-  const { username } = userInfo();
-  const osArch = operatingSystemArch();
-  const osPlatform = operatingSystemPlatform();
-  const osVersion = operatingSystemVersion();
-  analytics.identify({ userId, traits: { username, osPlatform, osArch, osVersion } });
-}
-
-function initAnalytics() {
-  analytics = new Analytics({ writeKey: "isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH"});
-  identifyAnalytics();
-  track("startup");
-}
 
 async function quitApplication() {
-  track("quit-application");
-   await flushAnalytics(() => app.quit());
-  // This timeout is here in case the callback is not called or takes too long
-  setTimeout(() => app.quit(), 3000);
+  app.quit();
 }
 
 function main() {
@@ -227,7 +180,6 @@ function main() {
 
   if (dataCollectionEnabled || process.env.development) {
     initExceptionManager(() => userId);
-    initAnalytics();
   }
 
   // listen to RPC's coming from windows
