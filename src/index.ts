@@ -24,7 +24,7 @@ const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
 import fetch from "node-fetch";
 import {SemVer} from "semver";
-import { initExceptionManager, Logger, notify } from "./exceptionManager";
+import { Logger, notify } from "./exceptionManager";
 
 initElectronRemote();
 autoUpdater.logger = new Logger();
@@ -177,10 +177,6 @@ function main() {
   });
   userId = store.getOrCreate("user-id", uuidv4());
   dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
-
-  if (dataCollectionEnabled || process.env.development) {
-    initExceptionManager(() => userId);
-  }
 
   // listen to RPC's coming from windows
   registerIpc();

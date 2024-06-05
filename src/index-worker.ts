@@ -3,7 +3,7 @@ import _ = require("lodash");
 import net = require("net");
 import { basename } from "path";
 import { Repository } from "./common/repository";
-import { initExceptionManager, notify } from "./exceptionManager";
+import { notify } from "./exceptionManager";
 import {setLogLevel} from "./logger";
 import { repStore } from "./repoStore";
 import * as graphQlServer from "./server";
@@ -22,12 +22,6 @@ const isPortInUse = (port: number): Promise<boolean> => new Promise<boolean>((re
         testServer.close();
     })
     .listen({ port, host: "localhost" });
-});
-
-ipcRenderer.once("exception-manager-enabled-changed", (e: IpcRendererEvent, enabled: boolean) => {
-    if (enabled) {
-        initExceptionManager(() => ipcRenderer.sendSync("get-user-id"));
-    }
 });
 
 const onAddRepoRequest = async (fullpath: string, id?: string) => {
