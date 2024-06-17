@@ -48,7 +48,6 @@ let firstTimeLaunch = false;
 let al: AutoLaunch;
 let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
-let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
 let userId: string;
 
@@ -125,13 +124,6 @@ function registerIpc() {
     const enabled = !(await isReadonlyVolume()) && await al.isEnabled();
     e.sender.send("auto-launch-is-enabled-changed", enabled);
   });
-  ipcMain.on("exception-manager-is-enabled-req", (e: IpcMainEvent) => {
-    e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
-  });
-  ipcMain.on("exception-manager-enabled-set", (e: IpcMainEvent, enable: boolean) => {
-    store.set("sentry-enabled", enable);
-    e.sender.send("exception-manager-enabled-changed", enable);
-  });
 
   ipcMain.on("auto-launch-set", (e: IpcMainEvent, enable: boolean) => {
     if (enable) {
@@ -176,7 +168,6 @@ function main() {
     firstTimeLaunch = true;
   });
   userId = store.getOrCreate("user-id", uuidv4());
-  dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
 
   // listen to RPC's coming from windows
   registerIpc();
