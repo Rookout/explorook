@@ -18,27 +18,18 @@ const styles = {
 
 export const Footer = ({ classes }) => {
     const [autoLaunchEnabled, setAutoLaunchEnabled] = useState(false);
-    const [exceptionManagerEnabled, setExceptionManagerEnabled] = useState(false);
 
     useEffect(() => {
         ipcRenderer.on("auto-launch-is-enabled-changed", (event, isEnabled) => {
             setAutoLaunchEnabled(isEnabled);
         });
-        ipcRenderer.on("exception-manager-enabled-changed", (event, isEnabled) => {
-            setExceptionManagerEnabled(isEnabled);
-        });
         ipcRenderer.send("auto-launch-is-enabled-req");
-        ipcRenderer.send("exception-manager-is-enabled-req");
     }, []);
 
     const onAutoLaunchChecked = event => {
         ipcRenderer.send("auto-launch-set", event.target.checked);
     };
 
-    const onExceptionManagerEnableChecked = event => {
-        ipcRenderer.send("exception-manager-enabled-set", event.target.checked);
-        alert("Changes will take effect after you restart the app");
-    };
 
     const getPlatformCheckboxText = () => {
         const dic = {
@@ -62,15 +53,6 @@ export const Footer = ({ classes }) => {
                     }}
                 />
                 <p title={AUTO_LAUNCH_EXPLANATION}>{getPlatformCheckboxText()}</p>
-                <Checkbox
-                    checked={exceptionManagerEnabled}
-                    onChange={onExceptionManagerEnableChecked}
-                    classes={{
-                        root: classes.root,
-                        checked: classes.checked,
-                    }}
-                />
-                <p title="Allow reporting errors to our servers">Allow errors collection</p>
             </ FormGroup>
         </div>
     )
