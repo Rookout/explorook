@@ -1,30 +1,24 @@
-html { 
-  background-color: #3F4758;
-  font-family: Roboto;
-  color: white;
+html {
+  font-family: DynatraceFlow;
   height: 100%;
+  background: #111223;
 }
+
 
 #root {
   height: 100%;
 }
 
-.primary {
-  color: #955FF8;
-  border-color: #955FF8;
-}
-
 .gray-shaded {
-  color: #B6C8D4;
-}
-
-.rookout-gray {
-  color: #6E7A89;
+  color: #AEAFC980;
 }
 
 body {
   height: 100%;
   -ms-overflow-style: scrollbar;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
 }
 
 .App {
@@ -38,51 +32,21 @@ div, span {
  }
 
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
-
-.App-title {
-  font-size: 1.5em;
-}
-
-.App-intro {
-  font-size: large;
-}
-
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.Header-line {
-  box-sizing: border-box;
-  height: 2px;
-  border: 1px solid #4D5667;
-}
-
 .Header-title {
   height: 24px;
-  color: #FFFFFF;
-  font-family: Roboto;
+  color: #F0F0F5;
+  font-family: DynatraceFlow;
   font-size: 20px;
   line-height: 24px;
   margin-bottom: 5px;
   margin-left: 10px;
+  font-weight: 600;
 }
 
 .Header-logo {
   margin-top: 5px;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 34px;
 }
 
 .Header {
@@ -92,110 +56,22 @@ div, span {
   padding-top: 10px;
   padding-bottom: 5px;
   padding-left: 25px;
+  align-items: center;
 }
 
-#token-box {
-  display: flex;
-  height: 25px;
-  padding: 10px;
-  background-color: #2F3545;
-  width: 100%;
-  max-width: 500px;
-  color: #B6C8D4;
-  font-family: Roboto;
-  font-size: 18px;
-}
-
-#token-wrapper {
-  display: -webkit-box;
-}
-
-#token-show-eye {
-  margin-left: auto;
-  justify-self: flex-end;
-  cursor: pointer;
-}
-
-.small-icon {
-  font-size: 18;
-  color: #5f697a;
-}
-
-#copy-token-btn {
-  height: 44px;
-  font-weight: 400;
-  font-size: 14px;
-  font-family: Roboto;
-  color: white;
-  border-radius: 0;
-  background-color: #955FF8;
-}
-
-.test-connection-btn {
-  font-weight: 400;
-  font-size: 14px;
-  font-family: Roboto;
-  color: white;
-  background-color: #955FF8;
-  margin-left: 10px;
-  padding: 0;
-  height: 25px;
-  width: 111px;
-  border-radius: 100px;
-}
-
-#minimize-window-btn:hover, #close-window-btn:hover {
-  background-color: #c4cfd6;
-}
 
 #close-window-btn {
-  color: white;
-  margin: 10px;
+  color: #F0F0F5;
+  margin: 28px 28px 0 0;
   -webkit-app-region: no-drag;
 }
 
-#minimize-window-btn {
-  color: white;
-  margin: 10px;
-  margin-right: 0px;
-  -webkit-app-region: no-drag;
-}
 
 #close-window-wrapper {
   float: right;
   z-index: 500;
   -webkit-app-region: no-drag;
   cursor: pointer;
-}
-
-#content-container {
-  margin-left: 25px;
-  text-align: left;
-}
-
-.repo-name {
-  margin-top: 5px;
-  margin-left: 10px;
-}
-
-.repo-name-edit {
-  margin-left: 10px;
-  min-width: 350px;
-  outline-width: 0;
-  background-color: transparent;
-  border-top: none;
-  border-left: none;
-  border-color: #955FF8;
-  border-right: none;
-  height: 25px;
-  font-size: 16px;
-  color: white;
-}
-
-#repo-buttons {
-  justify-content: flex-end;
-  margin-left: auto;
-  margin-right: 25px;
 }
 
 #version-title {
@@ -208,70 +84,20 @@ div, span {
   display: flex;
 }
 
-#token-title {
-  margin-bottom: -12px;
-  align-items: center;
-  font-size: 16px;
-}
-
-#token-lock {
-  margin-bottom: 5px;
-  height: 25px;
-  cursor: pointer;
-}
-
 #checkboxes-group {
   margin-left: 20px;
   margin-bottom: 8px;
 }
 
-.eula-modal {
-  display: flex;
-  flex-direction: column;
-  background: white;
-  font-family: Roboto, sans-serif;
-  height: 100%;
-  padding-left: 5%;
-  padding-right: 5%;
+
+
+#footer-container {
+  border-top: 1px solid #4D5667;
+  padding-top: 5px;
 }
 
-.eula-modal .headline {
-  color: black;
-  font-size: 24px;
-  margin-top: 30px;
-  font-weight: 300;
-}
-
-.eula-modal .eula-iframe {
-  width: 100%;
-  height: 65%;
-}
-
-.eula-modal .eula-box {
-  width: 100%;
-  height: 65%;
-  overflow: auto;
-  background-color: gray;
-}
-
-.eula-modal .actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  height: 35px;
-  margin-bottom: 20px;
-}
-
-.eula-modal .agree {
-  margin-left: 10px;
-}
-
-.on-prem-input {
-  border-bottom: 2px solid #B6C8D4;
-  color: #b6c8d4 !important;
-}
-.on-prem-input:hover {
-  color: #b6c8d4;
+#footer-container p {
+  color: #F0F0F5;
 }
 
 div::-webkit-scrollbar-track, span::-webkit-scrollbar-track, code::-webkit-scrollbar-track {
