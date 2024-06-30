@@ -25,12 +25,19 @@ export const Header = () => {
 
     const store = new Store({ name: "explorook" });
     const isLogLevelDebug = store.get("logLevel", "debug") === "debug";
+    const shouldSkipDtVerification = store.get("skipDtVerification", false);
+
     const setLogLever = isDebug => {
         ipcRenderer.sendTo(window.indexWorkerId, "set-log-level", isDebug ? "debug" : "error")
         setOpen(false);
     }
     const clearAllRepos = () => {
         ipcRenderer.sendTo(window.indexWorkerId, "clear-all-repos");
+        setOpen(false);
+    }
+
+    const toggleShouldSkipDtVerification = () => {
+        store.set('skipDtVerification', !shouldSkipDtVerification);
         setOpen(false);
     }
 
@@ -43,6 +50,7 @@ export const Header = () => {
                     <MenuItem key="debug" onClick={startDebug}>Debug</MenuItem>
                     <MenuItem key="log-level" onClick={() => setLogLever(!isLogLevelDebug)}>{isLogLevelDebug ? "Error Logs" : "Debug Logs"}</MenuItem>
                     <MenuItem key="remove-all-repos" onClick={clearAllRepos}>Clear data</MenuItem>
+                    <MenuItem key="toggle-skip-verification" onClick={toggleShouldSkipDtVerification}>{shouldSkipDtVerification ? 'Enable' : 'Skip'} Verification {!shouldSkipDtVerification && '(Unsafe)'}</MenuItem>
                     <MenuItem key="close" onClick={() => setOpen(false)}>Close</MenuItem>
                 </Menu>
             </div>

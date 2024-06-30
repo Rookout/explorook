@@ -1,6 +1,7 @@
 import type {CorsOptions, CorsRequest} from "cors";
 import * as cors from "cors";
 import fetch from "node-fetch";
+import {getStoreSafe} from "./explorook-store";
 
 
 const LOCALHOST_ORIGIN = "https://localhost:8080";
@@ -13,6 +14,7 @@ const DENY_CORS_OPTION: CorsOptions = {origin: false};
 
 const verifiedOriginsCache = new Set([LOCALHOST_ORIGIN]);
 
+const store = getStoreSafe();
 
 const corsOptionsDelegate = async (req: CorsRequest, callback: (err: Error | null, options?: CorsOptions) => void) => {
     try {
@@ -26,6 +28,13 @@ const corsOptionsDelegate = async (req: CorsRequest, callback: (err: Error | nul
             callback(null, DENY_CORS_OPTION);
             return;
         }
+
+        const shouldSkipDtVerification = store.get("skipDtVerification", false);
+        if (shouldSkipDtVerification) {
+            callback(null, ALLOW_CORS_OPTION);
+            return;
+        }
+
 
         const response = await fetch(`${origin}/platform-reserved/dob/isapprefallowed?appOrigin=${origin}`);
 
