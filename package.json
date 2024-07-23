@@ -24,7 +24,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "Dynatrace",
+        "owner": "rookout",
         "repo": "dynatrace-desktop-application"
       }
     ],
@@ -34,7 +34,7 @@
     "protocols": {
       "name": "rookout",
       "schemes": [
-        "dynatrace"
+        "rookout"
       ]
     },
     "files": [
