@@ -9,7 +9,7 @@ jobs:
   publish:
     macos:
       xcode: "15.0.0"
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
@@ -81,7 +81,7 @@ jobs:
   version_validation:
     macos:
       xcode: "15.0.0"
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - run:
