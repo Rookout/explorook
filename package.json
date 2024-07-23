@@ -1,7 +1,7 @@
 {
-  "name": "explorook",
-  "version": "1.16.5",
-  "description": "Rookout's site addon to support local files and folders",
+  "name": "dynatrace-desktop-application",
+  "version": "0.0.1",
+  "description": "dynatrace desktop application's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
     "postinstall": "patch-package",
@@ -18,15 +18,14 @@
     "debug": "cross-env development=1 $NODE_DEBUG_OPTION yarn run build && cross-env development=1 electron --inspect-brk ./dist/index.js"
   },
   "build": {
-    "productName": "Rookout Desktop App",
+    "productName": "Dynatrace Desktop App",
     "extends": null,
-    "appId": "com.rookout.explorook",
-    "afterSign": "./afterSignHook.js",
+    "appId": "com.rookout.dynatrace-desktop-application",
     "publish": [
       {
         "provider": "github",
-        "owner": "rookout",
-        "repo": "explorook"
+        "owner": "Dynatrace",
+        "repo": "dynatrace-desktop-application"
       }
     ],
     "directories": {
@@ -35,7 +34,7 @@
     "protocols": {
       "name": "rookout",
       "schemes": [
-        "rookout"
+        "dynatrace"
       ]
     },
     "files": [
@@ -71,7 +70,7 @@
       "icon": "assets/icons/logo@512x512.png"
     }
   },
-  "repository": "https://github.com/rookout/explorook",
+  "repository": "https://github.com/rookout/dynatrace-desktop-application",
   "keywords": [
     "Rookout",
     "Explorer",

@@ -4,7 +4,7 @@ dist
 .idea
 .eslintcache
 yarn-error.log
-
+pkg
 release-builds
 installers
 
