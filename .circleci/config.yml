@@ -5,12 +5,17 @@ references:
       branches:
         only: master
 
+
 jobs:
   publish:
     macos:
       xcode: "15.0.0"
-    resource_class: macos.m1.medium.gen1
+    resource_class: macos.m1.large.gen1
     steps:
+      - run:
+          name: Install Rosetta 2
+          command: |
+            softwareupdate --install-rosetta --agree-to-license
       - checkout
       - restore_cache:
           key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
@@ -81,8 +86,12 @@ jobs:
   version_validation:
     macos:
       xcode: "15.0.0"
-    resource_class: macos.m1.medium.gen1
+    resource_class: macos.m1.large.gen1
     steps:
+      - run:
+          name: Install Rosetta 2
+          command: |
+            softwareupdate --install-rosetta --agree-to-license
       - checkout
       - run:
           name: Validate version has no release yet
