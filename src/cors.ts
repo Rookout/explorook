@@ -15,7 +15,6 @@ const verifiedOriginsCache = new Set([LOCALHOST_ORIGIN]);
 
 const corsOptionsDelegate = async (req: cors.CorsRequest, callback: (err: Error | null, options?: cors.CorsOptions) => void) => {
     try {
-        const shouldSkipDtVerification = store.get("skipDtVerification", false);
         const origin = req.headers.origin;
         if (verifiedOriginsCache.has(origin) || ROOKOUT_ORIGIN_REGEX.test(origin)) {
             callback(null, ALLOW_CORS_OPTION);
