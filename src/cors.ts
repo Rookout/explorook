@@ -3,8 +3,7 @@ import fetch from "node-fetch";
 
 
 const LOCALHOST_ORIGIN = "https://localhost:8080";
-const ROOKOUT_ORIGIN_REGEX = /^https:\/\/.*\.rookout(?:-dev)?\.com$/;
-const DYNATRACE_ORIGIN_REGEX = /^https:\/\/.*\.dynatrace(?:labs)?\.com$/;
+const DYNATRACE_ORIGIN_REGEX = /^https:\/\/.*\.dynatrace(?:labs)?\.com(?::\d+)?$/;
 
 const ALLOW_CORS_OPTION: cors.CorsOptions = {origin: true};
 const DENY_CORS_OPTION: cors.CorsOptions = {origin: false};
@@ -16,7 +15,7 @@ const verifiedOriginsCache = new Set([LOCALHOST_ORIGIN]);
 const corsOptionsDelegate = async (req: cors.CorsRequest, callback: (err: Error | null, options?: cors.CorsOptions) => void) => {
     try {
         const origin = req.headers.origin;
-        if (verifiedOriginsCache.has(origin) || ROOKOUT_ORIGIN_REGEX.test(origin)) {
+        if (verifiedOriginsCache.has(origin)) {
             callback(null, ALLOW_CORS_OPTION);
             return;
         }
