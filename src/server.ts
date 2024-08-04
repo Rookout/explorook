@@ -2,13 +2,13 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { ApolloServerPluginLandingPageDisabled } from "apollo-server-core";
 import { ApolloServer } from "apollo-server-express";
 import * as bodyParser from "body-parser";
-import * as cors from "cors";
 import * as express from "express";
 import { readFileSync } from "fs";
 import { applyMiddleware } from "graphql-middleware";
 import * as http from "http";
 import { join } from "path";
 import { resolvers } from "./api";
+import {getCorsMiddleware} from "./cors";
 import { notify } from "./exceptionManager";
 import {
   filterDirTraversal,
@@ -32,17 +32,6 @@ const defaultOptions: StartOptions = {
   port: 44512
 };
 
-const corsDomainWhitelist = [
-  /^https:\/\/.*\.rookout\.com$/,
-  /^https:\/\/.*\.rookout-dev\.com$/,
-  /^https:\/\/.*\.dynatracelabs\.com$/,
-  /^https:\/\/.*\.dynatrace\.com$/,
-  "https://localhost:8080"
-];
-
-const corsOptions = {
-  origin: corsDomainWhitelist
-};
 
 export const start = async (options: StartOptions) => {
   const settings = { ...options, ...defaultOptions };
@@ -71,7 +60,7 @@ export const start = async (options: StartOptions) => {
     cache: "bounded"
   });
 
-  app.use(cors(corsOptions));
+  app.use(getCorsMiddleware());
   app.use(bodyParser.json());
 
   await apolloServer.start();

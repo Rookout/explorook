@@ -17,13 +17,13 @@
 </p>
 
 ## About
-[![CircleCI](https://img.shields.io/circleci/build/github/Rookout/explorook.svg?style=flat-square)](https://circleci.com/gh/Rookout/explorook)
-[![GitHub release](https://img.shields.io/github/release/rookout/explorook.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/releases/)
-[![Github all releases](https://img.shields.io/github/downloads/rookout/explorook/total.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/releases/)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)](https://GitHub.com//Rookout/explorook/graphs/commit-activity)
-[![GitHub contributors](https://img.shields.io/github/contributors/rookout/explorook.svg?style=flat-square)](https://GitHub.com/Rookout/explorook/graphs/contributors/)
-[![GitHub license](https://img.shields.io/github/license/rookout/explorook.svg?style=flat-square)](https://github.com/Rookout/explorook/blob/master/LICENSE)
-[![Known Vulnerabilities](https://snyk.io/test/github/rookout/explorook/badge.svg?style=flat-square)](https://snyk.io/test/github/rookout/explorook)
+[![CircleCI](https://img.shields.io/circleci/build/github/Rookout/dynatrace-desktop-application.svg?style=flat-square)](https://circleci.com/gh/Rookout/dynatrace-desktop-application)
+[![GitHub release](https://img.shields.io/github/release/rookout/dynatrace-desktop-application.svg?style=flat-square)](https://GitHub.com/Rookout/dynatrace-desktop-application/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/rookout/dynatrace-desktop-application/total.svg?style=flat-square)](https://GitHub.com/Rookout/dynatrace-desktop-application/releases/)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)](https://GitHub.com//Rookout/dynatrace-desktop-application/graphs/commit-activity)
+[![GitHub contributors](https://img.shields.io/github/contributors/rookout/dynatrace-desktop-application.svg?style=flat-square)](https://GitHub.com/Rookout/dynatrace-desktop-application/graphs/contributors/)
+[![GitHub license](https://img.shields.io/github/license/rookout/dynatrace-desktop-application.svg?style=flat-square)](https://github.com/Rookout/dynatrace-desktop-application/blob/master/LICENSE)
+[![Known Vulnerabilities](https://snyk.io/test/github/rookout/dynatrace-desktop-application/badge.svg?style=flat-square)](https://snyk.io/test/github/rookout/dynatrace-desktop-application)
 [![Twitter Follow](https://img.shields.io/twitter/follow/rookoutlabs.svg?style=social)](https://twitter.com/rookoutlabs)
 
 
@@ -51,7 +51,7 @@ https://youtu.be/watch?v=mkMpzQPNcsI
 ## Contributing
 
 There are many ways in which you can participate in the project, for example:
-- [Submit bugs and feature requests](https://github.com/Rookout/explorook/issues), and help us verify as they are checked in.
+- [Submit bugs and feature requests](https://github.com/Rookout/dynatrace-desktop-application/issues), and help us verify as they are checked in.
 - Review the [documentation](https://docs.rookout.com) and make pull requests for anything from typos to new content. 
 
 If you are interested in fixing issues and contributing directly to the code base, please reach out to support@rookout.com.
@@ -59,8 +59,8 @@ If you are interested in fixing issues and contributing directly to the code bas
 ## Feedback
 
 - Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/rookout)
-- [Request a new feature](https://github.com/Rookout/explorook/issues)
-- [File an issue](https://github.com/Rookout/explorook/issues)
+- [Request a new feature](https://github.com/Rookout/dynatrace-desktop-application/issues)
+- [File an issue](https://github.com/Rookout/dynatrace-desktop-application/issues)
 - Follow [@rookoutlabs](https://twitter.com/rookoutlabs) and let us know what you think!
 - Read and subscribe to the [official Rookout Blog](https://www.rookout.com/blog/)
 

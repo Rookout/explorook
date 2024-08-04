@@ -5,12 +5,17 @@ references:
       branches:
         only: master
 
+
 jobs:
   publish:
     macos:
       xcode: "15.0.0"
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.large.gen1
     steps:
+      - run:
+          name: Install Rosetta 2
+          command: |
+            softwareupdate --install-rosetta --agree-to-license
       - checkout
       - restore_cache:
           key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
@@ -81,8 +86,12 @@ jobs:
   version_validation:
     macos:
       xcode: "15.0.0"
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.large.gen1
     steps:
+      - run:
+          name: Install Rosetta 2
+          command: |
+            softwareupdate --install-rosetta --agree-to-license
       - checkout
       - run:
           name: Validate version has no release yet
@@ -95,7 +104,7 @@ jobs:
       - run:
           name: Generate release notes
           command: |
-            export EXPLOROOK_VERSION=$(node -e 'console.log(require("./package").version)') && curl -X POST https://github-enforcer.rookout.com/release -H "Content-Type: application/json" -H "X-Enforcer-Signature: $ENFORCER_SECRET" -d '{"repository":{"full_name":"Rookout/explorook"},"data":{"inner_version":"v'$EXPLOROOK_VERSION'","version_to_publish":"'$EXPLOROOK_VERSION'","component":"explorook","released_by":"CircleCI"}}'
+            export DYNATRACE_DESKTOP_APP_VERSION=$(node -e 'console.log(require("./package").version)') && curl -X POST https://github-enforcer.rookout.com/release -H "Content-Type: application/json" -H "X-Enforcer-Signature: $ENFORCER_SECRET" -d '{"repository":{"full_name":"Rookout/dynatrace-desktop-application"},"data":{"inner_version":"v'$DYNATRACE_DESKTOP_APP_VERSION'","version_to_publish":"'$DYNATRACE_DESKTOP_APP_VERSION'","component":"dynatrace-desktop-application","released_by":"CircleCI"}}'
 workflows:
   version: 2
   publish-pipeline:

@@ -6,7 +6,7 @@ import { Menu, MenuItem } from "@material-ui/core";
 import { closeWindow } from "../utils";
 import * as Store from "electron-store";
 
-const EXPLOROOK_VERSION = app.getVersion();
+const DYNATRACE_DESKTOP_APPLICATION_VERSION = app.getVersion();
 
 export const Header = () => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -46,9 +46,9 @@ export const Header = () => {
                 </Menu>
             </div>
             <div className="Header flex">
-                <img src="logo.png" className="Header-logo"  alt="App Logo"/>
-                <p className="Header-title" title={EXPLOROOK_VERSION}>Dynatrace Live Debugging Desktop App</p>
-                <p className="gray-shaded" id="version-title">{EXPLOROOK_VERSION}</p>
+                <img src="logo.png" className="Header-logo" />
+                <p className="Header-title" title={DYNATRACE_DESKTOP_APPLICATION_VERSION}>Dynatrace Desktop App</p>
+                <p className="gray-shaded" id="version-title">{DYNATRACE_DESKTOP_APPLICATION_VERSION}</p>
             </div>
         </div>
     );
