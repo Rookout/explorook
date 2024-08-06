@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Close, Remove } from "@material-ui/icons";
+import { Close } from "@material-ui/icons";
 import { ipcRenderer } from "electron";
 import { app } from "@electron/remote";
 import { Menu, MenuItem } from "@material-ui/core";
@@ -37,7 +37,6 @@ export const Header = () => {
     return (
         <div>
             <div id="close-window-wrapper" onContextMenu={onCloseRightClick}>
-                <Remove id="minimize-window-btn" onClick={closeWindow}/>
                 <Close id="close-window-btn" onClick={closeWindow}/>
                 <Menu anchorEl={anchorEl} open={open}>
                     <MenuItem key="debug" onClick={startDebug}>Debug</MenuItem>
@@ -51,7 +50,6 @@ export const Header = () => {
                 <p className="Header-title" title={DYNATRACE_DESKTOP_APPLICATION_VERSION}>Dynatrace Desktop App</p>
                 <p className="gray-shaded" id="version-title">{DYNATRACE_DESKTOP_APPLICATION_VERSION}</p>
             </div>
-            <hr className="Header-line"></hr>
         </div>
     );
 };

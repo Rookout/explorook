@@ -4,10 +4,16 @@
 </a>
 </p>
 
-<h3 align="center">Rookout desktop app</h3>
+<p align="center">
+    <a>
+        <img src="./assets/dynatrace_web.png" width="400" height="120" alt="Dynatrace Logo"/>
+    </a>
+</p>
+
+<h3 align="center">Dynatrace Desktop App</h3>
 
 <p align="center">
-  The Dyantrace desktop app makes it easy to view local files in your browser.
+  The Dynatrace desktop app makes it easy to view local files in your browser.
 </p>
 
 ## About
@@ -20,27 +26,22 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/rookout/dynatrace-desktop-application/badge.svg?style=flat-square)](https://snyk.io/test/github/rookout/dynatrace-desktop-application)
 [![Twitter Follow](https://img.shields.io/twitter/follow/rookoutlabs.svg?style=social)](https://twitter.com/rookoutlabs)
 
-Rookout is a data extraction and pipelining platform, which provides the ability to collect any piece of data from live code, on-demand, using non-breaking breakpoints (Learn more about Rookout on our [website](https://www.rookout.com) or our [docs pages](https://docs.rookout.com)).
 
-The Dynatrace desktop app ("dynatrace-desktop-application") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
+The Dynatrace desktop app (previously known as "Explorook" or "Rookout desktop app") allows you to navigate through your local projects in a simple and flexible manner. Use this app in combination with the Rookout web debugger or Dynatrace Live Debugger app (coming soon) to set non-breaking breakpoints in your source files, and to instantly apply them to live code. 
 
-<p align="center">
-  <img src="https://github.com/Rookout/dynatrace-desktop-application/blob/master/assets/animated-gif.gif" alt="Rookout Desktop App" width="840" />
-</p>
+
 
 - Ease of use - set up once and easily access any directory or file you choose directly from the browser. No need to manually open or refresh files and folders; no additional privileges needed.
 - Git aware - seamlessly access your source code across all devices where the app is installed, regardless of the local paths to which you’ve cloned a git repository to. Easily collaborate with fellow developers working on the same code base. 
-- Security- maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
+- Security - maintain strict control over the files you open for sharing and the websites that can access them. Rookout will never collect or modify your source code. 
 
 ## Security
 
-At Rookout we take your source code security very seriously. Rookout will never collect or modify your source code. 
+At Dynatrace we take your source code security very seriously. Dynatrace will never collect or modify your source code. 
 
-The Rookout Desktop App was designed with security as a foremost concern, its security features are as follows:
+The Dynatrace Desktop App was designed with security as a foremost concern, its security features are as follows:
 - The App only listens for connections from localhost.
-- The App only allows access from the Rookout app.
-
-[Learn more about our security standards](https://www.rookout.com/solution/source-code-security/)
+- The App only allows access from the Rookout and Dynatrace web apps.
 
 ## Installation
 

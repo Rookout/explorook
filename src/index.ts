@@ -2,7 +2,6 @@ import {
   enable as remoteEnable,
   initialize as initElectronRemote
 } from "@electron/remote/main";
-import Analytics from "@segment/analytics-node";
 import {
   app,
   BrowserWindow,
@@ -18,12 +17,6 @@ import * as log from "electron-log";
 import * as Store from "electron-store";
 import {autoUpdater, UpdateInfo} from "electron-updater";
 import fs = require("fs");
-import {
-  arch as operatingSystemArch,
-  platform as operatingSystemPlatform,
-  userInfo,
-  version as operatingSystemVersion
-} from "os";
 import * as path from "path";
 import {deeplinkHandler, initDeeplinks} from "./deeplinks";
 import { ExplorookStore } from "./explorook-store";
@@ -31,7 +24,7 @@ const uuidv4 = require("uuid/v4");
 import AutoLaunch = require("auto-launch");
 import fetch from "node-fetch";
 import {SemVer} from "semver";
-import { initExceptionManager, Logger, notify } from "./exceptionManager";
+import { Logger, notify } from "./exceptionManager";
 
 initElectronRemote();
 autoUpdater.logger = new Logger();
@@ -41,7 +34,7 @@ Store.initRenderer();
 const ICONS_DIR = "../assets/icons/";
 const APP_ICON = path.join(__dirname, ICONS_DIR, getAppIcon());
 const TRAY_ICON = path.join(__dirname, ICONS_DIR, getTrayIcon());
-const ROOKOUT_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
+const APP_LOGO = path.join(__dirname, ICONS_DIR, "logo.png");
 const CLOSE_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_close_black_18dp.png");
 const SETTINGS_ICON_BLACK = path.join(__dirname, ICONS_DIR, "baseline_settings_black_18dp.png");
 const CLOSE_ICON_WHITE = path.join(__dirname, ICONS_DIR, "baseline_close_white_18dp.png");
@@ -55,11 +48,8 @@ let firstTimeLaunch = false;
 let al: AutoLaunch;
 let store: ExplorookStore;
 let willUpdateOnClose: boolean = false;
-let dataCollectionEnabled: boolean;
 const icon = nativeImage.createFromPath(APP_ICON);
-let analytics: Analytics;
 let userId: string;
-let signedEula: boolean = false;
 
 // getAppIcon resolves the right icon for the running platform
 function getAppIcon() {
@@ -120,10 +110,6 @@ function registerIpc() {
   ipcMain.on("hidden", displayWindowHiddenNotification);
   ipcMain.on("start-server-error", (e: IpcMainEvent, err: any) => {
     displayNotification("Rookout Desktop App", `App failed to start local server: ${err}`);
-    track("start-server-error", { err });
-  });
-  ipcMain.on("track", (e: IpcMainEvent, trackEvent: string, props: any) => {
-    track(trackEvent, props);
   });
   ipcMain.on("get-user-id", (e: IpcMainEvent) => e.returnValue = userId);
   ipcMain.on("get-platform", (e: IpcMainEvent) => e.returnValue = process.platform.toString());
@@ -138,25 +124,7 @@ function registerIpc() {
     const enabled = !(await isReadonlyVolume()) && await al.isEnabled();
     e.sender.send("auto-launch-is-enabled-changed", enabled);
   });
-  ipcMain.on("exception-manager-is-enabled-req", (e: IpcMainEvent) => {
-    e.sender.send("exception-manager-enabled-changed", dataCollectionEnabled);
-  });
-  ipcMain.on("exception-manager-enabled-set", (e: IpcMainEvent, enable: boolean) => {
-    store.set("sentry-enabled", enable);
-    e.sender.send("exception-manager-enabled-changed", enable);
-  });
-  ipcMain.on("has-signed-eula", (e: IpcMainEvent) => {
-    e.returnValue = store.get("has-signed-eula", false);
-  });
-  ipcMain.on("signed-eula", (e: IpcMainEvent) => {
-    if (dataCollectionEnabled || process.env.development) {
-      initExceptionManager(() => userId);
-      initAnalytics();
-      track("signed-eula");
-    }
-    store.set("has-signed-eula", true);
-    startGraphqlServer();
-  });
+
   ipcMain.on("auto-launch-set", (e: IpcMainEvent, enable: boolean) => {
     if (enable) {
       store.set("linux-start-with-os", true);
@@ -168,44 +136,9 @@ function registerIpc() {
   });
 }
 
-function track(eventName: string, props: any = null, callback: (() => void) | null = null): void {
-  if (!analytics) {
-    return;
-  }
-  analytics.track({
-    userId,
-    event: eventName,
-    properties: props
-  }, callback);
-}
-
- async function flushAnalytics(callback: () => void) {
-  if (!analytics) {
-    return;
-  }
-  await analytics.closeAndFlush();
-  callback();
-}
-
-function identifyAnalytics() {
-  const { username } = userInfo();
-  const osArch = operatingSystemArch();
-  const osPlatform = operatingSystemPlatform();
-  const osVersion = operatingSystemVersion();
-  analytics.identify({ userId, traits: { username, osPlatform, osArch, osVersion } });
-}
-
-function initAnalytics() {
-  analytics = new Analytics({ writeKey: "isfxG3NQsq3qDoNPZPvhIVlmYVGDOLdH"});
-  identifyAnalytics();
-  track("startup");
-}
 
 async function quitApplication() {
-  track("quit-application");
-   await flushAnalytics(() => app.quit());
-  // This timeout is here in case the callback is not called or takes too long
-  setTimeout(() => app.quit(), 3000);
+  app.quit();
 }
 
 function main() {
@@ -235,12 +168,6 @@ function main() {
     firstTimeLaunch = true;
   });
   userId = store.getOrCreate("user-id", uuidv4());
-  dataCollectionEnabled = Boolean(store.get("sentry-enabled", true));
-  signedEula = Boolean(store.get("has-signed-eula", false));
-  if (signedEula && (dataCollectionEnabled || process.env.development)) {
-    initExceptionManager(() => userId);
-    initAnalytics();
-  }
 
   // listen to RPC's coming from windows
   registerIpc();
@@ -336,7 +263,7 @@ function displayNotification(title: string, body: string, onClick?: (event: Elec
     tray.displayBalloon({
       title,
       content: body,
-      icon: ROOKOUT_LOGO,
+      icon: APP_LOGO,
     });
   }
 }
@@ -379,16 +306,15 @@ function createMainWindow(indexWorkerWindow: BrowserWindow, hidden: boolean = fa
     webPreferences: { nodeIntegration: true, contextIsolation: false, sandbox: false }
   });
   remoteEnable(mainWindow.webContents);
-  if (signedEula) {
-    startGraphqlServer();
-  }
+  startGraphqlServer();
+
   ipcMain.on("app-window-up", (ev: IpcMainEvent) => {
     ev.sender.send("indexer-worker-id", indexWorker.id);
     if (hidden && process.platform === "darwin") {
       app.dock.hide();
     }
     if (firstTimeLaunch) {
-      displayNotification("Rookout's Desktop App is running in the background", "You can access the app via the tray icon");
+      displayNotification("Dynatrace's Desktop App is running in the background", "You can access the app via the tray icon");
     }
   });
 

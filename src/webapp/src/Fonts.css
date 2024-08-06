@@ -1,0 +1,39 @@
+@font-face {
+    font-family: 'DynatraceFlow';
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url(./assets/fonts/DTFlow-Light.woff2) format('woff2');
+}
+/* DT Flow Regular */
+@font-face {
+    font-family: 'DynatraceFlow';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(./assets/fonts/DTFlow-Regular.woff2) format('woff2');
+}
+/* DT Flow Medium */
+@font-face {
+    font-family: 'DynatraceFlow';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("./assets/fonts/DTFlow-Medium.woff2") format('woff2');
+}
+/* DT Flow Semibold */
+@font-face {
+    font-family: 'DynatraceFlow';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url(./assets/fonts/DTFlow-Semibold.woff2) format('woff2');
+}
+/* DT Flow Heavy */
+@font-face {
+    font-family: 'DynatraceFlow';
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url(./assets/fonts/DTFlow-Heavy.woff2) format('woff2');
+}

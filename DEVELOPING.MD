@@ -1,15 +1,14 @@
 # Introduction
-Rookout's Desktop App (previously known as "Explorook") is an open-source, [Electron](https://electronjs.org/) based desktop app used by Rookout's [web app](https://app.rookout.com) to extend its usability to the user's local filesystem.  
-Rookout's Desktop App uses a local http server to expose its API to Rookout's web debugger.  
-The API is protected by a self generated token.
+Dynatrace's Desktop App (previously known as "Explorook" and "Rookout Desktop App") is an open-source, [Electron](https://electronjs.org/) based desktop app used by Rookout's [web app](https://app.rookout.com) to extend its usability to the user's local filesystem.  
+Dynatrace's Desktop App uses a local http server to expose its API to Rookout's web debugger (and in the future, Dynatrace Live Debugging web app).
 
 # Security
-Rookout's Desktop App is only accessible from localhost  
-Rookout's Desktop App only allows read-only access and only to folders the user specifies (and their subfolders)  
+Dynatrace's Desktop App is only accessible from localhost  
+Dynatrace's Desktop App only allows read-only access and only to folders the user specifies (and their subfolders)  
 Folders traversal are forbidden  
-Rookout's Desktop App does not send any information about the user's source code to any server
+Dynatrace's Desktop App does not send any information about the user's source code to any server
 
-Rookout's Desktop App spawns three processes (one main and two renderers):  
+The app spawns three processes (one main and two renderers):  
 1. [The main process](#The-main-process)
 1. [The react web app](#The-react-web-app)
 1. [An invisible worker window](#The-invisible-worker-window)
@@ -20,7 +19,6 @@ It helps the windows achieve functionalities they cannot access directly (e.g: d
 
 # The react web app
 Written in ``ES6``, and uses ``create-react-app``, The react app is the configuration window where the user can add, delete and manage its configured folders and other global settings.
-[](/assets/explorook-main-window.gif)
 
 # The invisible worker window
 The invisible worker window runs the GraphQL server and manages all operations on repositories (CRUD operations and indexing)  
@@ -28,7 +26,7 @@ The reason we open an invisible window (and not use the main process for that) i
 
 # Security & Access
 Because we listen on http://localhost:44512 (which is the graphql endpoint we spin), every website running on the client's machine has access to our API.  
-In order to restrict access for Rookout's web app only - we use [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+In order to restrict access for Rookout's and Dynatrace's web apps only  - we use [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 
 # Project initialization
 1. run ``yarn`` in ``/src/webapp`` to install webapp dependencies
