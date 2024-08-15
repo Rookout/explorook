@@ -5,6 +5,7 @@ import './Fonts.css'
 import { Header } from './components/Header'
 import Footer from './components/Footer'
 import { EmptyState } from './components/EmptyState'
+import {ReposAddHandler} from "./components/ReposAddHandler";
 
 
 export const App = () => {
@@ -28,6 +29,7 @@ export const App = () => {
     <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
       <Header />
         <EmptyState />
+        <ReposAddHandler/>
       <Footer />
     </div>
   )
