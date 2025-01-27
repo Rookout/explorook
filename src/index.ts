@@ -365,7 +365,7 @@ function openTray() {
     { label: "Config...", icon: darkMode ? SETTINGS_ICON_WHITE : SETTINGS_ICON_BLACK, click: maximize },
     { label: "Close", icon: darkMode ? CLOSE_ICON_WHITE : CLOSE_ICON_BLACK, click: quitApplication },
   ]);
-  tray.setToolTip("Rookout");
+  tray.setToolTip("Dynatrace's Desktop App");
   tray.setContextMenu(contextMenu);
   tray.on("double-click", maximize);
   if (process.platform.match("darwin")) {
