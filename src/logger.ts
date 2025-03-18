@@ -16,12 +16,12 @@ if (!logLevel) {
     logLevel = "debug";
 }
 
-const getLogFileLocation = () => path.join(getLibraryFolder(), "rookout.log");
+const getLogFileLocation = () => path.join(getLibraryFolder(), "dynatrace.log");
 const customAppender = require("./logsContainerAppender");
 
 log4js.configure({
     appenders: {
-        file: {type: "file", filename: getLogFileLocation()},
+        "file": {type: "file", filename: getLogFileLocation()},
         "logs-container": {
             type: customAppender,
         }
