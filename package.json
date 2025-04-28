@@ -1,6 +1,6 @@
 {
   "name": "dynatrace-desktop-application",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "dynatrace desktop application's site addon to support local files and folders",
   "main": "dist/index.js",
   "scripts": {
@@ -122,7 +122,7 @@
     "electron-log": "4.4.7",
     "electron-store": "8.0.1",
     "electron-updater": "6.1.5",
-    "express": "4.19.2",
+    "express": "4.21.2",
     "graphql": "^15.4.0",
     "isomorphic-git": "^1.8.2",
     "lodash": "^4.17.21",
