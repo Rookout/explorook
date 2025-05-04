@@ -5,7 +5,6 @@ WORKDIR /build
 
 ADD package.json ./
 ADD yarn.lock ./
-ADD patches ./patches/
 
 RUN yarn install
 COPY . .
