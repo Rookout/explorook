@@ -2,7 +2,7 @@ import * as cors from "cors";
 import fetch from "node-fetch";
 
 
-const LOCALHOST_ORIGIN = "https://localhost:8080";
+const LOCALHOST_ORIGIN = "http://localhost:3000";
 const DYNATRACE_ORIGIN_REGEX = /^https:\/\/.*\.dynatrace(?:labs)?\.com(?::\d+)?$/;
 
 const ALLOW_CORS_OPTION: cors.CorsOptions = {origin: true};
