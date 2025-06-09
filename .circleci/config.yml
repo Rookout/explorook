@@ -12,6 +12,7 @@ jobs:
     resource_class: macos.m1.medium.gen1
     steps:
       - checkout
+      - macos/install-rosetta
       - restore_cache:
           key: homebrew-cache-{{ arch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum ".circleci/config.yml" }}
       - run:
