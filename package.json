@@ -132,7 +132,7 @@
     "lodash": "^4.17.21",
     "log4js": "6.7.1",
     "parse-repo": "^1.0.4",
-    "patch-package": "^6.4.0",
+    "patch-package": "^8.0.1",
     "postinstall-postinstall": "^2.1.0",
     "semver": "7.5.4",
     "slash": "3.0.0",
