@@ -129,7 +129,7 @@
     "express": "4.19.2",
     "graphql": "^15.4.0",
     "isomorphic-git": "^1.8.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "log4js": "6.7.1",
     "parse-repo": "^1.0.4",
     "patch-package": "^6.4.0",
